@@ -1,0 +1,812 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "PSD2 - Account Information API",
+    "version": "v4",
+    "description": "PSD2 Account Information API is a HTTP-1.1 REST service that provides access to user and accounting data of Česká spořitelna, a.s. customers for third parties with PSD2 license. It allows you to access general information about accounts, balances, transactions and standing orders."
+  },
+  "servers": [
+    {
+      "url": "https://webapi.developers.erstegroup.com/api/csas/production/v4/account-information",
+      "description": "Production Environment"
+    },
+    {
+      "url": "https://webapi.developers.erstegroup.com/api/csas/sandbox/v4/account-information",
+      "description": "Sandbox Environment"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Payment accounts",
+      "description": "Information about client payments accounts such as list of account, balances or transaction history."
+    },
+    {
+      "name": "Standing orders",
+      "description": "Retrieves a list of standing orders and details for a specific standing order."
+    }
+  ],
+  "paths": {
+    "/my/accounts": {
+      "get": {
+        "tags": [
+          "Payment accounts"
+        ],
+        "summary": "Get client payment accounts list",
+        "description": "Paginated list of client's accounts.",
+        "parameters": [
+          {
+            "name": "size",
+            "in": "query",
+            "description": "Pagination - Number of entries per page (max. 999).",
+            "schema": {
+              "type": "number",
+              "example": 10
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Pagination - Desired page number.",
+            "schema": {
+              "type": "number",
+              "example": 0
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "description": "Comma separated list of fields that should be used for sorting.",
+            "schema": {
+              "type": "string",
+              "example": "iban"
+            }
+          },
+          {
+            "name": "order",
+            "in": "query",
+            "description": "Comma separated list of sort types. ASC for ascending and DESC for descending.",
+            "schema": {
+              "type": "string",
+              "example": "desc"
+            }
+          },
+          {
+            "name": "WEB-API-key",
+            "in": "header",
+            "required": true,
+            "description": "Use the API key that was generated for you on the developer portal.",
+            "schema": {
+              "type": "string",
+              "example": "00000000-1212-0f0f-a0a0-123456789abc"
+            }
+          },
+          {
+            "name": "user-involved",
+            "in": "header",
+            "required": true,
+            "description": "Indicates whether the user is directly involved in the action",
+            "schema": {
+              "type": "string",
+              "example": "false"
+            }
+          },
+          {
+            "name": "user-agent",
+            "in": "header",
+            "description": "Client identification (e.g., browser, application)",
+            "schema": {
+              "type": "string",
+              "example": "PostmanRuntime/7.32.2"
+            }
+          },
+          {
+            "name": "user-ip-address",
+            "in": "header",
+            "description": "IP address of the client sending the request",
+            "schema": {
+              "type": "string",
+              "example": "127.0.0.1"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "pageNumber": { "type": "number" },
+                    "pageCount": { "type": "number" },
+                    "pageSize": { "type": "number" },
+                    "nextPage": { "type": "number" },
+                    "accounts": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/AccountDetail" }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "description": "Bad Request" }
+        }
+      }
+    },
+    "/my/accounts/{id}/balance": {
+      "get": {
+        "tags": [
+          "Payment accounts"
+        ],
+        "summary": "Get account balances list",
+        "description": "Obtain account balance by account id.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Opaque system ID of the account",
+            "schema": {
+              "type": "string",
+              "example": "D2C8C1DCC51A3738538A40A4863CA288E0225E52"
+            }
+          },
+          {
+            "name": "WEB-API-key",
+            "in": "header",
+            "required": true,
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "user-involved",
+            "in": "header",
+            "required": true,
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "user-agent",
+            "in": "header",
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "user-ip-address",
+            "in": "header",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "balances": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/AccountBalance" }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": { "description": "Not Found" }
+        }
+      }
+    },
+    "/my/accounts/{id}/transactions": {
+      "get": {
+        "tags": [
+          "Payment accounts"
+        ],
+        "summary": "Get overview of transactions",
+        "description": "Paginated and optionally filtered (by dates) transaction list for given account.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Unique system identification of the client account",
+            "schema": {
+              "type": "string",
+              "example": "D2C8C1DCC51A3738538A40A4863CA288E0225E52"
+            }
+          },
+          {
+            "name": "fromDate",
+            "in": "query",
+            "description": "Filter transactions starting from a specific day in UTC (yyyy-MM-dd).",
+            "schema": {
+              "type": "string",
+              "example": "2019-10-15"
+            }
+          },
+          {
+            "name": "toDate",
+            "in": "query",
+            "description": "Filter card transactions up to the chosen day in UTC (yyyy-MM-dd).",
+            "schema": {
+              "type": "string",
+              "example": "2019-10-30"
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "description": "Pagination - Number of entries per page (max. 200).",
+            "schema": {
+              "type": "number",
+              "default": 50,
+              "example": 50
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Pagination - The desired page (indexed from zero).",
+            "schema": {
+              "type": "number",
+              "example": 0
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "description": "One single field that should be used for sorting.",
+            "schema": {
+              "type": "string",
+              "example": "bookingdate"
+            }
+          },
+          {
+            "name": "order",
+            "in": "query",
+            "description": "ASC for ascending and DESC for descending.",
+            "schema": {
+              "type": "string",
+              "example": "desc"
+            }
+          },
+          {
+            "name": "WEB-API-key",
+            "in": "header",
+            "required": true,
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "user-involved",
+            "in": "header",
+            "required": true,
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "user-agent",
+            "in": "header",
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "user-ip-address",
+            "in": "header",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "pageNumber": { "type": "number" },
+                    "pageCount": { "type": "number" },
+                    "pageSize": { "type": "number" },
+                    "nextPage": { "type": "number" },
+                    "transactions": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/AccountTransaction" }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "description": "Bad Request" },
+          "404": { "description": "Not Found" }
+        }
+      }
+    },
+    "/my/standingorders": {
+      "get": {
+        "tags": [
+          "Standing orders"
+        ],
+        "summary": "Get standing order list",
+        "description": "Retrieves a list of standing orders.",
+        "parameters": [
+          {
+            "name": "size",
+            "in": "query",
+            "description": "Paging. Default:10",
+            "schema": {
+              "type": "number",
+              "example": 10
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Paging. Default:0",
+            "schema": {
+              "type": "number",
+              "example": 0
+            }
+          },
+          {
+            "name": "WEB-API-key",
+            "in": "header",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Full response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "pageNumber": { "type": "number" },
+                    "pageCount": { "type": "number" },
+                    "pageSize": { "type": "number" },
+                    "nextPage": { "type": "number" },
+                    "standingOrders": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/StandingOrderResponse" }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "description": "Bad Request" }
+        }
+      }
+    },
+    "/my/standingorders/{id}": {
+      "get": {
+        "tags": [
+          "Standing orders"
+        ],
+        "summary": "Get standing order detail",
+        "description": "Resource for get detail about the standing order.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Identification of standing order",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "WEB-API-key",
+            "in": "header",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Full response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandingOrderResponse"
+                }
+              }
+            }
+          },
+          "400": { "description": "Bad Request" },
+          "404": { "description": "Not Found" }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AccountDetail": {
+        "type": "object",
+        "required": [
+          "id",
+          "identification",
+          "currency"
+        ],
+        "properties": {
+          "id": { "type": "string" },
+          "identification": {
+            "type": "object",
+            "required": [ "iban" ],
+            "properties": {
+              "iban": { "type": "string" },
+              "other": { "type": "string" }
+            }
+          },
+          "currency": { "type": "string" },
+          "servicer": {
+            "type": "object",
+            "required": [ "bankCode", "countryCode", "bic" ],
+            "properties": {
+              "bankCode": { "type": "string" },
+              "countryCode": { "type": "string" },
+              "bic": { "type": "string" }
+            }
+          },
+          "nameI18N": { "type": "string" },
+          "productI18N": { "type": "string" },
+          "ownersNames": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "relationship": {
+            "type": "object",
+            "properties": {
+              "isOwner": { "type": "boolean" }
+            }
+          },
+          "suitableScope": {
+            "type": "object",
+            "properties": {
+              "AISP": { "type": "string" },
+              "PISP": { "type": "string" }
+            }
+          }
+        }
+      },
+      "AccountBalance": {
+        "type": "object",
+        "required": [ "amount", "creditDebitIndicator", "date" ],
+        "properties": {
+          "type": {
+            "type": "object",
+            "properties": {
+              "codeOrProprietary": {
+                "type": "object",
+                "properties": {
+                  "code": { "type": "string", "enum": ["CLAV", "CLBD"] }
+                }
+              }
+            }
+          },
+          "amount": { "$ref": "#/components/schemas/AmountBalance" },
+          "creditDebitIndicator": { "type": "string", "enum": ["DBIT", "CRDT"] },
+          "date": { "$ref": "#/components/schemas/Date" }
+        }
+      },
+      "AccountTransaction": {
+        "type": "object",
+        "required": [ "entryReference", "amount", "creditDebitIndicator", "status", "bookingDate", "valueDate", "bankTransactionCode", "entryDetails" ],
+        "properties": {
+          "entryReference": { "type": "string" },
+          "reservationId": { "type": "string" },
+          "amount": { "$ref": "#/components/schemas/AmountTransaction" },
+          "creditDebitIndicator": { "type": "string", "enum": ["CRDT", "DBIT"] },
+          "status": { "type": "string", "enum": ["BOOK", "INFO"] },
+          "bookingDate": { "$ref": "#/components/schemas/Date" },
+          "valueDate": { "$ref": "#/components/schemas/Date" },
+          "bankTransactionCode": {
+            "type": "object",
+            "required": [ "proprietary" ],
+            "properties": {
+              "proprietary": {
+                "type": "object",
+                "required": [ "issuer" ],
+                "properties": {
+                  "code": { "type": "number" },
+                  "issuer": { "type": "string" }
+                }
+              }
+            }
+          },
+          "entryDetails": {
+            "type": "object",
+            "properties": {
+              "transactionDetails": {
+                "type": "object",
+                "properties": {
+                  "references": {
+                    "type": "object",
+                    "required": [ "accountServicerReference" ],
+                    "properties": {
+                      "accountServicerReference": { "type": "string" },
+                      "endToEndIdentification": { "type": "string" },
+                      "chequeNumber": { "type": "string" }
+                    }
+                  },
+                  "amountDetails": {
+                    "type": "object",
+                    "properties": {
+                      "instructedAmount": {
+                        "type": "object",
+                        "required": [ "amount" ],
+                        "properties": { "amount": { "$ref": "#/components/schemas/AmountTransaction" } }
+                      },
+                      "counterValueAmount": {
+                        "type": "object",
+                        "required": [ "amount" ],
+                        "properties": {
+                          "amount": { "$ref": "#/components/schemas/AmountTransaction" },
+                          "currencyExchange": {
+                            "type": "object",
+                            "properties": {
+                              "sourceCurrency": { "type": "string" },
+                              "targetCurrency": { "type": "string" },
+                              "exchangeRate": { "type": "number" }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "charges": {
+                    "type": "object",
+                    "required": [ "bearer" ],
+                    "properties": {
+                      "bearer": { "type": "string", "enum": ["SHA", "OUR", "BEN"] }
+                    }
+                  },
+                  "relatedParties": {
+                    "type": "object",
+                    "properties": {
+                      "debtor": { "$ref": "#/components/schemas/Actor" },
+                      "debtorAccount": { "$ref": "#/components/schemas/PartyAccountIdentification" },
+                      "creditor": { "$ref": "#/components/schemas/Actor" },
+                      "creditorAccount": { "$ref": "#/components/schemas/PartyAccountIdentification" },
+                      "proprietary": { "$ref": "#/components/schemas/RelatedPartiesProprietary" }
+                    }
+                  },
+                  "relatedAgents": {
+                    "type": "object",
+                    "properties": {
+                      "creditorAgent": { "$ref": "#/components/schemas/Agent" },
+                      "debtorAgent": { "$ref": "#/components/schemas/Agent" }
+                    }
+                  },
+                  "remittanceInformation": {
+                    "type": "object",
+                    "properties": {
+                      "unstructured": { "type": "string" },
+                      "structured": {
+                        "type": "object",
+                        "properties": {
+                          "creditorReferenceInformation": {
+                            "type": "object",
+                            "properties": {
+                              "reference": { "type": "array", "items": { "type": "string" } }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "additionalTransactionInformation": { "type": "string" },
+                  "additionalRemittanceInformation": { "type": "string" },
+                  "additionalTransactionDescription": { "type": "string" }
+                }
+              }
+            }
+          }
+        }
+      },
+      "StandingOrderResponse": {
+        "type": "object",
+        "required": [ "standingOrder", "standingOrderIdentification", "amount", "currency", "paymentTypeInformation" ],
+        "properties": {
+          "standingOrder": { "$ref": "#/components/schemas/StandingOrder" },
+          "standingOrderIdentification": {
+            "type": "object",
+            "required": [ "transactionIdentification" ],
+            "properties": {
+              "transactionIdentification": { "type": "string" }
+            }
+          },
+          "amount": { "$ref": "#/components/schemas/PaymentAmount" },
+          "requestedExecutionDate": { "type": "string" },
+          "debtorAccount": {
+            "type": "object",
+            "required": [ "currency" ],
+            "properties": {
+              "identification": {
+                "type": "object",
+                "properties": {
+                  "iban": { "type": "string" },
+                  "other": { "type": "object", "properties": { "identification": { "type": "string" } } }
+                }
+              },
+              "currency": { "type": "string" }
+            }
+          },
+          "creditorAccount": {
+            "type": "object",
+            "properties": {
+              "identification": {
+                "type": "object",
+                "properties": {
+                  "iban": { "type": "string" },
+                  "other": { "type": "object", "properties": { "identification": { "type": "string" } } }
+                }
+              }
+            }
+          },
+          "paymentTypeInformation": {
+            "type": "object",
+            "required": [ "instructionPriority", "serviceLevel" ],
+            "properties": {
+              "instructionPriority": { "type": "string", "enum": ["NORM"] },
+              "serviceLevel": {
+                "type": "object",
+                "required": [ "code" ],
+                "properties": { "code": { "type": "string" } }
+              }
+            }
+          },
+          "remittanceInformation": {
+            "type": "object",
+            "properties": {
+              "structured": {
+                "type": "object",
+                "properties": {
+                  "creditorReferenceInformation": {
+                    "type": "object",
+                    "properties": { "reference": { "type": "array", "items": { "type": "string" } } }
+                  }
+                }
+              },
+              "unstructured": { "type": "string" }
+            }
+          }
+        }
+      },
+      "StandingOrder": {
+        "type": "object",
+        "required": [ "execution" ],
+        "properties": {
+          "alias": { "type": "string" },
+          "execution": {
+            "type": "object",
+            "required": [ "mode" ],
+            "properties": {
+              "mode": { "type": "string", "enum": ["UNTIL_DATE", "UNTIL_CANCELLATION", "AFTER_MAX_ITERATION_EXCEEDED", "MAX_AMOUNT_EXCEEDED"] },
+              "modeDue": { "type": "string", "enum": ["DUE_DAY_OF_MONTH", "DUE_LAST_DAY_OF_MONTH"] },
+              "interval": { "type": "string", "enum": ["IRREGULAR", "WEEKLY", "MONTHLY", "BI_MONTHLY", "QUARTERLY", "HALFYEARLY", "YEARLY"] },
+              "intervalDue": { "type": "number" }
+            }
+          },
+          "validity": {
+            "type": "object",
+            "properties": {
+              "lastExecutionDate": { "type": "string" },
+              "maxIterations": { "type": "string" },
+              "maxAmount": {
+                "type": "object",
+                "required": [ "value", "currency" ],
+                "properties": {
+                  "value": { "type": "number" },
+                  "currency": { "type": "string" }
+                }
+              }
+            }
+          },
+          "exceptions": {
+            "type": "object",
+            "properties": {
+              "breaks": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "validFromDate": { "type": "string" },
+                    "validToDate": { "type": "string" }
+                  }
+                }
+              },
+              "stoppages": {
+                "type": "array",
+                "items": { "type": "string" }
+              }
+            }
+          }
+        }
+      },
+      "Date": {
+        "type": "object",
+        "required": [ "date" ],
+        "properties": {
+          "date": { "type": "string" }
+        }
+      },
+      "AmountBalance": {
+        "type": "object",
+        "required": [ "value", "currency" ],
+        "properties": {
+          "value": { "type": "number" },
+          "currency": { "type": "string" }
+        }
+      },
+      "AmountTransaction": {
+        "type": "object",
+        "required": [ "value", "currency" ],
+        "properties": {
+          "value": { "type": "number" },
+          "currency": { "type": "string" }
+        }
+      },
+      "PaymentAmount": {
+        "type": "object",
+        "required": [ "instructedAmount" ],
+        "properties": {
+          "instructedAmount": {
+            "type": "object",
+            "required": [ "value", "currency" ],
+            "properties": {
+              "value": { "type": "number" },
+              "currency": { "type": "string" }
+            }
+          }
+        }
+      },
+      "Actor": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string" }
+        }
+      },
+      "PartyAccountIdentification": {
+        "type": "object",
+        "required": [ "identification" ],
+        "properties": {
+          "identification": {
+            "type": "object",
+            "properties": {
+              "iban": { "type": "string" },
+              "other": { "$ref": "#/components/schemas/OtherIdentification" }
+            }
+          }
+        }
+      },
+      "OtherIdentification": {
+        "type": "object",
+        "required": [ "identification" ],
+        "properties": {
+          "identification": { "type": "string" }
+        }
+      },
+      "RelatedPartiesProprietary": {
+        "type": "object",
+        "required": [ "party" ],
+        "properties": {
+          "party": {
+            "type": "object",
+            "required": [ "name" ],
+            "properties": { "name": { "type": "string" } }
+          }
+        }
+      },
+      "Agent": {
+        "type": "object",
+        "properties": {
+          "financialInstitutionIdentification": {
+            "type": "object",
+            "properties": {
+              "bic": { "type": "string" }
+            }
+          }
+        }
+      }
+    }
+  }
+}

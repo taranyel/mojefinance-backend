@@ -1,0 +1,1345 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "description": "This is the REST API Account Direct Acces API (ADAA).",
+    "version": "1.2",
+    "title": "Account Direct Access API"
+  },
+  "tags": [
+    {
+      "name": "History",
+      "description": "Transaction history."
+    },
+    {
+      "name": "Balances",
+      "description": "Account balance."
+    },
+    {
+      "name": "Accounts",
+      "description": "Selected accounts used for API service."
+    },
+    {
+      "name": "Statements",
+      "description": "Statements detail or PDF file."
+    },
+    {
+      "name": "Subscriptions",
+      "description": "Asynchronous event subscriptions"
+    }
+  ],
+  "paths": {
+    "/accounts/{accountId}/transactions": {
+      "get": {
+        "tags": [
+          "History"
+        ],
+        "summary": "Transaction history",
+        "description": "Returns transaction history based on input parameters. Sorting is based on transaction date, from older to newer transactions. Currently only transactions up to 2 years old are returned. In case older transactions are requested (using parameters fromDate/toDate), error is returned.",
+        "operationId": "getTransactions",
+        "parameters": [
+          {
+            "name": "x-correlation-id",
+            "in": "header",
+            "description": "Correlation ID (GUID 128-bit: 8-4-4-4-12) is the generated unique identifier of the initial request, which stays the same through all the systems/application involved.",
+            "example": "71f415f4-412d-4c55-af05-15d1e0389f8f",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^(\\{{0,1}([0-9a-fA-F]){8}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){12}\\}{0,1})$"
+            }
+          },
+          {
+            "name": "accountId",
+            "in": "path",
+            "required": true,
+            "description": "IBAN represented as unique ID, which is returned from resource account-ids.",
+            "example": "Q1oxMzAxMDAwOTAxMTQ3NzcxODAwMjI3OkNaSw",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 400
+            }
+          },
+          {
+            "name": "toDateTime",
+            "in": "query",
+            "description": "End date and time of returned transaction history. Must not be less than 'fromDateTime'. Format: yyyy-mm-ddThh:mm:ss.msZ (Z denotes a UTC offset of 00:00).",
+            "example": "2018-05-10T15:42:30.000Z",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "fromDateTime",
+            "in": "query",
+            "description": "Start date and time of returned transaction history. Must not be greater than 'toDateTime'. Format: yyyy-mm-ddThh:mm:ss.msZ (Z denotes a UTC offset of 00:00).",
+            "example": "2017-05-10T15:42:30.000Z",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "fromDate",
+            "deprecated": true,
+            "in": "query",
+            "description": "Start date of returned transaction history (YYYY-MM-DD). Must not be greater than 'toDate'.",
+            "example": "2017-05-10",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "toDate",
+            "deprecated": true,
+            "in": "query",
+            "description": "End date of returned transaction history (YYYY-MM-DD). Must not be less than 'fromDate'.",
+            "example": "2018-05-10",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Current transaction history page. Page starts with 0 (first page).",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "minimum": 0
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "description": "Number of transactions per page. Default value is 100 transactions per page.",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 100,
+              "minimum": 1,
+              "maximum": 100
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageSlice"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request header/parameter (missing header/parameter or wrong header/parameter value).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Client has no access to account or account is in blacklist.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Unchanged data download limit reached. Use publish-subscribe pattern for data change notifications. Limit: 1 download per 61 minutes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": [],
+            "AccessTokenAuth": []
+          }
+        ]
+      }
+    },
+    "/accounts": {
+      "get": {
+        "tags": [
+          "Accounts"
+        ],
+        "summary": "List of selected accounts.",
+        "description": "List of selected accounts used for API service. Accounts are selected within service registration.",
+        "operationId": "getAccounts",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/CorrelationId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Accounts"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request header/parameter (missing header/parameter or wrong header/parameter value).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Client has no access to any accounts or accounts are in blacklist.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": [],
+            "AccessTokenAuth": []
+          }
+        ]
+      }
+    },
+    "/accounts/{accountId}/transactions/event-subscriptions": {
+      "post": {
+        "tags": [
+          "Subscriptions"
+        ],
+        "summary": "Subscribe to receive asynchronous events",
+        "description": "Subscribe to receive asynchronous events",
+        "operationId": "createSubscription",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/CorrelationId"
+          },
+          {
+            "$ref": "#/components/parameters/AccountId"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SubscriptionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Subscription created",
+            "headers": {
+              "Location": {
+                "description": "URI to the newly created subscription",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SubscriptionInfo"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request header/parameter (missing header/parameter or wrong header/parameter value).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Client has no access to account or account is in blacklist.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Account not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Invalid request body.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": [],
+            "AccessTokenAuth": []
+          }
+        ]
+      }
+    },
+    "/accounts/{accountId}/transactions/event-subscriptions/{subscriptionId}": {
+      "get": {
+        "tags": [
+          "Subscriptions"
+        ],
+        "summary": "Get subscription information",
+        "description": "Get subscription information",
+        "operationId": "getSubscriptionInfo",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/CorrelationId"
+          },
+          {
+            "$ref": "#/components/parameters/AccountId"
+          },
+          {
+            "$ref": "#/components/parameters/SubscriptionId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Subscription information",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SubscriptionInfo"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request header/parameter (missing header/parameter or wrong header/parameter value).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Client has no access to account or account is in blacklist.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Subscription/account not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": [],
+            "AccessTokenAuth": []
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "Subscriptions"
+        ],
+        "summary": "Unsubscribe from receiving asynchronous events",
+        "description": "Unsubscribe from receiving asynchronous events",
+        "operationId": "deleteSubscription",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/CorrelationId"
+          },
+          {
+            "$ref": "#/components/parameters/AccountId"
+          },
+          {
+            "$ref": "#/components/parameters/SubscriptionId"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Subscription deleted successfully."
+          },
+          "400": {
+            "description": "Invalid request header/parameter (missing header/parameter or wrong header/parameter value).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Client has no access to account or account is in blacklist.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Subscription/account not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": [],
+            "AccessTokenAuth": []
+          }
+        ]
+      }
+    },
+    "/accounts/{accountId}/balances": {
+      "get": {
+        "tags": [
+          "Balances"
+        ],
+        "summary": "Actual balance",
+        "description": "Returns the current account balance of the client’s account.",
+        "operationId": "GetBalances",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/CorrelationId"
+          },
+          {
+            "$ref": "#/components/parameters/AccountId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountBalancesResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request header/parameter (missing header/parameter or wrong header/parameter value).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Client has no access to account or account is in blacklist.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": [],
+            "AccessTokenAuth": []
+          }
+        ]
+      }
+    },
+    "/accounts/{accountId}/statements": {
+      "get": {
+        "tags": [
+          "Statements"
+        ],
+        "summary": "Detail information about statements for account.",
+        "description": "Returns information of specific account statements.",
+        "operationId": "getAccountStatements",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/CorrelationId"
+          },
+          {
+            "$ref": "#/components/parameters/AccountId"
+          },
+          {
+            "$ref": "#/components/parameters/StatementDateFrom"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatementsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request header/parameter (missing header/parameter or wrong header/parameter value).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Client has no access to account or account is in blacklist.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": [],
+            "AccessTokenAuth": []
+          }
+        ]
+      }
+    },
+    "/accounts/{accountId}/statements/{statementId}": {
+      "get": {
+        "tags": [
+          "Statements"
+        ],
+        "summary": "Statement in PDF format",
+        "description": "Use statement ID for return specific statement in PDF format.",
+        "operationId": "getStatementPDF",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/CorrelationId"
+          },
+          {
+            "$ref": "#/components/parameters/AccountId"
+          },
+          {
+            "name": "statementId",
+            "in": "path",
+            "required": true,
+            "description": "Statement ID.",
+            "example": 1415,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "PDF document with requested statement is returned.",
+            "content": {
+              "application/pdf": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request header/parameter (missing header/parameter or wrong header/parameter value).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Client has no access to account or account is in blacklist.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": [],
+            "AccessTokenAuth": []
+          }
+        ]
+      }
+    }
+  },
+  "servers": [
+    {
+      "url": "https://api-gateway.kb.cz/adaa/v2"
+    }
+  ],
+  "security": [
+    {
+      "ApiKeyAuth": []
+    },
+    {
+      "AccessTokenAuth": []
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "apiKey",
+        "description": "API key can be generated in API Portal (for more information see https://developers.kb.cz/manual#apikey)"
+      },
+      "AccessTokenAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "KB OAuth2 access token can be generated by OAuth2 API (for more information see https://developers.kb.cz/manual#oauth2).\n- NOTE: If you send access token from you application, strukture of sending value is: „Bearer+space+access token“. \n- If you use API Console (in API Portal; link), send access token without „Bearer“ (API Console adds „Bearer“ automatically).\n"
+      }
+    },
+    "parameters": {
+      "CorrelationId": {
+        "name": "x-correlation-id",
+        "in": "header",
+        "description": "Correlation ID (GUID 128-bit: 8-4-4-4-12) is the generated unique identifier of the initial request, which stays the same through all the systems/application involved.",
+        "example": "71f415f4-412d-4c55-af05-15d1e0389f8f",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "pattern": "^(\\{{0,1}([0-9a-fA-F]){8}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){12}\\}{0,1})$"
+        }
+      },
+      "StatementDateFrom": {
+        "name": "dateFrom",
+        "in": "query",
+        "required": true,
+        "description": "Date of returned account statements information.",
+        "example": "2020-01-30T15:42:30.000Z",
+        "schema": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "AccountId": {
+        "name": "accountId",
+        "in": "path",
+        "required": true,
+        "description": "IBAN represented as unique ID, which is returned from resource account-ids.",
+        "example": "Q1oxMzAxMDAwOTAxMTQ3NzcxODAwMjI3OkNaSw",
+        "schema": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 400
+        }
+      },
+      "ToDate": {
+        "name": "toDate",
+        "in": "query",
+        "description": "End date of returned transaction history (YYYY-MM-DD). Must not be less than 'fromDate'.",
+        "example": "2018-05-10",
+        "schema": {
+          "type": "string",
+          "format": "date"
+        }
+      },
+      "FromDate": {
+        "name": "fromDate",
+        "in": "query",
+        "description": "Start date of returned transaction history (YYYY-MM-DD). Must not be greater than 'toDate'.",
+        "example": "2017-05-10",
+        "schema": {
+          "type": "string",
+          "format": "date"
+        }
+      },
+      "SubscriptionId": {
+        "name": "subscriptionId",
+        "in": "path",
+        "required": true,
+        "description": "Subscription ID. Format: GUID 128-bit: 8-4-4-4-12",
+        "schema": {
+          "$ref": "#/components/schemas/SubscriptionId"
+        }
+      }
+    },
+    "schemas": {
+      "Accounts": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/Account"
+        }
+      },
+      "Account": {
+        "type": "object",
+        "properties": {
+          "accountId": {
+            "$ref": "#/components/schemas/AccountId"
+          },
+          "iban": {
+            "$ref": "#/components/schemas/IBAN"
+          },
+          "currency": {
+            "$ref": "#/components/schemas/CurrencyISO"
+          },
+          "nameI18N":{
+            "$ref": "#/components/schemas/nameI18N"
+          },
+          "productI18N": {
+            "$ref": "#/components/schemas/productI18N"
+          }
+        },
+        "required": [
+          "accountId",
+          "iban",
+          "currency"
+        ]
+      },
+      "SubscriptionRequest": {
+        "type": "object",
+        "properties": {
+          "eventApiUrl": {
+            "$ref": "#/components/schemas/EventApiUrl"
+          },
+          "eventApiKey": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Authorization token for Event API access. Used as HTTP header 'x-api-key', see Event API specification.",
+            "example": "Q1oxMzAxMDAwOTAxMTQ3NzcxODAwMjI3OkNaSw"
+          }
+        },
+        "required": [
+          "eventApiUrl",
+          "eventApiKey"
+        ]
+      },
+      "SubscriptionInfo": {
+        "type": "object",
+        "properties": {
+          "subscriptionId": {
+            "$ref": "#/components/schemas/SubscriptionId"
+          },
+          "eventApiUrl": {
+            "$ref": "#/components/schemas/EventApiUrl"
+          },
+          "eventApiVersion": {
+            "type": "string",
+            "example": "1.0"
+          },
+          "status": {
+            "description": "- ACTIVE - notifications are active (expected status)\n- SUSPENDED - failed to call event API (or event API not respond within 5s); multiple attempts (to call event API) are being made; in case of success, status will change to ACTIVE; in case of failure (all attempts), status will change to STOPPED\n- STOPPED - all attempts failed, final status; new registration (POST /event-subscriptions) is required\n",
+            "type": "string",
+            "enum": [
+              "SUSPENDED",
+              "ACTIVE",
+              "STOPPED"
+            ]
+          },
+          "statusNarrative": {
+            "type": "string",
+            "example": "Connection Timeout: https://company.org/event-api/v1/subscriptions/71f415f4-412d-4c55-af05-15d1e0389f8f/events"
+          }
+        },
+        "required": [
+          "subscriptionId",
+          "eventApiUrl",
+          "eventApiVersion",
+          "status"
+        ]
+      },
+      "SubscriptionId": {
+        "description": "ID of a subscription",
+        "type": "string",
+        "example": "71f415f4-412d-4c55-af05-15d1e0389f8f",
+        "pattern": "^(\\{{0,1}([0-9a-fA-F]){8}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){12}\\}{0,1})$"
+      },
+      "EventApiUrl": {
+        "type": "string",
+        "minLength": 10,
+        "description": "Base URL of Event API implementation. Must be already available at the time of subscription creation.",
+        "example": "https://company.org/event-api/v1",
+        "pattern": "^https?:\\/\\/(www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}(\\.[a-zA-Z0-9()]{1,6})?\\b([-a-zA-Z0-9()@:%_\\+.~#?&//=]*)"
+      },
+      "PageSlice": {
+        "type": "object",
+        "description": "The list of transactions on the client's account according to the filter set in the request.",
+        "required": [
+          "content",
+          "totalPages",
+          "pageNumber",
+          "pageSize",
+          "numberOfElements",
+          "first",
+          "last",
+          "empty"
+        ],
+        "properties": {
+          "content": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AccountTransaction"
+            }
+          },
+          "totalPages": {
+            "type": "integer",
+            "description": "Total number of pages."
+          },
+          "pageNumber": {
+            "type": "integer",
+            "description": "Actual page number. Number of the first page is 0."
+          },
+          "pageSize": {
+            "type": "integer",
+            "description": "Size of the page (how many elements are shown per page)."
+          },
+          "numberOfElements": {
+            "type": "integer",
+            "description": "Number of elements on the current page."
+          },
+          "first": {
+            "type": "boolean",
+            "description": "Is the first page."
+          },
+          "last": {
+            "type": "boolean",
+            "description": "Is the last page."
+          },
+          "empty": {
+            "type": "boolean",
+            "description": "Is actual page empty."
+          }
+        }
+      },
+      "IBAN": {
+        "title": "IBAN",
+        "description": "International Bank Account Number.",
+        "example": "CZ9501000000001234567899",
+        "type": "string",
+        "maxLength": 34
+      },
+      "Iban": {
+        "title": "iban",
+        "description": "International Bank Account Number.",
+        "example": "CZ9501000000001234567899",
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 34
+      },
+      "AccountNumber": {
+        "title": "AccountNumber",
+        "description": "Account Number in national format (without bank code).",
+        "example": "1234567899",
+        "type": "string",
+        "maxLength": 34
+      },
+      "BankCode": {
+        "title": "BankCode",
+        "description": "Bank code in national format.",
+        "example": "0100",
+        "type": "string",
+        "maxLength": 4
+      },
+      "BankIdentifierCode": {
+        "title": "BankIdentifierCode",
+        "description": "International unique bank identifier (SWIFT/BIC).",
+        "example": "KOMBCZPPXXX",
+        "type": "string",
+        "maxLength": 11
+      },
+      "nameI18N": {
+        "type": "string",
+        "description": "Localized name of the account",
+        "example": "My main personal account"
+      },
+      "productI18N": {
+        "type": "string",
+        "description": "Localized name of the account product type",
+        "example": "Bezny ucet/Current account"
+      },
+      "CurrencyISO": {
+        "title": "CurrencyISO",
+        "description": "ISO code for the currency.",
+        "example": "EUR",
+        "type": "string",
+        "maxLength": 3
+      },
+
+        "CreditDebitIndicator": {
+        "title": "CreditDebitIndicator",
+        "description": "Indicates whether the account balance is positive or negative\n\nCODE:\n* CREDIT - Accontunt balance is &gt; 0 or Account ballance = 0\n* DEBIT - Account balance is &lt; 0\n",
+        "example": "CREDIT",
+        "type": "string",
+        "enum": [
+          "CREDIT",
+          "DEBIT"
+        ]
+      },
+      "Statement": {
+        "title": "Statement",
+        "description": "Detail information about a single statement (including the statement identification used for PDF file download).",
+        "type": "object",
+        "required": [
+          "statementId",
+          "issued",
+          "sequenceNumber",
+          "pagesCount",
+          "archive"
+        ],
+        "properties": {
+          "issued": {
+            "description": "Statement issue date.",
+            "example": "2020-02-03",
+            "type": "string",
+            "format": "date"
+          },
+          "sequenceNumber": {
+            "description": "Statement sequence number (can be 0 for one-time statements).",
+            "example": 1,
+            "type": "integer"
+          },
+          "pagesCount": {
+            "description": "Statement total page count.",
+            "example": 1,
+            "type": "integer"
+          },
+          "statementId": {
+            "description": "Unique ID of the PDF statement.",
+            "example": 1415,
+            "type": "integer",
+            "format": "int64"
+          },
+          "archive": {
+            "description": "Archived statement flag (regular statements = false; archived = true).",
+            "example": false,
+            "type": "boolean"
+          }
+        }
+      },
+      "StatementsResponse": {
+        "title": "StatementsResponse",
+        "description": "Contains the information about statements.",
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/Statement"
+        }
+      },
+      "TransactionReferences": {
+        "description": "Transaction references",
+        "type": "object",
+        "properties": {
+          "accountServicer": {
+            "description": "Identification of the payment assigned by bank",
+            "type": "string",
+            "example": "SGWD000000653288"
+          },
+          "endToEndIdentification": {
+            "description": "Unique identification of the payment/transaction provided by the client who initiated the payment",
+            "type": "string",
+            "example": "E2E-6xgp25qD46"
+          },
+          "variable": {
+            "description": "Variable symbol",
+            "type": "string",
+            "example": "2018001"
+          },
+          "constant": {
+            "description": "Constant symbol",
+            "type": "string",
+            "example": "0514"
+          },
+          "specific": {
+            "description": "Specific symbol",
+            "type": "string",
+            "example": "708090"
+          },
+          "receiver": {
+            "description": "Message to a payee / reference to receiver.",
+            "type": "string",
+            "example": "Zpráva pro příjemce"
+          },
+           "myDescription": {
+            "description": "Description for me",
+            "type": "string",
+            "example": "Zpráva pro mě"
+
+          }
+        }
+      },
+      "AccountType": {
+        "title": "AccountType",
+        "description": "Type of bank account.\nCODE:\n* KB - KB accounts\n* AG - aggregate accounts\n",
+        "example": "KB",
+        "type": "string",
+        "enum": [
+          "KB",
+          "AG"
+        ]
+      },
+      "EntryReference": {
+        "title": "EntryReference",
+        "description": "Payment identification number assigned by bank.",
+        "example": "KB-1234567890",
+        "type": "string"
+      },
+      "AccountTransaction": {
+        "title": "AccountTransaction",
+        "description": "The single account transaction details.",
+        "type": "object",
+        "required": [
+          "lastUpdated",
+          "accountType",
+          "iban",
+          "amount",
+          "creditDebitIndicator",
+          "transactionType"
+        ],
+        "properties": {
+          "lastUpdated": {
+            "description": "The last transaction history update. Datetime is in ISO 8601 format.",
+            "type": "string",
+            "format": "date-time"
+          },
+          "accountType": {
+            "$ref": "#/components/schemas/AccountType"
+          },
+          "entryReference": {
+            "$ref": "#/components/schemas/EntryReference"
+          },
+          "iban": {
+            "$ref": "#/components/schemas/IBAN"
+          },
+          "creditDebitIndicator": {
+            "$ref": "#/components/schemas/CreditDebitIndicator"
+          },
+          "transactionType": {
+            "$ref": "#/components/schemas/TransactionType"
+          },
+          "bankTransactionCode": {
+            "$ref": "#/components/schemas/BankTransactionCode"
+          },
+          "amount": {
+            "$ref": "#/components/schemas/CurrencyAmount"
+          },
+          "bookingDate": {
+            "description": "The date the payment was processed/accounted by bank in ISODate format (''YYYY-MM-DD'').",
+            "example": "2019-04-23",
+            "type": "string",
+            "format": "date"
+          },
+          "valueDate": {
+            "description": "The payment due date in ISODate format (''YYYY-MM-DD'').",
+            "example": "2019-04-24",
+            "type": "string",
+            "format": "date"
+          },
+          "instructed": {
+            "$ref": "#/components/schemas/CurrencyAmount"
+          },
+          "reversalIndicator": {
+            "$ref": "#/components/schemas/ReversalIndicator"
+          },
+          "status": {
+            "description": "Status of the payment on account from bank point of view.",
+            "example": "BOOK",
+            "type": "string"
+          },
+          "counterParty": {
+            "$ref": "#/components/schemas/TransactionCounterparty"
+          },
+          "references": {
+            "$ref": "#/components/schemas/TransactionReferences"
+          },
+          "additionalTransactionInformation": {
+            "description": "Additional information about transaction provided by bank",
+            "type": "string",
+            "maxLength": 500,
+            "example": "8201701069595 BIC: GIBACZPXXXX; #71A# SHA ZALOHA DLE SMLOUVY O DODAVKACH"
+          },
+          "cardTransactionDetails": {
+            "$ref": "#/components/schemas/CardTransactionDetails"
+          }
+        }
+      },
+      "TransactionCounterparty": {
+        "description": "Transaction counterparty details. Not all fields may be available for all transactions (e.g. for card transaction).",
+        "type": "object",
+        "properties": {
+          "iban": {
+            "$ref": "#/components/schemas/IBAN"
+          },
+          "name": {
+            "description": "Name of the counterparty",
+            "type": "string",
+            "example": "Tesco Stores ČR a.s."
+          },
+          "accountNo": {
+            "$ref": "#/components/schemas/AccountNumber"
+          },
+          "bankBic": {
+            "$ref": "#/components/schemas/BankIdentifierCode"
+          },
+          "bankCode": {
+            "$ref": "#/components/schemas/BankCode"
+          },
+          "bankName": {
+            "description": "Counterparty account servicing institution name.",
+            "type": "string",
+            "example": "Česká spořitelna, a.s."
+          }
+        }
+      },
+      "TransactionType": {
+        "type": "string",
+        "example": "DOMESTIC",
+        "enum": [
+          "INTEREST",
+          "FEE",
+          "DOMESTIC",
+          "FOREIGN",
+          "SEPA",
+          "CASH",
+          "CARD",
+          "OTHER"
+        ]
+      },
+      "CurrencyAmount": {
+        "description": "Amount with ISO currency.",
+        "type": "object",
+        "properties": {
+          "value": {
+            "description": "The amount.",
+            "example": 10000,
+            "type": "number",
+            "format": "double"
+          },
+          "currency": {
+            "$ref": "#/components/schemas/CurrencyISO"
+          }
+        }
+      },
+      "CreditLine": {
+        "title": "CreditLine",
+        "description": "Credit line information (allowed debit).",
+        "type": "object",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/CurrencyAmount"
+          }
+        ]
+      },
+      "AccountBalancesResponse": {
+        "title": "AccountBalancesResponse",
+        "description": "The list of all the client's balances for requested account.",
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/AccountBalance"
+        }
+      },
+      "AccountBalance": {
+        "title": "AccountBalance",
+        "description": "Account balance for specific balance type.",
+        "type": "object",
+        "required": [
+          "type",
+          "creditDebitIndicator",
+          "amount",
+          "validAt"
+        ],
+        "properties": {
+          "type": {
+            "description": "Code of the account balance type.\n\nCODE:\n* PREVIOUSLY_CLOSED_BOOK - Previously Closed Book\n* CLOSING_BOOKED - Closing Booked\n* CLOSING_AVAILABLE - Closing Available\n",
+            "example": "PREVIOUSLY_CLOSED_BOOK",
+            "type": "string",
+            "enum": [
+              "PREVIOUSLY_CLOSED_BOOK",
+              "CLOSING_BOOKED",
+              "CLOSING_AVAILABLE"
+            ]
+          },
+          "creditDebitIndicator": {
+            "$ref": "#/components/schemas/CreditDebitIndicator"
+          },
+          "amount": {
+            "$ref": "#/components/schemas/CurrencyAmount"
+          },
+          "validAt": {
+            "description": "Date the balance information was valid for. Datetime is in ISO 8601 format.",
+            "type": "string",
+            "format": "date-time"
+          },
+          "creditLine": {
+            "$ref": "#/components/schemas/CreditLine"
+          }
+        }
+      },
+      "BankTransactionCode": {
+        "description": "Transaction code",
+        "type": "object",
+        "properties": {
+          "code": {
+            "description": "Transaction code",
+            "example": "1000010",
+            "type": "string",
+            "maxLength": 35
+          },
+          "issuer": {
+            "$ref": "#/components/schemas/BankTransactionCodeIssuer"
+          }
+        }
+      },
+      "BankTransactionCodeIssuer": {
+        "description": "The identification of the issuer of the transaction code\n- CBA - Code of the transaction defined by CBA (Czech Bank Association) associated with specific payment. Every bank uses its own LOV for transaction codes which is derived from 1st to 3rd level of the transaction codes LOV defined by CBA standar for CAMT.053. For more information see https://mojebanka.kb.cz/file/cs/format_xml_vypis_ciselnik_trn.pdf\n- OTHER\n",
+        "example": "CBA",
+        "type": "string",
+        "enum": [
+          "CBA",
+          "OTHER"
+        ]
+      },
+      "Currency": {
+        "title": "currency",
+        "description": "Bank account's currency represented as currency ISO code.",
+        "example": "CZK",
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 3
+      },
+      "ReversalIndicator": {
+        "type": "boolean",
+        "title": "ReversalIndicator",
+        "example": false,
+        "description": "Indicates whether the transaction is of “storno” type or not."
+      },
+      "AccountId": {
+        "title": "AccountId",
+        "description": "IBAN represented as unique account ID.",
+        "example": "Q1oxMzAxMDAwOTAxMTQ3NzcxODAwMjI3OkNaSw",
+        "type": "string",
+        "maxLength": 400
+      },
+      "CardTransactionDetails": {
+        "description": "Details related to a CARD transaction",
+        "type": "object",
+        "properties": {
+          "holdExpirationDate": {
+            "description": "Expiration date of a pending state transaction. ISO 8601 format.",
+            "type": "string",
+            "format": "date",
+            "example": "2022-05-03"
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "description": "The parent element contains a collection of all error states.",
+        "properties": {
+          "errors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        },
+        "required": [
+          "errors"
+        ]
+      },
+      "Error": {
+        "type": "object",
+        "description": "Specific error.",
+        "required": [
+          "message"
+        ],
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "Optional error code (only for business exceptions)."
+          },
+          "additionalInfo": {
+            "type": "object",
+            "description": "Optional information about error. Contains additional information specific to a particular error.",
+            "properties": {
+              "parameterName": {
+                "type": "string",
+                "description": "The input parameter name."
+              },
+              "rejectedValue": {
+                "type": "string",
+                "description": "Rejected value of the parameter"
+              }
+            }
+          },
+          "message": {
+            "type": "string",
+            "description": "Text description of the error. It is not meant to be interpreted to the end user but to enrich the error log."
+          }
+        }
+      }
+    }
+  }
+}

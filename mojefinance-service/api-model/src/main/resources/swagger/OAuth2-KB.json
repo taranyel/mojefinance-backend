@@ -1,0 +1,196 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "version": "2.0.1",
+    "title": "OAuth2",
+    "description": "KB Authorization API."
+  },
+  "servers": [
+    {
+      "url": "https://api-gateway.kb.cz/oauth2/v3"
+    },
+    {
+      "url": "https://api-gateway.kb.cz/sandbox/oauth2/v3"
+    }
+  ],
+  "tags": [
+    {
+      "name": "OAUTH2"
+    }
+  ],
+  "paths": {
+    "/access_token": {
+      "post": {
+        "operationId": "getToken",
+        "tags": [
+          "OAUTH2"
+        ],
+        "summary": "Obtain access token based on selected grand type.",
+        "description": "Access token can be obtained either by using grand type of *authorization_code* and providing authorization *code*, *client_id* and *client_secret* or by providing *refresh_token* for grant type of *refresh_token*.",
+        "parameters": [
+          {
+            "name": "x-correlation-id",
+            "in": "header",
+            "description": "Correlation ID (GUID 128-bit: 8-4-4-4-12) is the generated unique identifier of the initial request, which stays the same through all the systems/applications involved. It is strongly recommended to fill this parameter for debugging purposes.",
+            "example": "324d4777-b59e-4ad3-bb16-527856460113",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^(\\{{0,1}([0-9a-fA-F]){8}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){12}\\}{0,1})$"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/GetTokenRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetTokenResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request parameter (missing parameter or wrong parameter value). For more details about possible error types, see 'https://tools.ietf.org/html/rfc6749#section-5.2'",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "apiKey",
+        "description": "API key can be generated in API Portal (for more information see https://developers.kb.cz/manual#apikey)"
+      }
+    },
+    "parameters": {
+      "CorrelationId": {
+        "name": "x-correlation-id",
+        "in": "header",
+        "description": "Correlation ID (GUID 128-bit: 8-4-4-4-12) is the generated unique identifier of the initial request, which stays the same through all the systems/applications involved. It is strongly recommended to fill this parameter for debugging purposes.",
+        "example": "324d4777-b59e-4ad3-bb16-527856460113",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "pattern": "^(\\{{0,1}([0-9a-fA-F]){8}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){12}\\}{0,1})$"
+        }
+      }
+    },
+    "schemas": {
+      "GetTokenRequest": {
+        "type": "object",
+        "required": [
+          "grant_type",
+          "redirect_uri"
+        ],
+        "properties": {
+          "code": {
+            "description": "The authorization code returned from the initial request.",
+            "type": "string"
+          },
+          "refresh_token": {
+            "description": "The refresh token string. This parameter is mandatory for *grant_type = refresh_token*.",
+            "type": "string"
+          },
+          "grant_type": {
+            "description": "authorization_code - authorization based on an obtained authorization_code, refresh_token - authorization based on an existing refresh token",
+            "type": "string",
+            "enum": [
+              "authorization_code",
+              "refresh_token"
+            ]
+          },
+          "redirect_uri": {
+            "description": "Redirect URI used in authorization code request. These URLs must be identical.",
+            "type": "string"
+          },
+          "client_id": {
+            "description": "The client ID obtained during application registration. This parameter is mandatory for *grant_type = authorization_code*.",
+            "type": "string"
+          },
+          "client_secret": {
+            "description": "The client application secret. This parameter is mandatory for *grant_type = authorization_code*.",
+            "type": "string"
+          }
+        }
+      },
+      "GetTokenResponse": {
+        "type": "object",
+        "required": [
+          "access_token",
+          "token_type",
+          "expires_in"
+        ],
+        "properties": {
+          "token_type": {
+            "type": "string",
+            "description": "The type of the token issued. Value is case insensitive."
+          },
+          "access_token": {
+            "type": "string",
+            "description": "The access token issued by the authorization server."
+          },
+          "id_token": {
+            "type": "string",
+            "description": "ID token is a security token that contains claims about the authentication of an end-user issued by an authorization server."
+          },
+          "refresh_token": {
+            "type": "string",
+            "description": "Refresh tokens are credentials used to obtain new access tokens once authorization has already been granted."
+          },
+          "expires_in": {
+            "type": "integer",
+            "format": "int64",
+            "description": "The lifetime in seconds of the access token."
+          },
+          "acr": {
+            "type": "integer",
+            "format": "int64",
+            "description": "The security level of authentication. Value '0' refers to nonSCA."
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "required": [
+          "error"
+        ],
+        "properties": {
+          "error": {
+            "type": "string",
+            "description": "Type of error."
+          },
+          "error_description": {
+            "type": "string",
+            "description": "Description of an error."
+          }
+        }
+      }
+    }
+  }
+}
