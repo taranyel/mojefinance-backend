@@ -1,0 +1,381 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "OAUTH2 Authorization APIs",
+    "version": "1.0.0",
+    "description": "If you are going to use API, which needs user authorization (e.g. PSD2 and Premium APIs), it is necessary for your application to be able to work with our identity provider (IDP) which provides authentication for user of the bank who can grant authorization for your application.\n\nThe authorization is done via the OAuth2 protocol.\n\nThe IDP will give you a time-limited OAuth2 access token for your client which you can use to make a call to API. Alternatively your application can obtain code which can be exchanged for access token and refresh token by making a backend server call. Refresh token allows your application to obtain access token without need of another authentication for up to 180 days."
+  },
+  "servers": [
+    {
+      "url": "https://bezpecnost.csas.cz/api/psd2/fl/oidc/v1",
+      "description": "Production Environment"
+    },
+    {
+      "url": "https://webapi.developers.erstegroup.com/api/csas/sandbox/v1/sandbox-idp",
+      "description": "Sandbox Environment"
+    }
+  ],
+  "paths": {
+    "/auth": {
+      "get": {
+        "tags": [
+          "Authorization APIs"
+        ],
+        "summary": "Authorization endpoint",
+        "description": "The first step is to redirect the user to the login page of Česká spořitelna.\nThe implicit grant is ideal if you need short-term, one-time access to the API.\n\nCode grant flow is ideal when you need to access the API on the user's behalf repeatedly in a longer time frame and you do not want the user to authorize every time the access token expires.",
+        "operationId": "authorizationEndpoint",
+        "parameters": [
+          {
+            "name": "redirect_uri",
+            "in": "query",
+            "description": "The redirect URI you have registered in the Erste Developer Portal.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "https://www.example.com"
+            }
+          },
+          {
+            "name": "client_id",
+            "in": "query",
+            "description": "OAuth2 Client ID you have received from the bank for the given environment.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "your-client-id"
+            }
+          },
+          {
+            "name": "response_type",
+            "in": "query",
+            "description": "The OAuth grant type (implicit/code).",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "token",
+                "code"
+              ],
+              "example": "code"
+            }
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "description": "This string will be returned to you at the end of the flow. Used for CSRF protection.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "abc123"
+            }
+          },
+          {
+            "name": "access_type",
+            "in": "query",
+            "description": "Default value is online. Use \"offline\" if you want both the refresh and access token.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "offline",
+                "online"
+              ],
+              "example": "offline"
+            }
+          },
+          {
+            "name": "scope",
+            "in": "query",
+            "description": "The requested scopes for this access token, separated by spaces and URI-encoded.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "offline_access",
+                "aisp",
+                "pisp",
+                "siblings.accounts",
+                "siblings.payments"
+              ],
+              "example": "aisp"
+            }
+          },
+          {
+            "name": "prompt",
+            "in": "query",
+            "description": "Use the parameter only if you want to display the consent screen again.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "consent"
+              ],
+              "example": "consent"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/token": {
+      "post": {
+        "tags": [
+          "Authorization APIs"
+        ],
+        "summary": "Auth Code / Refresh Token",
+        "description": "Exchange Authorization Code for Access Token or use Refresh Token.",
+        "operationId": "post_token",
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/AuthCodeRequest"
+                  },
+                  {
+                    "$ref": "#/components/schemas/RefreshTokenRequest"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/AuthCodeResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/RefreshTokenResponse"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "error_description": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/revokeext": {
+      "post": {
+        "tags": [
+          "Authorization APIs"
+        ],
+        "summary": "Revoke Token",
+        "description": "The Token Revocation extension defines a mechanism for clients to indicate to the authorization server that a refresh or an access token is no longer needed.",
+        "operationId": "postRevokeToken",
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/RevokeTokenRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "error_description": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AuthCodeRequest": {
+        "type": "object",
+        "required": [
+          "client_id",
+          "client_secret",
+          "grant_type",
+          "code",
+          "redirect_uri"
+        ],
+        "properties": {
+          "client_id": {
+            "type": "string",
+            "description": "OAuth2 Client ID from the Erste Developer Portal.",
+            "example": "a1f9b8c7-d3e2-4f1a-b5c6-9e8d7f6b4a3c"
+          },
+          "client_secret": {
+            "type": "string",
+            "description": "OAuth2 Client secret from the Erste Developer Portal.",
+            "example": "nV3k8Vh2W1o9bV6hLSfVcg8ZSCvoWhV2n"
+          },
+          "grant_type": {
+            "type": "string",
+            "enum": [
+              "authorization_code"
+            ],
+            "description": "Grant type. In this endpoint, use value \"authorization_code\"."
+          },
+          "code": {
+            "type": "string",
+            "description": "Authorization code you received after the user successfully completed the login."
+          },
+          "redirect_uri": {
+            "type": "string",
+            "description": "The redirect URI you have registered in the Erste Developer Portal.",
+            "example": "https://www.example.com"
+          }
+        }
+      },
+      "AuthCodeResponse": {
+        "type": "object",
+        "required": [
+          "access_token",
+          "token_type",
+          "expires_in",
+          "scope",
+          "refresh_token"
+        ],
+        "properties": {
+          "access_token": {
+            "type": "string",
+            "description": "OAuth2 access token. Maximum length is 1000 characters."
+          },
+          "token_type": {
+            "type": "string",
+            "description": "Token type defined by OAuth2 specification.",
+            "example": "Bearer"
+          },
+          "expires_in": {
+            "type": "number",
+            "description": "Integer number defined by OAuth2 specification specifying the token duration in seconds.",
+            "example": 299
+          },
+          "scope": {
+            "type": "string",
+            "description": "The assigned scope for the access token.",
+            "example": "aisp pisp offline_access"
+          },
+          "refresh_token": {
+            "type": "string",
+            "description": "OAuth2 refresh token. Maximum length is 1000 characters."
+          }
+        }
+      },
+      "RefreshTokenRequest": {
+        "type": "object",
+        "required": [
+          "client_id",
+          "client_secret",
+          "grant_type",
+          "refresh_token"
+        ],
+        "properties": {
+          "client_id": {
+            "type": "string",
+            "description": "OAuth2 Client ID from the Erste Developer Portal.",
+            "example": "a1f9b8c7-d3e2-4f1a-b5c6-9e8d7f6b4a3c"
+          },
+          "client_secret": {
+            "type": "string",
+            "description": "OAuth2 Client secret from the Erste Developer Portal.",
+            "example": "nV3k8Vh2W1o9bV6hLSfVcg8ZSCvoWhV2n"
+          },
+          "grant_type": {
+            "type": "string",
+            "enum": [
+              "refresh_token"
+            ],
+            "description": "Grant type. In this endpoint, use value \"refresh_token\"."
+          },
+          "refresh_token": {
+            "type": "string",
+            "description": "OAuth2 refresh token received in previous endpoint."
+          }
+        }
+      },
+      "RefreshTokenResponse": {
+        "type": "object",
+        "required": [
+          "access_token",
+          "token_type",
+          "expires_in",
+          "scope"
+        ],
+        "properties": {
+          "access_token": {
+            "type": "string",
+            "description": "OAuth2 access token. Maximum length is 1000 characters."
+          },
+          "token_type": {
+            "type": "string",
+            "description": "Token type defined by OAuth2 specification.",
+            "example": "Bearer"
+          },
+          "expires_in": {
+            "type": "number",
+            "description": "Integer number defined by OAuth2 specification specifying the token duration in seconds.",
+            "example": 299
+          },
+          "scope": {
+            "type": "string",
+            "description": "The assigned scope for the access token.",
+            "example": "aisp pisp offline_access"
+          }
+        }
+      },
+      "RevokeTokenRequest": {
+        "type": "object",
+        "required": [
+          "token"
+        ],
+        "properties": {
+          "token": {
+            "type": "string",
+            "description": "Refresh/access token value"
+          }
+        }
+      }
+    }
+  }
+}
