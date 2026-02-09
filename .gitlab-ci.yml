@@ -14,7 +14,10 @@
     stage: build
     script:
       - echo "Building backend..."
-      - mvn clean install
+      - mvn -f mojefinance-service/pom.xml clean install
+
+    # now build the application
+      - mvn -f mojefinance-application/pom.xml clean install
     artifacts:
       paths:
         - mojefinance-application/target/*.jar
