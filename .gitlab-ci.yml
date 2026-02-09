@@ -1,0 +1,20 @@
+  workflow:
+    rules:
+      - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+
+  stages:
+    - build
+
+  variables:
+    MAVEN_OPTS: "-Dmaven.repo.local=.m2/repository"
+
+  build:
+    image: maven:3.9-eclipse-temurin-21
+    stage: build
+    script:
+      - echo "Building backend..."
+      - mvn clean install
+    artifacts:
+      paths:
+        - mojefinance-application/target/*.jar
