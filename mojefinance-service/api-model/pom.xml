@@ -56,7 +56,7 @@
                 <version>7.8.0</version>
                 <executions>
                     <execution>
-                        <id>kb-adaa</id>
+                        <id>kb-adaa-api</id>
                         <goals>
                             <goal>generate</goal>
                         </goals>
@@ -78,7 +78,7 @@
                     </execution>
 
                     <execution>
-                        <id>kb-oauth</id>
+                        <id>kb-oauth-api</id>
                         <goals>
                             <goal>generate</goal>
                         </goals>
@@ -100,7 +100,7 @@
                     </execution>
 
                     <execution>
-                        <id>reif-app</id>
+                        <id>reif-api</id>
                         <goals>
                             <goal>generate</goal>
                         </goals>
@@ -122,7 +122,7 @@
                     </execution>
 
                     <execution>
-                        <id>cs-oauth</id>
+                        <id>cs-oauth-api</id>
                         <goals>
                             <goal>generate</goal>
                         </goals>
@@ -144,7 +144,7 @@
                     </execution>
 
                     <execution>
-                        <id>cs-account-info</id>
+                        <id>cs-account-info-api</id>
                         <goals>
                             <goal>generate</goal>
                         </goals>
@@ -155,6 +155,28 @@
                             <generatorName>spring</generatorName>
                             <apiPackage>cvut.fel.sit.cs.openapi.api</apiPackage>
                             <modelPackage>cvut.fel.sit.cs.openapi.model</modelPackage>
+                            <supportingFilesToGenerate>
+                                ApiUtil.java
+                            </supportingFilesToGenerate>
+                            <configOptions>
+                                <useSpringSecurity>true</useSpringSecurity>
+                                <interfaceOnly>true</interfaceOnly>
+                            </configOptions>
+                        </configuration>
+                    </execution>
+
+                    <execution>
+                        <id>air-bank-api</id>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <inputSpec>
+                                ${project.basedir}/src/main/resources/swagger/air-bank-api.json
+                            </inputSpec>
+                            <generatorName>spring</generatorName>
+                            <apiPackage>cvut.fel.sit.airbank.openapi.api</apiPackage>
+                            <modelPackage>cvut.fel.sit.airbank.openapi.model</modelPackage>
                             <supportingFilesToGenerate>
                                 ApiUtil.java
                             </supportingFilesToGenerate>

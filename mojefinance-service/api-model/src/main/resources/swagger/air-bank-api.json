@@ -1,0 +1,813 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Air Bank OpenAPI - AISP v7.0",
+    "version": "7.0",
+    "description": "This is documentation of the AISP services of Air Bank OpenAPI. Access to this API can be granted only to entities holding a PSD2 license issued by the Czech National Bank or other relevant regulatory body."
+  },
+  "servers": [
+    {
+      "url": "https://api.airbank.cz/openapi",
+      "description": "Production Environment"
+    },
+    {
+      "url": "https://api.airbank.cz/sandbox",
+      "description": "Sandbox Environment"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "OAuth2": {
+        "type": "oauth2",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://ib.airbank.cz/",
+            "tokenUrl": "https://api.airbank.cz/openapi/oauth2/token",
+            "scopes": {
+              "AISP": "Account Information Service Provider",
+              "PISP": "Payment Initiation Service Provider",
+              "CISP": "Card Based Payment Instrument Issuer"
+            }
+          }
+        }
+      }
+    },
+    "schemas": {
+      "Error": {
+        "type": "object",
+        "properties": {
+          "errors": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "error": { "type": "string" },
+                "message": { "type": "string" },
+                "scope": { "type": "string" }
+              },
+              "required": ["error", "message"]
+            }
+          }
+        },
+        "required": ["errors"]
+      },
+      "AccountList": {
+        "type": "object",
+        "properties": {
+          "pageNumber": { "type": "string" },
+          "pageCount": { "type": "string" },
+          "pageSize": { "type": "string" },
+          "nextPage": { "type": "string" },
+          "totalCount": { "type": "string" },
+          "accounts": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": { "type": "string", "description": "account ID" },
+                "identification": {
+                  "type": "object",
+                  "properties": {
+                    "iban": { "type": "string", "description": "account number in IBAN format" },
+                    "other": { "type": "string", "description": "account number in national format" }
+                  },
+                  "required": ["iban", "other"]
+                },
+                "currency": { "type": "string", "description": "currency of money" },
+                "servicer": {
+                  "type": "object",
+                  "properties": {
+                    "bankCode": { "type": "string", "description": "bank code in national format" },
+                    "countryCode": { "type": "string", "description": "currency of money" },
+                    "bic": { "type": "string", "description": "BIC for account" }
+                  },
+                  "required": ["bankCode", "countryCode", "bic"]
+                },
+                "nameI18N": { "type": "string", "description": "account name" },
+                "productI18N": { "type": "string", "description": "account type" },
+                "ownersNames": { "type": "array", "description": "names of account owners", "items": { "type": "string" } }
+              },
+              "required": ["id", "identification", "currency", "servicer", "nameI18N", "productI18N"]
+            }
+          }
+        },
+        "required": ["accounts"]
+      },
+      "BalanceList": {
+        "type": "object",
+        "properties": {
+          "balances": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "object",
+                  "description": "balance type",
+                  "properties": {
+                    "codeOrProprietary": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": ["PRCD", "CLAV"],
+                          "description": "PRCD previously closed booked balance, CLAV closing available balance"
+                        }
+                      },
+                      "required": ["code"]
+                    }
+                  },
+                  "required": ["codeOrProprietary"]
+                },
+                "creditLine": {
+                  "type": "object",
+                  "description": "debit or overdraft",
+                  "properties": {
+                    "included": { "type": "boolean", "description": "if debit or overdraft is included" },
+                    "amount": {
+                      "type": "object",
+                      "description": "amount of agreed and allowed debit or overdraft",
+                      "properties": {
+                        "value": { "type": "number" },
+                        "currency": { "type": "string" }
+                      },
+                      "required": ["value", "currency"]
+                    }
+                  },
+                  "required": ["included"]
+                },
+                "amount": {
+                  "type": "object",
+                  "description": "amount of money for balance",
+                  "properties": {
+                    "value": { "type": "number" },
+                    "currency": { "type": "string" }
+                  },
+                  "required": ["value", "currency"]
+                },
+                "creditDebitIndicator": {
+                  "type": "string",
+                  "enum": ["CRDT", "DBIT"],
+                  "description": "CRDT indicates positive balance, DBIT indicates negative balance"
+                },
+                "date": {
+                  "type": "object",
+                  "description": "time when balance was obtained",
+                  "properties": {
+                    "dateTime": { "type": "string", "description": "actual time in ISO 8601" }
+                  },
+                  "required": ["dateTime"]
+                }
+              },
+              "required": ["type", "creditLine", "amount", "creditDebitIndicator", "date"]
+            }
+          }
+        },
+        "required": ["balances"]
+      },
+      "TransactionList": {
+        "type": "object",
+        "properties": {
+          "pageNumber": { "type": "string" },
+          "pageCount": { "type": "string" },
+          "pageSize": { "type": "string" },
+          "nextPage": { "type": "string" },
+          "totalCount": { "type": "string" },
+          "transactions": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "entryReference": { "type": "string", "description": "internal transaction identifier" },
+                "amount": {
+                  "type": "object",
+                  "description": "transaction amount in account currency",
+                  "properties": {
+                    "value": { "type": "number" },
+                    "currency": { "type": "string" }
+                  },
+                  "required": ["value", "currency"]
+                },
+                "creditDebitIndicator": {
+                  "type": "string",
+                  "enum": ["DBIT", "CRDT"],
+                  "description": "transaction direction"
+                },
+                "reversalIndicator": { "type": "boolean" },
+                "status": {
+                  "type": "string",
+                  "enum": ["BOOK", "PDNG"],
+                  "description": "transaction status"
+                },
+                "bookingDate": {
+                  "type": "object",
+                  "description": "date when bank processed transaction - ISO Date format",
+                  "properties": { "date": { "type": "string" } },
+                  "required": ["date"]
+                },
+                "valueDate": {
+                  "type": "object",
+                  "description": "maturity date of payment - ISO Date format",
+                  "properties": { "date": { "type": "string" } },
+                  "required": ["date"]
+                },
+                "bankTransactionCode": {
+                  "type": "object",
+                  "description": "bank transaction code according to enumeration issued by Czech bank association for this particular payment",
+                  "properties": {
+                    "proprietary": {
+                      "type": "object",
+                      "properties": {
+                        "code": { "type": "string" },
+                        "issuer": { "type": "string" }
+                      },
+                      "required": ["code", "issuer"]
+                    }
+                  },
+                  "required": ["proprietary"]
+                },
+                "entryDetails": {
+                  "type": "object",
+                  "properties": {
+                    "transactionDetails": {
+                      "type": "object",
+                      "properties": {
+                        "references": {
+                          "type": "object",
+                          "properties": {
+                            "paymentInformationIdentification": { "type": "string", "description": "specific symbol" },
+                            "mandateIdentification": { "type": "string", "description": "constant symbol" },
+                            "endToEndIdentification": { "type": "string", "description": "variable symbol" },
+                            "clearingSystemReference": { "type": "string", "description": "internal payment type identifier" },
+                            "chequeNumber": { "type": "string", "description": "payment card number" }
+                          }
+                        },
+                        "amountDetails": {
+                          "type": "object",
+                          "properties": {
+                            "instructedAmount": {
+                              "type": "object",
+                              "description": "transaction amount in the currency that was required by the client for transfer",
+                              "properties": {
+                                "amount": {
+                                  "type": "object",
+                                  "properties": {
+                                    "value": { "type": "number" },
+                                    "currency": { "type": "string" }
+                                  },
+                                  "required": ["value", "currency"]
+                                }
+                              },
+                              "required": ["amount"]
+                            },
+                            "counterValueAmount": {
+                              "type": "object",
+                              "description": "amount of payment in the client account currency after conversion of the amount required by the client for transfer",
+                              "properties": {
+                                "amount": {
+                                  "type": "object",
+                                  "properties": {
+                                    "value": { "type": "number" },
+                                    "currency": { "type": "string" }
+                                  },
+                                  "required": ["value", "currency"]
+                                },
+                                "currencyExchange": {
+                                  "type": "object",
+                                  "description": "exchange rate",
+                                  "properties": {
+                                    "sourceCurrency": { "type": "string" },
+                                    "targetCurrency": { "type": "string" },
+                                    "exchangeRate": { "type": "number" }
+                                  },
+                                  "required": ["sourceCurrency", "targetCurrency", "exchangeRate"]
+                                }
+                              },
+                              "required": ["amount", "currencyExchange"]
+                            },
+                            "proprietaryAmount": {
+                              "type": "object",
+                              "description": "only present if cashback or charges are applied",
+                              "properties": {
+                                "type": {
+                                  "type": "string",
+                                  "description": "either 'CASHBACK' for cashback withdrawal during PoS card transaction, or 'FEE' for deduction of charges related to the transaction. Note: The ProprietaryAmount object is only present if cashback or charges are applied in the transaction."
+                                },
+                                "amount": {
+                                  "type": "object",
+                                  "properties": {
+                                    "value": { "type": "number" },
+                                    "currency": { "type": "string" }
+                                  },
+                                  "required": ["value", "currency"]
+                                }
+                              },
+                              "required": ["type", "amount"]
+                            },
+                            "transactionAmount": {
+                              "type": "object",
+                              "description": "only present if charges are applied",
+                              "properties": {
+                                "amount": {
+                                  "type": "object",
+                                  "description": "amount after deduction of charges; can be negative (for credit transactions with charges greater than the credited amount). Note: The TransactionAmount object is only present if cashback or charges are applied in the transaction.",
+                                  "properties": {
+                                    "value": { "type": "number" },
+                                    "currency": { "type": "string" }
+                                  },
+                                  "required": ["value", "currency"]
+                                }
+                              },
+                              "required": ["amount"]
+                            }
+                          },
+                          "required": ["instructedAmount"]
+                        },
+                        "charges": {
+                          "type": "object",
+                          "description": "indication of the way that the payment is charged",
+                          "properties": {
+                            "bearer": {
+                              "type": "string",
+                              "description": "the way of charging the payment (OUR, SHA, BEN)"
+                            }
+                          }
+                        },
+                        "relatedParties": {
+                          "type": "object",
+                          "properties": {
+                            "debtor": {
+                              "type": "object",
+                              "description": "debtor identification",
+                              "properties": {
+                                "name": { "type": "string", "description": "name of the related party" },
+                                "postalAddress": {
+                                  "type": "object",
+                                  "description": "address of the related party",
+                                  "properties": {
+                                    "streetName": { "type": "string" },
+                                    "buildingNumber": { "type": "string" },
+                                    "postCode": { "type": "string" },
+                                    "townName": { "type": "string" },
+                                    "countrySubDivision": { "type": "string" },
+                                    "country": { "type": "string" },
+                                    "addressLine": { "type": "array", "items": { "type": "string" } }
+                                  },
+                                  "required": ["townName", "country"]
+                                }
+                              }
+                            },
+                            "creditor": {
+                              "type": "object",
+                              "description": "creditor identification",
+                              "properties": {
+                                "name": { "type": "string", "description": "name of the related party" },
+                                "postalAddress": {
+                                  "type": "object",
+                                  "description": "address of the related party",
+                                  "properties": {
+                                    "streetName": { "type": "string" },
+                                    "buildingNumber": { "type": "string" },
+                                    "postCode": { "type": "string" },
+                                    "townName": { "type": "string" },
+                                    "countrySubDivision": { "type": "string" },
+                                    "country": { "type": "string" },
+                                    "addressLine": { "type": "array", "items": { "type": "string" } }
+                                  },
+                                  "required": ["townName", "country"]
+                                }
+                              }
+                            },
+                            "debtorAccount": {
+                              "type": "object",
+                              "description": "debtor account identification",
+                              "properties": {
+                                "identification": {
+                                  "type": "object",
+                                  "properties": {
+                                    "iban": { "type": "string" },
+                                    "other": {
+                                      "type": "object",
+                                      "properties": { "identification": { "type": "string" } },
+                                      "required": ["identification"]
+                                    }
+                                  }
+                                },
+                                "currency": { "type": "string" },
+                                "name": { "type": "string" }
+                              },
+                              "required": ["identification"]
+                            },
+                            "creditorAccount": {
+                              "type": "object",
+                              "description": "creditor account identification",
+                              "properties": {
+                                "identification": {
+                                  "type": "object",
+                                  "properties": {
+                                    "iban": { "type": "string" },
+                                    "other": {
+                                      "type": "object",
+                                      "properties": { "identification": { "type": "string" } },
+                                      "required": ["identification"]
+                                    }
+                                  }
+                                },
+                                "currency": { "type": "string" },
+                                "name": { "type": "string" }
+                              },
+                              "required": ["identification"]
+                            }
+                          }
+                        },
+                        "remittanceInformation": {
+                          "type": "object",
+                          "description": "additional information about payment",
+                          "properties": {
+                            "unstructured": { "type": "string" },
+                            "structured": {
+                              "type": "object",
+                              "properties": {
+                                "creditorReferenceInformation": {
+                                  "type": "object",
+                                  "properties": { "reference": { "type": "string" } }
+                                }
+                              }
+                            }
+                          }
+                        },
+                        "additionalTransactionInformation": {
+                          "type": "string",
+                          "description": "description, possibly additional information abouttransaction"
+                        }
+                      },
+                      "required": ["references", "amountDetails", "relatedParties", "relatedAgents"]
+                    }
+                  },
+                  "required": ["transactionDetails"]
+                }
+              },
+              "required": ["entryReference", "amount", "creditDebitIndicator", "status", "bookingDate", "valueDate", "bankTransactionCode", "entryDetails"]
+            }
+          }
+        },
+        "required": ["transactions"]
+      }
+    }
+  },
+  "tags": [
+    { "name": "Security resources" },
+    { "name": "AISP" }
+  ],
+  "paths": {
+    "/oauth2/register": {
+      "post": {
+        "tags": ["Security resources"],
+        "summary": "Application registration",
+        "description": "This resource is used to register an application before accessing other API endpoints. Included scopes must be a subset of these included in an user certificate.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "client_name": { "type": "string" },
+                  "redirect_uris": { "type": "array", "items": { "type": "string" } },
+                  "scopes": { "type": "array", "items": { "type": "string" } }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json;charset=UTF-8": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "client_id": { "type": "string", "description": "client ID used to retrieve OAuth2 token" },
+                    "client_secret": { "type": "string", "description": "client secret used to retrieve OAuth2 token" },
+                    "api_key": { "type": "string", "description": "key to identify API calling" }
+                  },
+                  "required": ["client_id", "client_secret", "api_key"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/oauth2/register/{client_id}": {
+      "get": {
+        "tags": ["Security resources"],
+        "summary": "Application info",
+        "description": "This resource is used to retrieve information about an application.",
+        "parameters": [
+          {
+            "name": "client_id",
+            "in": "path",
+            "required": true,
+            "description": "Client id from the registration of the application",
+            "schema": { "type": "string", "example": "4224c721d0bf47a5a109250db484e0e8" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json;charset=UTF-8": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "client_id": { "type": "string", "description": "client ID used to retrieve OAuth2 token" },
+                    "client_secret": { "type": "string", "description": "client secret used to retrieve OAuth2 token" },
+                    "api_key": { "type": "string", "description": "key to identify API calling" },
+                    "redirect_uris": { "type": "array", "description": "List of registered redirect uris", "items": { "type": "string" } },
+                    "client_name": { "type": "string", "description": "Application name" }
+                  },
+                  "required": ["client_id", "client_secret", "api_key", "client_name"]
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Security resources"],
+        "summary": "Delete application",
+        "description": "This resource is used to delete application registration.",
+        "parameters": [
+          {
+            "name": "client_id",
+            "in": "path",
+            "required": true,
+            "description": "Client id from the registration of the application",
+            "schema": { "type": "string", "example": "4224c721d0bf47a5a109250db484e0e8" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "This response has no content." }
+        }
+      }
+    },
+    "/oauth2/register/{client_id}/renewSecret": {
+      "post": {
+        "tags": ["Security resources"],
+        "summary": "Renew OAuth secrets",
+        "description": "This resource is used to renew client secret used in OAuth2 for given client ID.",
+        "parameters": [
+          {
+            "name": "client_id",
+            "in": "path",
+            "required": true,
+            "description": "Client id from the registration of the application",
+            "schema": { "type": "string", "example": "4224c721d0bf47a5a109250db484e0e8" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json;charset=UTF-8": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "client_id": { "type": "string", "description": "client ID used to retrieve OAuth2 token" },
+                    "client_secret": { "type": "string", "description": "client secret used to retrieve OAuth2 token" },
+                    "api_key": { "type": "string", "description": "key to identify API calling" }
+                  },
+                  "required": ["client_id", "client_secret", "api_key"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/oauth2/token": {
+      "post": {
+        "tags": ["Security resources"],
+        "summary": "Token exchange resource",
+        "description": "This resource is used to retrieve access token, either from authorization code or from refresh token.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "grant_type": { "type": "string", "enum": ["authorization_code"] },
+                      "code": { "type": "string" },
+                      "redirect_uri": { "type": "string" },
+                      "client_id": { "type": "string" },
+                      "client_secret": { "type": "string" }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "grant_type": { "type": "string", "enum": ["refresh_token"] },
+                      "refresh_token": { "type": "string" },
+                      "client_id": { "type": "string" },
+                      "client_secret": { "type": "string" }
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json;charset=UTF-8": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "access_token": { "type": "string", "description": "OAuth2 access token" },
+                    "expires_in": { "type": "number", "description": "token validity in seconds" },
+                    "refresh_token": { "type": "string", "description": "OAuth2 refresh token" },
+                    "token_type": { "type": "string", "description": "OAuth2 token type" }
+                  },
+                  "required": ["access_token", "expires_in", "token_type"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/oauth2/token/revoke": {
+      "post": {
+        "tags": ["Security resources"],
+        "summary": "Token revoke resource",
+        "description": "This resource is used to revoke an access or refresh token. This operation is not supported by sandbox.",
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded;charset=UTF-8": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "token": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "OK" }
+        }
+      }
+    },
+    "/accountInfo/v7/my/accounts": {
+      "get": {
+        "tags": ["AISP"],
+        "summary": "Accounts Overview",
+        "description": "Get a list of active and blocked accounts for logged-in user. Only show accounts that are owned by user.",
+        "parameters": [
+          {
+            "name": "size",
+            "in": "query",
+            "description": "number of items on the page",
+            "schema": { "type": "number", "example": 3 }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "page number (starts from 0) parameter",
+            "schema": { "type": "number", "example": 0 }
+          }
+        ],
+        "security": [{ "OAuth2": ["AISP"] }],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json;charset=UTF-8": {
+                "schema": { "$ref": "#/components/schemas/AccountList" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/accountInfo/v7/my/accounts/{id}/balance": {
+      "get": {
+        "tags": ["AISP"],
+        "summary": "Account Balances",
+        "description": "Returns list of balances for client’s bank account. Account is identified by it’s id.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "internal account identifier",
+            "schema": { "type": "number", "example": 1234 }
+          }
+        ],
+        "security": [{ "OAuth2": ["AISP"] }],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json;charset=UTF-8": {
+                "schema": { "$ref": "#/components/schemas/BalanceList" }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/accountInfo/v7/my/accounts/{accountId}/transactions": {
+      "get": {
+        "tags": ["AISP"],
+        "summary": "Account Transactions",
+        "description": "Get a list of transactions on given account. Only realized transactions are returned.",
+        "parameters": [
+          {
+            "name": "accountId",
+            "in": "path",
+            "required": true,
+            "description": "internal account identifier",
+            "schema": { "type": "number", "example": 1234 }
+          },
+          {
+            "name": "fromDate",
+            "in": "query",
+            "description": "date in ISO 8601 format (YYYY-MM-DD)",
+            "schema": { "type": "string", "example": "2018-02-06" }
+          },
+          {
+            "name": "toDate",
+            "in": "query",
+            "description": "date in ISO 8601 format (YYYY-MM-DD)",
+            "schema": { "type": "string", "example": "2018-03-06" }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "description": "number of items on the page",
+            "schema": { "type": "number", "example": 3 }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "page number (starts from 0) parameter",
+            "schema": { "type": "number", "example": 0 }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "description": "sorting parameter (e.g. valueDate, realizationDate, transactionType, value.amount)",
+            "schema": { "type": "string", "example": "transactionType" }
+          },
+          {
+            "name": "order",
+            "in": "query",
+            "description": "ordering parameter (ASC, DESC)",
+            "schema": { "type": "string", "example": "ASC" }
+          }
+        ],
+        "security": [{ "OAuth2": ["AISP"] }],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/TransactionList" }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request or Invalid Parameter",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized (e.g., Expired consent for older history)",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
