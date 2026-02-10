@@ -1,0 +1,38 @@
+{
+  "realm": "mojefinance",
+  "enabled": true,
+  "registrationAllowed": true,
+  "loginWithEmailAllowed": true,
+  "resetPasswordAllowed": true,
+  "rememberMe": false,
+  "eventsListeners": ["jboss-logging", "registration-provider"],
+  "clients": [
+    {
+      "clientId": "mojefinance-frontend",
+      "publicClient": true,
+      "redirectUris": ["http://localhost:5173/"],
+      "webOrigins": ["*"],
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": true
+    },
+    {
+      "publicClient": false,
+      "serviceAccountsEnabled": true,
+      "standardFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "bearerOnly": false,
+      "authorizationServicesEnabled": false
+    }
+  ],
+  "users": [
+    {
+      "username": "test",
+      "email": "test@gmail.com",
+      "firstName": "test",
+      "lastName": "test",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [{ "type": "password", "value": "test" }]
+    }
+  ]
+}
