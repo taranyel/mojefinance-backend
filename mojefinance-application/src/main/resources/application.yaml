@@ -10,8 +10,22 @@ spring:
     defer-datasource-initialization: true
     hibernate:
       ddl-auto: create
-  sql:
-    init:
-      mode: always
-      data-locations:
-        - classpath:db/scripts/data.sql
+#  sql:
+#    init:
+#      mode: always
+#      data-locations:
+#        - classpath:db/scripts/data.sql
+
+  ssl:
+    bundle:
+      pem:
+        bank-mtls:
+          keystore:
+            certificate: classpath:certs/ceska-sporitelna-cert.pem
+            private-key: classpath:certs/ceska-sporitelna-key.key
+
+external:
+  api:
+    ceska-sporitelna:
+      base-url: https://webapi.developers.erstegroup.com/api/csas/sandbox
+      token-path: /v1/sandbox-idp/token
