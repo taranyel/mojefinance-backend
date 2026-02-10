@@ -1,0 +1,14 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://postgres-db:5432/mojefinance
+    driver-class-name: org.postgresql.Driver
+    username: ${db-username}
+    password: ${db-password}
+
+  security:
+    oauth2:
+      resourceserver:
+        opaque-token:
+          introspection-uri: http://keycloak:8080/realms/mojefinance/protocol/openid-connect/token/introspect
+          client-id: ${mojefinance-client-id}
+          client-secret: ${mojefinance-client-secret}
