@@ -2,8 +2,6 @@ FROM maven:3.9.8-eclipse-temurin-21 AS builder
 
 WORKDIR /app
 
-COPY pom.xml .
-
 COPY mojefinance-application/pom.xml ./mojefinance-application/
 COPY mojefinance-service/pom.xml ./mojefinance-service/
 COPY mojefinance-service/api-model/pom.xml ./mojefinance-service/api-model/
