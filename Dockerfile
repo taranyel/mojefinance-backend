@@ -25,9 +25,9 @@ RUN mkdir -p /app/mojefinance-application/src/main/resources/certs
 
 RUN ln -s /etc/secrets/ceska-sporitelna-cert.pem /app/mojefinance-application/src/main/resources/certs/ceska-sporitelna-cert.pem
 RUN ln -s /etc/secrets/ceska-sporitelna-key.key /app/mojefinance-application/src/main/resources/certs/ceska-sporitelna-key.key
-RUN ln -s /etc/secrets/application-render.properties /app/mojefinance-application/src/main/resources/application-render.properties
+RUN ln -s /etc/secrets/application-render.yaml /app/mojefinance-application/src/main/resources/application-render.yaml
 
 COPY --from=builder /app/mojefinance-application/target/mojefinance-application-1.0-SNAPSHOT.jar app.jar
 EXPOSE 8081
 
-ENTRYPOINT ["sh", "-c", "java -jar app.jar --spring.config.import=file:/etc/secrets/application-render.properties"]
+ENTRYPOINT ["sh", "-c", "java -jar app.jar --spring.config.import=file:/etc/secrets/application-render.yaml"]
