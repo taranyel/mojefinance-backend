@@ -21,9 +21,7 @@ FROM eclipse-temurin:21-jre-jammy
 
 WORKDIR /app
 
-RUN mkdir -p /app/mojefinance-application/src/main/resources/certs
-
 COPY --from=builder /app/mojefinance-application/target/mojefinance-application-1.0-SNAPSHOT.jar app.jar
 EXPOSE 8081
 
-ENTRYPOINT ["sh", "-c", "java -jar app.jar --spring.config.import=file:/etc/secrets/application-render.yaml --spring.config.import=file:/etc/secrets/ceska-sporitelna-key.key --spring.config.import=file:/etc/secrets/ceska-sporitelna-cert.pem"]
+ENTRYPOINT ["sh", "-c", "java -jar app.jar --spring.config.import=file:/etc/secrets/application-render.yaml"]

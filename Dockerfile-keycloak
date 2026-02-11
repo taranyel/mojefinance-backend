@@ -7,25 +7,19 @@ RUN mvn clean package -DskipTests
 
 # --- Stage 2: Keycloak Optimizer ---
 FROM quay.io/keycloak/keycloak:latest AS kc-optimizer
-# Copy the compiled JAR from Stage 1
 COPY --from=maven-builder /app/target/keycloak-1.0.0.jar /opt/keycloak/providers/registration-provider.jar
 
+# Build-time variables MUST match your runtime DB
 ENV KC_DB=postgres
-ENV KC_HEALTH_ENABLED=true
-ENV KC_METRICS_ENABLED=true
 
-# Create the optimized build
 RUN /opt/keycloak/bin/kc.sh build
 
-# --- Stage 3: Final Production Image ---
+# --- Stage 3: Final Runtime ---
 FROM quay.io/keycloak/keycloak:latest
 WORKDIR /opt/keycloak
 
-# Copy the optimized distribution
 COPY --from=kc-optimizer /opt/keycloak/ /opt/keycloak/
-# Copy the realm file
 COPY ./keycloak/realm.json /opt/keycloak/data/import/realm.json
 
-# Use 'start' with --optimized.
-# We remove the hostname flags here and handle them in Render variables instead.
-ENTRYPOINT ["/opt/keycloak/bin/kc.sh", "start", "--optimized", "--import-realm"]
+# Use start-dev with --optimized
+ENTRYPOINT ["/opt/keycloak/bin/kc.sh", "start-dev", "--import-realm"]

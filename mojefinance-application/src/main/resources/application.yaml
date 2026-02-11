@@ -16,14 +16,6 @@ spring:
 #      data-locations:
 #        - classpath:db/scripts/data.sql
 
-  ssl:
-    bundle:
-      pem:
-        bank-mtls:
-          keystore:
-            certificate: classpath:certs/ceska-sporitelna-cert.pem
-            private-key: classpath:certs/ceska-sporitelna-key.key
-
 external:
   api:
     ceska-sporitelna:
