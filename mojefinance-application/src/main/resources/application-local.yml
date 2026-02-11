@@ -12,3 +12,10 @@ spring:
           introspection-uri: http://localhost:8080/realms/mojefinance/protocol/openid-connect/token/introspect
           client-id: ${mojefinance-client-id}
           client-secret: ${mojefinance-client-secret}
+
+external:
+  oauth2:
+    ceska-sporitelna:
+      client-id: ${ceska-sporitelna-client-id}
+      client-secret: ${ceska-sporitelna-client-secret}
+      redirect-uri: http://localhost:5173/bank-callback
