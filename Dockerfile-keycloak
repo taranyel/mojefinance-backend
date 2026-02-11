@@ -30,4 +30,4 @@ COPY --from=kc-optimizer /opt/keycloak/ /opt/keycloak/
 COPY ./keycloak/realm.json /opt/keycloak/data/import/realm.json
 
 # Final production start command
-ENTRYPOINT ["/opt/keycloak/bin/kc.sh", "start", "--optimized", "--import-realm"]
+ENTRYPOINT ["/opt/keycloak/bin/kc.sh", "start-dev", "--optimized", "--import-realm"]
