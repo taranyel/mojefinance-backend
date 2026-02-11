@@ -11,10 +11,10 @@ COPY mojefinance-service/user-service/pom.xml ./mojefinance-service/user-service
 
 COPY . .
 
-WORKDIR /app/mojefinance-application
+WORKDIR /app/mojefinance-service
 RUN mvn clean install
 
-WORKDIR /app/mojefinance-service
+WORKDIR /app/mojefinance-application
 RUN mvn clean install
 
 FROM eclipse-temurin:21-jre-jammy
