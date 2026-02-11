@@ -1,35 +1,21 @@
 FROM maven:3.9.8-eclipse-temurin-21 AS builder
-
 WORKDIR /app
-
-COPY mojefinance-application/pom.xml ./mojefinance-application/
-COPY mojefinance-service/pom.xml ./mojefinance-service/
-COPY mojefinance-service/api-model/pom.xml ./mojefinance-service/api-model/
-COPY mojefinance-service/account-service/pom.xml ./mojefinance-service/account-service/
-COPY mojefinance-service/bank-connection-service/pom.xml ./mojefinance-service/bank-connection-service/
-COPY mojefinance-service/user-service/pom.xml ./mojefinance-service/user-service/
-
 COPY . .
-
-WORKDIR /app/mojefinance-service
-RUN mvn clean install
-
-WORKDIR /app/mojefinance-application
-RUN mvn clean install
+# Build the whole project
+RUN mvn clean install -DskipTests
 
 FROM eclipse-temurin:21-jre-jammy
-
 WORKDIR /app
 
-RUN mkdir -p /app/mojefinance-application/src/main/resources/certs
+# We don't need to create folders or symlinks for the config file.
+# We only need the folder for the CERTS if your code specifically
+# looks for them at a hardcoded path.
+RUN mkdir -p /app/resources/certs
 
-# Create a symlink from Render's secret path to your app's expected path
-# Note: This works because Render mounts /etc/secrets at runtime
-RUN ln -s /etc/secrets/ceska-sporitelna-cert.pem /app/mojefinance-application/src/main/resources/certs/ceska-sporitelna-cert.pem
-RUN ln -s /etc/secrets/ceska-sporitelna-key.key /app/mojefinance-application/src/main/resources/certs/ceska-sporitelna-key.key
-RUN ln -s /etc/secrets/application-render.properties /app/mojefinance-application/src/main/resources/application-render.properties
-
+# Copy the built jar
 COPY --from=builder /app/mojefinance-application/target/mojefinance-application-1.0-SNAPSHOT.jar app.jar
+
 EXPOSE 8081
 
-ENTRYPOINT ["java", "-jar", "app.jar"]
+# Tell Spring exactly where to find the secrets Render provides
+ENTRYPOINT ["sh", "-c", "java -jar app.jar --spring.config.import=file:/etc/secrets/application-render.properties"]
