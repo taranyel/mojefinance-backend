@@ -10,7 +10,12 @@ COPY mojefinance-service/bank-connection-service/pom.xml ./mojefinance-service/b
 COPY mojefinance-service/user-service/pom.xml ./mojefinance-service/user-service/
 
 COPY . .
-RUN mvn clean package -DskipTests
+
+WORKDIR /app/mojefinance-application
+RUN mvn clean install
+
+WORKDIR /app/mojefinance-service
+RUN mvn clean install
 
 FROM eclipse-temurin:21-jre-jammy
 
