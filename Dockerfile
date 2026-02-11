@@ -18,6 +18,13 @@ FROM eclipse-temurin:21-jre-jammy
 
 WORKDIR /app
 
+RUN mkdir -p /app/mojefinance-application/src/main/resources/certs
+
+# Create a symlink from Render's secret path to your app's expected path
+# Note: This works because Render mounts /etc/secrets at runtime
+RUN ln -s /etc/secrets/ceska-sporitelna-cert.pem /app/mojefinance-application/src/main/resources/certs/ceska-sporitelna-cert.pem
+RUN ln -s /etc/secrets/ceska-sporitelna-key.key /app/mojefinance-application/src/main/resources/certs/ceska-sporitelna-key.key
+
 COPY --from=builder /app/mojefinance-application/target/mojefinance-application-1.0-SNAPSHOT.jar app.jar
 EXPOSE 8081
 
