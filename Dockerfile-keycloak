@@ -1,33 +1,31 @@
-# --- Stage 1: Maven Builder (Compiles your Java Provider) ---
+# --- Stage 1: Maven Builder ---
 FROM maven:3.9.8-eclipse-temurin-21 AS maven-builder
 WORKDIR /app
 COPY keycloak/pom.xml .
 COPY keycloak/src ./src
 RUN mvn clean package -DskipTests
 
-# --- Stage 2: Keycloak Optimizer (Runs the 'build' command) ---
+# --- Stage 2: Keycloak Optimizer ---
 FROM quay.io/keycloak/keycloak:latest AS kc-optimizer
-
-# Copy the JAR from the Maven stage into the Keycloak providers folder
+# Copy the compiled JAR from Stage 1
 COPY --from=maven-builder /app/target/keycloak-1.0.0.jar /opt/keycloak/providers/registration-provider.jar
 
-# Set build-time environment variables
 ENV KC_DB=postgres
 ENV KC_HEALTH_ENABLED=true
 ENV KC_METRICS_ENABLED=true
 
-# RUN the build command here to optimize the image
+# Create the optimized build
 RUN /opt/keycloak/bin/kc.sh build
 
 # --- Stage 3: Final Production Image ---
 FROM quay.io/keycloak/keycloak:latest
 WORKDIR /opt/keycloak
 
-# Copy the entire optimized distribution from the optimizer stage
+# Copy the optimized distribution
 COPY --from=kc-optimizer /opt/keycloak/ /opt/keycloak/
-
-# Copy your realm file (Runtime data)
+# Copy the realm file
 COPY ./keycloak/realm.json /opt/keycloak/data/import/realm.json
 
-# Final production start command
-ENTRYPOINT ["/opt/keycloak/bin/kc.sh", "start-dev", "--optimized", "--import-realm"]
+# Use 'start' with --optimized.
+# We remove the hostname flags here and handle them in Render variables instead.
+ENTRYPOINT ["/opt/keycloak/bin/kc.sh", "start", "--optimized", "--import-realm"]
