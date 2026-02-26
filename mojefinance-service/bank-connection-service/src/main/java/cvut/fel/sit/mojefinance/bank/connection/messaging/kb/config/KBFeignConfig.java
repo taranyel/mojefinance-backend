@@ -1,4 +1,4 @@
-package cvut.fel.sit.mojefinance.bank.connection.messaging.config;
+package cvut.fel.sit.mojefinance.bank.connection.messaging.kb.config;
 
 import feign.Client;
 import feign.hc5.ApacheHttp5Client;
@@ -14,11 +14,11 @@ import org.springframework.context.annotation.Configuration;
 import javax.net.ssl.SSLContext;
 
 @Configuration
-public class BankConnectionFeignConfig {
+public class KBFeignConfig {
 
     @Bean
     public Client feignClient(SslBundles sslBundles) {
-        var sslBundle = sslBundles.getBundle("bank-mtls");
+        var sslBundle = sslBundles.getBundle("kb-mtls");
         SSLContext sslContext = sslBundle.createSslContext();
         SSLConnectionSocketFactory sslSocketFactory = SSLConnectionSocketFactoryBuilder.create()
                 .setSslContext(sslContext)
