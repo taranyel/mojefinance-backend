@@ -61,3 +61,20 @@ external:
       base-url: https://api.csob.cz/api/csob
       token-path: /oauth2/v1/token
       accounts-path: /psd2/v3/ais/my/accounts
+
+  oauth2:
+    redirect-uri: http://localhost:5173/bank-callback
+    ceska-sporitelna:
+      client-id: ${ceska-sporitelna-client-id}
+      client-secret: ${ceska-sporitelna-client-secret}
+    csob:
+      client-id: ${csob-client-id}
+      client-secret: ${csob-client-secret}
+    kb:
+      client-id: ${kb-client-id}
+      client-secret: ${kb-client-secret}
+    reiffeisen-bank:
+      client-id: ${reiffeisen-bank-client-id}
+    air-bank:
+      client-id: ${air-bank-client-id}
+      client-secret: ${air-bank-client-secret}

@@ -49,7 +49,7 @@
 
         <dependency>
             <groupId>cvut.fel.sit</groupId>
-            <artifactId>bank-connection-service</artifactId>
+            <artifactId>bank-service</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
 

@@ -10,7 +10,7 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>bank-connection-service</artifactId>
+    <artifactId>bank-service</artifactId>
     <packaging>jar</packaging>
 
     <dependencies>

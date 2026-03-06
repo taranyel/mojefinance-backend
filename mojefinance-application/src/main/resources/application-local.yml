@@ -12,21 +12,3 @@ spring:
           introspection-uri: http://localhost:8080/realms/mojefinance/protocol/openid-connect/token/introspect
           client-id: ${mojefinance-client-id}
           client-secret: ${mojefinance-client-secret}
-
-external:
-  oauth2:
-    redirect-uri: http://localhost:5173/bank-callback
-    ceska-sporitelna:
-      client-id: ${ceska-sporitelna-client-id}
-      client-secret: ${ceska-sporitelna-client-secret}
-    csob:
-      client-id: ${csob-client-id}
-      client-secret: ${csob-client-secret}
-    kb:
-      client-id: ${kb-client-id}
-      client-secret: ${kb-client-secret}
-    reiffeisen-bank:
-      client-id: ${reiffeisen-bank-client-id}
-    air-bank:
-      client-id: ${air-bank-client-id}
-      client-secret: ${air-bank-client-secret}
