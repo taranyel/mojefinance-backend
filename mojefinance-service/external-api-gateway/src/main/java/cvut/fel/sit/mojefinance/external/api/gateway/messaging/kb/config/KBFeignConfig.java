@@ -8,7 +8,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class KBFeignConfig {
     @Bean
-    public Client feignClient(BankFeignConfiguration factory) {
+    public Client kbFeignClient(BankFeignConfiguration factory) {
         return factory.createFeignClient("kb-mtls");
     }
 }

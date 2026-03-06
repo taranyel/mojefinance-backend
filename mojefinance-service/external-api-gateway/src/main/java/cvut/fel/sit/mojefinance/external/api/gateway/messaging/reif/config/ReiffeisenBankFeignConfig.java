@@ -8,7 +8,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class ReiffeisenBankFeignConfig {
     @Bean
-    public Client feignClient(BankFeignConfiguration factory) {
+    public Client reifFeignClient(BankFeignConfiguration factory) {
         return factory.createFeignClient("reiffeisen-bank-mtls");
     }
 }
