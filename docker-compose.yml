@@ -10,7 +10,7 @@ services:
       KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN}
       KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
       KEYCLOAK_EVENT_LISTENERS: registration-provider
-      KC_HOSTNAME_URL: http://localhost:8080
+      KC_HOSTNAME_URL: ${KEYCLOAK_HOSTNAME_URL}
       KC_HTTP_ENABLED: true
     healthcheck:
       test: [ "CMD-SHELL", "{ printf 'HEAD /health/ready HTTP/1.0\r\n\r\n' >&0; grep -q 'HTTP/1.0 200'; } 0<>/dev/tcp/localhost/8080" ]
