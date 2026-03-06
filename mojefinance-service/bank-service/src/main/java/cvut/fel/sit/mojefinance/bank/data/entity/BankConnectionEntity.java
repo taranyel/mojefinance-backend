@@ -1,11 +1,7 @@
 package cvut.fel.sit.mojefinance.bank.data.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import jakarta.persistence.GenerationType;
+import jakarta.persistence.*;
 
-import jakarta.persistence.Table;
 import lombok.Data;
 
 @Data
@@ -16,8 +12,14 @@ public class BankConnectionEntity {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long bankConnectionId;
 
+    @Column(nullable = false)
     private String customerUsername;
+
+    @Column(nullable = false)
     private String bankName;
+
     private String refreshToken;
+
+    @Column(nullable = false)
     private String bankConnectionStatus;
 }
