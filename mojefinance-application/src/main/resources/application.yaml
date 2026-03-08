@@ -4,17 +4,21 @@ server:
     context-path: /mojefinance/api
 
 spring:
+  config:
+    import:
+      - classpath:client-registration.yaml
+
   jpa:
     show-sql: false
     generate-ddl: true
     defer-datasource-initialization: true
     hibernate:
       ddl-auto: create
-  #  sql:
-  #    init:
-  #      mode: always
-  #      data-locations:
-  #        - classpath:db/scripts/data.sql
+  sql:
+    init:
+      mode: always
+      data-locations:
+        - classpath:db/scripts/data.sql
 
   ssl:
     bundle:
@@ -39,42 +43,3 @@ spring:
             location: "classpath:certs/kb-certificate.pfx"
             password: ${csob-keystore-password}
             type: PKCS12
-
-external:
-  api:
-    ceska-sporitelna:
-      base-url: https://webapi.developers.erstegroup.com/api/csas/sandbox
-      token-path: /v1/sandbox-idp/token
-      accounts-path: /v4/account-information/my/accounts
-    kb:
-      base-url: https://api.kb.cz/sandbox
-      token-path: /oauth2/v1/token
-      accounts-path: /aisp/v2/my/accounts
-    reiffeisen-bank:
-      base-url: https://api.rb.cz/rbcz
-      accounts-path: /premium/mock/accounts
-    air-bank:
-      base-url: https://api.airbank.cz/sandbox
-      token-path: /oauth2/token
-      accounts-path: /accountInfo/v3/my/accounts
-    csob:
-      base-url: https://api.csob.cz/api/csob
-      token-path: /oauth2/v1/token
-      accounts-path: /psd2/v3/ais/my/accounts
-
-  oauth2:
-    redirect-uri: http://localhost:5173/bank-callback
-    ceska-sporitelna:
-      client-id: ${ceska-sporitelna-client-id}
-      client-secret: ${ceska-sporitelna-client-secret}
-    csob:
-      client-id: ${csob-client-id}
-      client-secret: ${csob-client-secret}
-    kb:
-      client-id: ${kb-client-id}
-      client-secret: ${kb-client-secret}
-    reiffeisen-bank:
-      client-id: ${reiffeisen-bank-client-id}
-    air-bank:
-      client-id: ${air-bank-client-id}
-      client-secret: ${air-bank-client-secret}

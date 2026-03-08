@@ -49,4 +49,9 @@ public class BankController implements BanksApi {
         ConnectedBanksResponse apiResponse = bankApiMapper.toConnectedBanksResponse(domainResponse);
         return new ResponseEntity<>(apiResponse, HttpStatus.OK);
     }
+
+    @Override
+    public ResponseEntity<Void> connectReiffeisenBank(String authorization) {
+        return BanksApi.super.connectReiffeisenBank(authorization);
+    }
 }

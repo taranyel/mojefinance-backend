@@ -1,31 +1,20 @@
 package cvut.fel.sit.mojefinance.external.api.gateway.messaging.csob.service;
 
-import cvut.fel.sit.cs.openapi.model.AuthCodeResponse;
 import cvut.fel.sit.mojefinance.external.api.gateway.messaging.csob.client.CSOBApiFeignClient;
+import cvut.fel.sit.mojefinance.external.api.gateway.messaging.util.Constants;
+import cvut.fel.sit.mojefinance.external.api.gateway.messaging.util.ExchangeTokenHelper;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.util.MultiValueMap;
-
-import static cvut.fel.sit.mojefinance.external.api.gateway.messaging.util.FormDataProvider.createFormDataForTokenRequest;
 
 
 @Service
 @RequiredArgsConstructor
 public class CSOBAdapterImpl implements CSOBAdapter {
     private final CSOBApiFeignClient csobApiFeignClient;
-
-    @Value("${external.oauth2.csob.client-id}")
-    private String clientId;
-
-    @Value("${external.oauth2.csob.client-secret}")
-    private String clientSecret;
+    private final ExchangeTokenHelper exchangeTokenHelper;
 
     @Override
     public void connectCSOB(String code) {
-        MultiValueMap<String, String> formData = createFormDataForTokenRequest(code, clientId, clientSecret);
-        ResponseEntity<AuthCodeResponse> responseEntity = csobApiFeignClient.getToken(formData);
-        System.out.println("Access token: " + responseEntity.toString());
+        exchangeTokenHelper.exchangeToken(Constants.CSOB_CLIENT_REGISTRATION_ID, code);
     }
 }

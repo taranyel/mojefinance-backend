@@ -11,5 +11,7 @@ public interface BankService {
 
     void connectKB(String code);
 
+    void connectReiffeisenBank();
+
     ConnectedBanksDomainResponse getConnectedBanks(String authorization);
 }

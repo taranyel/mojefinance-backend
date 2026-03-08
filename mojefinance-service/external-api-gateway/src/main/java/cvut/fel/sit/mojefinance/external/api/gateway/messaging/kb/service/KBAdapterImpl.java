@@ -1,31 +1,20 @@
 package cvut.fel.sit.mojefinance.external.api.gateway.messaging.kb.service;
 
-import cvut.fel.sit.cs.openapi.model.AuthCodeResponse;
 import cvut.fel.sit.mojefinance.external.api.gateway.messaging.kb.client.KBApiFeignClient;
+import cvut.fel.sit.mojefinance.external.api.gateway.messaging.util.Constants;
+import cvut.fel.sit.mojefinance.external.api.gateway.messaging.util.ExchangeTokenHelper;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.util.MultiValueMap;
-
-import static cvut.fel.sit.mojefinance.external.api.gateway.messaging.util.FormDataProvider.createFormDataForTokenRequest;
 
 
 @Service
 @RequiredArgsConstructor
 public class KBAdapterImpl implements KBAdapter {
     private final KBApiFeignClient kbApiFeignClient;
-
-    @Value("${external.oauth2.kb.client-id}")
-    private String clientId;
-
-    @Value("${external.oauth2.kb.client-secret}")
-    private String clientSecret;
+    private final ExchangeTokenHelper exchangeTokenHelper;
 
     @Override
     public void connectKB(String code) {
-        MultiValueMap<String, String> formData = createFormDataForTokenRequest(code, clientId, clientSecret);
-        ResponseEntity<AuthCodeResponse> responseEntity = kbApiFeignClient.getToken(formData);
-        System.out.println("Access token: " + responseEntity.toString());
+        exchangeTokenHelper.exchangeToken(Constants.KB_CLIENT_REGISTRATION_ID, code);
     }
 }

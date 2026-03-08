@@ -19,7 +19,6 @@
         <module>user-service</module>
         <module>bank-service</module>
         <module>external-api-gateway</module>
-        <module>shared-service</module>
     </modules>
 
     <properties>

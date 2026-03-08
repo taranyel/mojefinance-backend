@@ -1,31 +1,19 @@
 package cvut.fel.sit.mojefinance.external.api.gateway.messaging.cs.service;
 
-import cvut.fel.sit.cs.openapi.model.AuthCodeResponse;
-import cvut.fel.sit.mojefinance.external.api.gateway.messaging.cs.client.CeskaSporitelnaApiFeignClient;
+import cvut.fel.sit.mojefinance.external.api.gateway.messaging.util.Constants;
+import cvut.fel.sit.mojefinance.external.api.gateway.messaging.util.ExchangeTokenHelper;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.ResponseEntity;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.util.MultiValueMap;
 
-import static cvut.fel.sit.mojefinance.external.api.gateway.messaging.util.FormDataProvider.createFormDataForTokenRequest;
-
-
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class CeskaSporitelnaAdapterImpl implements CeskaSporitelnaAdapter {
-    private final CeskaSporitelnaApiFeignClient ceskaSporitelnaApiFeignClient;
-
-    @Value("${external.oauth2.ceska-sporitelna.client-id}")
-    private String clientId;
-
-    @Value("${external.oauth2.ceska-sporitelna.client-secret}")
-    private String clientSecret;
+    private final ExchangeTokenHelper exchangeTokenHelper;
 
     @Override
     public void connectCeskaSporitelna(String code) {
-        MultiValueMap<String, String> formData = createFormDataForTokenRequest(code, clientId, clientSecret);
-        ResponseEntity<AuthCodeResponse> responseEntity = ceskaSporitelnaApiFeignClient.getToken(formData);
-        System.out.println("Access token: " + responseEntity.toString());
+       exchangeTokenHelper.exchangeToken(Constants.CESKA_SPORITELNA_CLIENT_REGISTRATION_ID, code);
     }
 }
