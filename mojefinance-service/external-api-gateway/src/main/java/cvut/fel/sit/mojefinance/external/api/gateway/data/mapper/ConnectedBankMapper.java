@@ -1,6 +1,7 @@
 package cvut.fel.sit.mojefinance.external.api.gateway.data.mapper;
 
 import cvut.fel.sit.mojefinance.external.api.gateway.data.entity.ConnectedBank;
+import cvut.fel.sit.mojefinance.external.api.gateway.util.Constants;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -13,24 +14,24 @@ public class ConnectedBankMapper {
         List<ConnectedBank> connectedBanks = new ArrayList<>();
         for (String registrationId: clientRegistrationIds) {
             switch (registrationId) {
-                case "ceska-sporitelna":
+                case Constants.CESKA_SPORITELNA_CLIENT_REGISTRATION_ID:
                     connectedBanks.add(ConnectedBank.builder()
-                            .name("Ceska Sporitelna")
+                            .name(Constants.CESKA_SPORITELNA_NAME)
                             .build());
                     break;
-                case "csob":
+                case Constants.CSOB_CLIENT_REGISTRATION_ID:
                     connectedBanks.add(ConnectedBank.builder()
-                            .name("CSOB")
+                            .name(Constants.CSOB_NAME)
                             .build());
                     break;
-                case "kb":
+                case Constants.KB_CLIENT_REGISTRATION_ID:
                     connectedBanks.add(ConnectedBank.builder()
-                            .name("KB")
+                            .name(Constants.KB_NAME)
                             .build());
                     break;
-                case "air-bank":
+                case Constants.AIR_BANK_CLIENT_REGISTRATION_ID:
                     connectedBanks.add(ConnectedBank.builder()
-                            .name("Air Banks")
+                            .name(Constants.AIR_BANK_NAME)
                             .build());
                     break;
             }

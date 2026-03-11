@@ -1,7 +1,7 @@
 package cvut.fel.sit.mojefinance.external.api.gateway.messaging.cs.config;
 
 import cvut.fel.sit.mojefinance.external.api.gateway.messaging.config.FeignConfiguration;
-import cvut.fel.sit.mojefinance.external.api.gateway.messaging.util.Constants;
+import cvut.fel.sit.mojefinance.external.api.gateway.util.Constants;
 import feign.Client;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

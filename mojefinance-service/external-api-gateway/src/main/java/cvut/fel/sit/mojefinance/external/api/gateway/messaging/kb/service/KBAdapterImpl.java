@@ -1,7 +1,7 @@
 package cvut.fel.sit.mojefinance.external.api.gateway.messaging.kb.service;
 
 import cvut.fel.sit.mojefinance.external.api.gateway.messaging.kb.client.KBApiFeignClient;
-import cvut.fel.sit.mojefinance.external.api.gateway.messaging.util.Constants;
+import cvut.fel.sit.mojefinance.external.api.gateway.util.Constants;
 import cvut.fel.sit.mojefinance.external.api.gateway.messaging.util.ExchangeTokenHelper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
