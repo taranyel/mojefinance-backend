@@ -1,49 +1,50 @@
-security:
-  oauth2:
-    client:
-      registration:
-        ceska-sporitelna:
-          client-id: ${ceska-sporitelna-client-id}
-          client-secret: ${ceska-sporitelna-client-secret}
-          authorization-grant-type: authorization_code
-          redirect-uri: http://localhost:5173/bank-callback
-          scope: aisp
-          provider: ceska-sporitelna
-          client-authentication-method: client_secret_post
-        csob:
-          client-id: ${csob-client-id}
-          client-secret: ${csob-client-secret}
-          authorization-grant-type: authorization_code
-          redirect-uri: http://localhost:5173/bank-callback
-          scope: accounts
-          provider: csob
-        kb:
-          client-id: ${kb-client-id}
-          client-secret: ${kb-client-secret}
-          authorization-grant-type: authorization_code
-          redirect-uri: http://localhost:5173/bank-callback
-          scope: accounts
-          provider: kb
-        air-bank:
-          client-id: ${air-bank-client-id}
-          client-secret: ${air-bank-client-secret}
-          authorization-grant-type: authorization_code
-          redirect-uri: http://localhost:5173/bank-callback
-          scope: accounts
-          provider: air-bank
-      provider:
-        ceska-sporitelna:
-          token-uri: ${external.api.ceska-sporitelna.base-url}${external.api.ceska-sporitelna.token-path}
-          authorization-uri: ${external.api.ceska-sporitelna.base-url}${external.api.ceska-sporitelna.authorization-path}
-        kb:
-          token-uri: ${external.api.kb.base-url}${external.api.kb.token-path}
-          authorization-uri: ${external.api.kb.authorization-url}
-        air-bank:
-          token-uri: ${external.api.air-bank.base-url}${external.api.air-bank.token-path}
-          authorization-uri: ${external.api.air-bank.authorization-url}
-        csob:
-          token-uri: ${external.api.csob.base-url}${external.api.csob.token-path}
-          authorization-uri: ${external.api.csob.authorization-url}
+spring:
+  security:
+    oauth2:
+      client:
+        registration:
+          ceska-sporitelna:
+            client-id: ${ceska-sporitelna-client-id}
+            client-secret: ${ceska-sporitelna-client-secret}
+            authorization-grant-type: authorization_code
+            redirect-uri: http://localhost:5173/bank-callback
+            scope: aisp
+            provider: ceska-sporitelna
+            client-authentication-method: client_secret_post
+          csob:
+            client-id: ${csob-client-id}
+            client-secret: ${csob-client-secret}
+            authorization-grant-type: authorization_code
+            redirect-uri: http://localhost:5173/bank-callback
+            scope: accounts
+            provider: csob
+          kb:
+            client-id: ${kb-client-id}
+            client-secret: ${kb-client-secret}
+            authorization-grant-type: authorization_code
+            redirect-uri: http://localhost:5173/bank-callback
+            scope: accounts
+            provider: kb
+          air-bank:
+            client-id: ${air-bank-client-id}
+            client-secret: ${air-bank-client-secret}
+            authorization-grant-type: authorization_code
+            redirect-uri: http://localhost:5173/bank-callback
+            scope: accounts
+            provider: air-bank
+        provider:
+          ceska-sporitelna:
+            token-uri: ${external.api.ceska-sporitelna.base-url}${external.api.ceska-sporitelna.token-path}
+            authorization-uri: ${external.api.ceska-sporitelna.base-url}${external.api.ceska-sporitelna.authorization-path}
+          kb:
+            token-uri: ${external.api.kb.base-url}${external.api.kb.token-path}
+            authorization-uri: ${external.api.kb.authorization-url}
+          air-bank:
+            token-uri: ${external.api.air-bank.base-url}${external.api.air-bank.token-path}
+            authorization-uri: ${external.api.air-bank.authorization-url}
+          csob:
+            token-uri: ${external.api.csob.base-url}${external.api.csob.token-path}
+            authorization-uri: ${external.api.csob.authorization-url}
 
 external:
   api:

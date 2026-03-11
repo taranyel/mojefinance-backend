@@ -353,11 +353,11 @@ components:
     Bank:
       type: object
       properties:
-          bankName:
+          name:
             type: string
           logoUrl:
             type: string
-          bankConnectionStatus:
+          connectionStatus:
             type: string
 
     ProfileResponse:

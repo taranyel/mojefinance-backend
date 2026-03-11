@@ -15,7 +15,7 @@ import javax.net.ssl.SSLContext;
 
 @Configuration
 @RequiredArgsConstructor
-public class BankFeignConfiguration {
+public class FeignConfiguration {
     private final SslBundles sslBundles;
 
     public Client createFeignClient(String bundleName) {

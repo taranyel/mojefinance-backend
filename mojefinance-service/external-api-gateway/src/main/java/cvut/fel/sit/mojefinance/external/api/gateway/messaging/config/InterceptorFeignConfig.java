@@ -9,6 +9,6 @@ import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
 public class InterceptorFeignConfig {
     @Bean
     public RequestInterceptor oauth2Interceptor(OAuth2AuthorizedClientManager apiAManager) {
-        return new BankFeignInterceptor(apiAManager);
+        return new FeignInterceptor(apiAManager);
     }
 }

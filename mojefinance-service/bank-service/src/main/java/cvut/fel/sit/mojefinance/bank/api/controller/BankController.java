@@ -45,7 +45,7 @@ public class BankController implements BanksApi {
 
     @Override
     public ResponseEntity<ConnectedBanksResponse> getConnectedBanks(String authorization) {
-        ConnectedBanksDomainResponse domainResponse = bankService.getConnectedBanks(authorization);
+        ConnectedBanksDomainResponse domainResponse = bankService.getConnectedBanks();
         ConnectedBanksResponse apiResponse = bankApiMapper.toConnectedBanksResponse(domainResponse);
         return new ResponseEntity<>(apiResponse, HttpStatus.OK);
     }

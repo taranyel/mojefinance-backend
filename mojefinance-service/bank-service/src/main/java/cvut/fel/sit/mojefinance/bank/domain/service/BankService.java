@@ -13,5 +13,5 @@ public interface BankService {
 
     void connectReiffeisenBank();
 
-    ConnectedBanksDomainResponse getConnectedBanks(String authorization);
+    ConnectedBanksDomainResponse getConnectedBanks();
 }

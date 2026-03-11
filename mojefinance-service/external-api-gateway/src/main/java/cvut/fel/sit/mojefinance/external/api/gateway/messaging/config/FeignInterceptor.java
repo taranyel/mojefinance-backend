@@ -17,7 +17,7 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class BankFeignInterceptor implements RequestInterceptor {
+public class FeignInterceptor implements RequestInterceptor {
     private final OAuth2AuthorizedClientManager authorizedClientManager;
 
     @Override
@@ -31,6 +31,10 @@ public class BankFeignInterceptor implements RequestInterceptor {
             }
 
             String clientRegistrationId = extractClientRegistrationId(template);
+            if (clientRegistrationId == null) {
+                log.trace("Skipping OAuth2 token injection");
+                return;
+            }
             log.trace("Attempting to add OAuth2 token for client: {}", clientRegistrationId);
 
             OAuth2AuthorizeRequest authorizeRequest = OAuth2AuthorizeRequest
@@ -65,13 +69,11 @@ public class BankFeignInterceptor implements RequestInterceptor {
             return "kb";
         } else if (url.contains("csob")) {
             return "csob";
-        } else if (url.contains("reif") || url.contains("rb.cz")) {
-            return "reiffeisen-bank";
         } else if (url.contains("airbank")) {
             return "air-bank";
         }
 
-        return "ceska-sporitelna";
+        return null;
     }
 
     private Authentication getAuthentication() {
