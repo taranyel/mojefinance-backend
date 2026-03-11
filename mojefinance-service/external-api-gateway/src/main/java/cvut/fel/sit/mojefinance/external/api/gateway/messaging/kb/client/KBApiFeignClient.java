@@ -1,7 +1,6 @@
 package cvut.fel.sit.mojefinance.external.api.gateway.messaging.kb.client;
 
 import cvut.fel.sit.cs.openapi.model.AuthCodeResponse;
-import cvut.fel.sit.mojefinance.external.api.gateway.messaging.kb.config.KBFeignConfig;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -11,8 +10,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 @FeignClient(
         name = "KBApiFeignClient",
-        url = "${external.api.kb.base-url}",
-        configuration = KBFeignConfig.class
+        url = "${external.api.kb.base-url}"
 )
 public interface KBApiFeignClient {
 

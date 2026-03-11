@@ -1,5 +1,6 @@
 package cvut.fel.sit.mojefinance.external.api.gateway.messaging.cs.service;
 
+import cvut.fel.sit.mojefinance.external.api.gateway.data.entity.ConnectedBank;
 import cvut.fel.sit.mojefinance.external.api.gateway.util.Constants;
 import cvut.fel.sit.mojefinance.external.api.gateway.messaging.util.ExchangeTokenHelper;
 import lombok.RequiredArgsConstructor;
@@ -13,7 +14,10 @@ public class CeskaSporitelnaAdapterImpl implements CeskaSporitelnaAdapter {
     private final ExchangeTokenHelper exchangeTokenHelper;
 
     @Override
-    public void connectCeskaSporitelna(String code) {
+    public ConnectedBank connectCeskaSporitelna(String code) {
        exchangeTokenHelper.exchangeToken(Constants.CESKA_SPORITELNA_CLIENT_REGISTRATION_ID, code);
+       return ConnectedBank.builder()
+               .name(Constants.CESKA_SPORITELNA_NAME)
+               .build();
     }
 }

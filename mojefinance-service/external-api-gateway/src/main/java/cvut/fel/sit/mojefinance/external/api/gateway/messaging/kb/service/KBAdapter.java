@@ -1,5 +1,7 @@
 package cvut.fel.sit.mojefinance.external.api.gateway.messaging.kb.service;
 
+import cvut.fel.sit.mojefinance.external.api.gateway.data.entity.ConnectedBank;
+
 public interface KBAdapter {
-    void connectKB(String code);
+    ConnectedBank connectKB(String code);
 }

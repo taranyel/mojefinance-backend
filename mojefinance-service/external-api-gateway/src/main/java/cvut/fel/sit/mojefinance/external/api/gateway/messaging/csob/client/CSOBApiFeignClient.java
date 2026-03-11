@@ -1,7 +1,6 @@
 package cvut.fel.sit.mojefinance.external.api.gateway.messaging.csob.client;
 
 import cvut.fel.sit.cs.openapi.model.AuthCodeResponse;
-import cvut.fel.sit.mojefinance.external.api.gateway.messaging.csob.config.CSOBFeignConfig;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -11,8 +10,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 @FeignClient(
         name = "CSOBApiFeignClient",
-        url = "${external.api.csob.base-url}",
-        configuration = CSOBFeignConfig.class
+        url = "${external.api.csob.base-url}"
 )
 public interface CSOBApiFeignClient {
 

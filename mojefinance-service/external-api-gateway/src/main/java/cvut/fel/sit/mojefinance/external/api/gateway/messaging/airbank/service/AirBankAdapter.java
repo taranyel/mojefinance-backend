@@ -1,5 +1,7 @@
 package cvut.fel.sit.mojefinance.external.api.gateway.messaging.airbank.service;
 
+import cvut.fel.sit.mojefinance.external.api.gateway.data.entity.ConnectedBank;
+
 public interface AirBankAdapter {
-    void connectAirBank(String code);
+    ConnectedBank connectAirBank(String code);
 }

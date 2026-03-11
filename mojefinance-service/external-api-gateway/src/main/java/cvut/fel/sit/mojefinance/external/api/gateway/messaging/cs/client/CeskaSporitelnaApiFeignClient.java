@@ -1,7 +1,6 @@
 package cvut.fel.sit.mojefinance.external.api.gateway.messaging.cs.client;
 
 import cvut.fel.sit.cs.openapi.model.AuthCodeResponse;
-import cvut.fel.sit.mojefinance.external.api.gateway.messaging.cs.config.CeskaSporitelnaFeignConfig;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -11,8 +10,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 @FeignClient(
         name = "CeskaSporitelnaApiFeignClient",
-        url = "${external.api.ceska-sporitelna.base-url}",
-        configuration = CeskaSporitelnaFeignConfig.class
+        url = "${external.api.ceska-sporitelna.base-url}"
 )
 public interface CeskaSporitelnaApiFeignClient {
 

@@ -1,5 +1,7 @@
 package cvut.fel.sit.mojefinance.external.api.gateway.messaging.csob.service;
 
+import cvut.fel.sit.mojefinance.external.api.gateway.data.entity.ConnectedBank;
+
 public interface CSOBAdapter {
-    void connectCSOB(String code);
+    ConnectedBank connectCSOB(String code);
 }

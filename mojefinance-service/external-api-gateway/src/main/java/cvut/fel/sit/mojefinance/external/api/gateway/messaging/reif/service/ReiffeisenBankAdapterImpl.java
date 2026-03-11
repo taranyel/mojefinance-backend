@@ -8,5 +8,4 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class ReiffeisenBankAdapterImpl implements ReiffeisenBankAdapter {
     private final ReiffeisenBankApiFeignClient reiffeisenBankApiFeignClient;
-
 }

@@ -12,8 +12,11 @@ public class Constants {
     public static final String CSOB_CLIENT_REGISTRATION_ID = "csob";
     public static final String CSOB_SSL_BUNDLE_NAME = "csob-mtls";
     public static final String CSOB_NAME = "CSOB";
+    public static final String CSOB_API_KEY_HEADER = "APIKEY";
 
     public static final String KB_CLIENT_REGISTRATION_ID = "kb";
     public static final String KB_SSL_BUNDLE_NAME = "kb-mtls";
     public static final String KB_NAME = "KB";
+
+    public static final String REIFFEISENBANK_NAME = "Reiffeisen Bank";
 }

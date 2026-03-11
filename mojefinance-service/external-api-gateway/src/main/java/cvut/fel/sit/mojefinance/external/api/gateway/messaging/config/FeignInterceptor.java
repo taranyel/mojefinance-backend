@@ -4,7 +4,6 @@ import feign.RequestInterceptor;
 import feign.RequestTemplate;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.client.ClientAuthorizationRequiredException;
@@ -23,7 +22,7 @@ public class FeignInterceptor implements RequestInterceptor {
     @Override
     public void apply(RequestTemplate template) {
         try {
-            Authentication authentication = getAuthentication();
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
             if (authentication == null) {
                 log.trace("No authentication available, skipping OAuth2 token injection");
@@ -73,14 +72,6 @@ public class FeignInterceptor implements RequestInterceptor {
             return "air-bank";
         }
 
-        return null;
-    }
-
-    private Authentication getAuthentication() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication != null && !(authentication instanceof AnonymousAuthenticationToken) && authentication.isAuthenticated()) {
-            return authentication;
-        }
         return null;
     }
 }

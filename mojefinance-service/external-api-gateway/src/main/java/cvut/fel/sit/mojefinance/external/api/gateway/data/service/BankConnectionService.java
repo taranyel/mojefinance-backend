@@ -14,7 +14,7 @@ public class BankConnectionService {
     private final BankConnectionRepository repository;
     private final ConnectedBankMapper mapper;
 
-    public ConnectedBanksResponse getAllConnectedBanksByCustomerUsername(String customerUsername) {
+    public ConnectedBanksResponse getAllConnectedBanksByPrincipalName(String customerUsername) {
         List<String> connectedClients = repository.getConnectedBanks(customerUsername);
         return ConnectedBanksResponse.builder()
                 .connectedBanks(mapper.mapClientRegistrationIdsToConnectedBanks(connectedClients))

@@ -1,5 +1,6 @@
 package cvut.fel.sit.mojefinance.external.api.gateway.messaging.kb.service;
 
+import cvut.fel.sit.mojefinance.external.api.gateway.data.entity.ConnectedBank;
 import cvut.fel.sit.mojefinance.external.api.gateway.messaging.kb.client.KBApiFeignClient;
 import cvut.fel.sit.mojefinance.external.api.gateway.util.Constants;
 import cvut.fel.sit.mojefinance.external.api.gateway.messaging.util.ExchangeTokenHelper;
@@ -14,7 +15,10 @@ public class KBAdapterImpl implements KBAdapter {
     private final ExchangeTokenHelper exchangeTokenHelper;
 
     @Override
-    public void connectKB(String code) {
+    public ConnectedBank connectKB(String code) {
         exchangeTokenHelper.exchangeToken(Constants.KB_CLIENT_REGISTRATION_ID, code);
+        return ConnectedBank.builder()
+                .name(Constants.KB_NAME)
+                .build();
     }
 }

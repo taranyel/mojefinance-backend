@@ -16,21 +16,21 @@ spring:
             client-secret: ${csob-client-secret}
             authorization-grant-type: authorization_code
             redirect-uri: http://localhost:5173/bank-callback
-            scope: accounts
+            scope: aisp
             provider: csob
           kb:
             client-id: ${kb-client-id}
             client-secret: ${kb-client-secret}
             authorization-grant-type: authorization_code
             redirect-uri: http://localhost:5173/bank-callback
-            scope: accounts
+            scope: aisp
             provider: kb
           air-bank:
             client-id: ${air-bank-client-id}
             client-secret: ${air-bank-client-secret}
             authorization-grant-type: authorization_code
             redirect-uri: http://localhost:5173/bank-callback
-            scope: accounts
+            scope: aisp
             provider: air-bank
         provider:
           ceska-sporitelna:
@@ -71,3 +71,4 @@ external:
       token-path: /oauth2/v1/token
       authorization-url: https://identita.csob.cz/mep/fs/fl/oauth2/auth
       accounts-path: /psd2/v3/ais/my/accounts
+      apikey: ${csob-apikey}

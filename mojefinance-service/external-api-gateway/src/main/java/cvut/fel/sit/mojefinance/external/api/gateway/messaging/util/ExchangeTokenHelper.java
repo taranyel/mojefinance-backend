@@ -8,7 +8,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
-import org.springframework.security.oauth2.client.endpoint.DefaultAuthorizationCodeTokenResponseClient;
+import org.springframework.security.oauth2.client.endpoint.OAuth2AccessTokenResponseClient;
 import org.springframework.security.oauth2.client.endpoint.OAuth2AuthorizationCodeGrantRequest;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
@@ -26,7 +26,7 @@ import java.util.Collections;
 @RequiredArgsConstructor
 public class ExchangeTokenHelper {
     private final ClientRegistrationRepository clientRegistrationRepository;
-    private final DefaultAuthorizationCodeTokenResponseClient tokenResponseClient;
+    private final OAuth2AccessTokenResponseClient<OAuth2AuthorizationCodeGrantRequest> tokenResponseClient;
     private final OAuth2AuthorizedClientService authorizedClientService;
 
     public void exchangeToken(String clientRegistrationId, String code) {

@@ -357,8 +357,6 @@ components:
             type: string
           logoUrl:
             type: string
-          connectionStatus:
-            type: string
 
     ProfileResponse:
       type: object
