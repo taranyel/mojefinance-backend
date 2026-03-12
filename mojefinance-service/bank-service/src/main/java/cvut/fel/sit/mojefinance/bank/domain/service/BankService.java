@@ -1,17 +1,13 @@
 package cvut.fel.sit.mojefinance.bank.domain.service;
 
-import cvut.fel.sit.mojefinance.bank.domain.dto.ConnectedBanksDomainResponse;
+import cvut.fel.sit.mojefinance.bank.domain.dto.ConnectBankDomainRequest;
+import cvut.fel.sit.mojefinance.bank.domain.dto.GetConnectedBanksDomainResponse;
+import cvut.fel.sit.mojefinance.bank.domain.entity.BankDomainEntity;
 
 public interface BankService {
-    void connectCeskaSporitelna(String code);
+    BankDomainEntity connectBank(ConnectBankDomainRequest request);
 
-    void connectCSOB(String code);
+    void disconnectBank(String clientRegistrationId);
 
-    void connectAirBank(String code);
-
-    void connectKB(String code);
-
-    void connectReiffeisenBank();
-
-    ConnectedBanksDomainResponse getConnectedBanks();
+    GetConnectedBanksDomainResponse getConnectedBanks();
 }

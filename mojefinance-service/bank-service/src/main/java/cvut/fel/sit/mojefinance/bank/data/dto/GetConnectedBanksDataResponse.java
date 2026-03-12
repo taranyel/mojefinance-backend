@@ -8,7 +8,7 @@ import java.util.List;
 
 @Data
 @Builder
-public class ConnectedBanksDataResponse {
+public class GetConnectedBanksDataResponse {
     private List<BankEntity> connectedBanks;
 }
 

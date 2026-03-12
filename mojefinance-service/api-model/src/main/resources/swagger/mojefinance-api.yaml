@@ -54,10 +54,10 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
-  /banks/connect/ceska-sporitelna:
-    get:
-      summary: Connect to Ceska Sporitelna bank
-      operationId: connectCeskaSporitelna
+  /banks/connect:
+    post:
+      summary: Connect to a bank
+      operationId: connectBank
       parameters:
         - name: Authorization
           in: header
@@ -66,13 +66,23 @@ paths:
             type: string
         - name: code
           in: query
-          required: true
+          required: false
           schema:
             type: string
-          description: Authorization code received from Ceska Sporitelna after user authorization
+          description: Authorization code received from financial institution after user authorization (optional)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Bank'
       responses:
-        '200':
-          description: OK
+        '201':
+          description: CREATED
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Bank'
         '401':
           description: Unauthorized
           content:
@@ -98,145 +108,18 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
-  /banks/connect/csob:
-    get:
-      summary: Connect to CSOB
-      operationId: connectCSOB
+  /banks/disconnect/{client-registration-id}:
+    delete:
+      summary: Disconnect bank
+      operationId: disconnectBank
       parameters:
         - name: Authorization
           in: header
           required: true
           schema:
             type: string
-        - name: code
-          in: query
-          required: true
-          schema:
-            type: string
-          description: Authorization code received from CSOB after user authorization
-      responses:
-        '200':
-          description: OK
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '400':
-          description: Bad request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '403':
-          description: Forbidden
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '500':
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-
-  /banks/connect/kb:
-    get:
-      summary: Connect to KB
-      operationId: connectKB
-      parameters:
-        - name: Authorization
-          in: header
-          required: true
-          schema:
-            type: string
-        - name: code
-          in: query
-          required: true
-          schema:
-            type: string
-          description: Authorization code received from KB after user authorization
-      responses:
-        '200':
-          description: OK
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '400':
-          description: Bad request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '403':
-          description: Forbidden
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '500':
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-
-  /banks/connect/air-bank:
-    get:
-      summary: Connect to Air Bank
-      operationId: connectAirBank
-      parameters:
-        - name: Authorization
-          in: header
-          required: true
-          schema:
-            type: string
-        - name: code
-          in: query
-          required: true
-          schema:
-            type: string
-          description: Authorization code received from Air Bank after user authorization
-      responses:
-        '200':
-          description: OK
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '400':
-          description: Bad request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '403':
-          description: Forbidden
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '500':
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-
-  /banks/connect/reiffeisen-bank:
-    get:
-      summary: Connect to Reiffeisen Bank
-      operationId: connectReiffeisenBank
-      parameters:
-        - name: Authorization
-          in: header
+        - name: client-registration-id
+          in: path
           required: true
           schema:
             type: string
@@ -353,10 +236,17 @@ components:
     Bank:
       type: object
       properties:
-          name:
-            type: string
-          logoUrl:
-            type: string
+        clientRegistrationId:
+          type: string
+        bankName:
+          type: string
+        logoUrl:
+          type: string
+        manuallyCreated:
+          type: boolean
+        bankConnectionStatus:
+          type: string
+          enum: [CONNECTED, DISCONNECTED]
 
     ProfileResponse:
       type: object

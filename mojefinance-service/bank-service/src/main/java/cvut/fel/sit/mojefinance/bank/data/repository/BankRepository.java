@@ -1,16 +1,15 @@
 package cvut.fel.sit.mojefinance.bank.data.repository;
 
-import cvut.fel.sit.mojefinance.bank.data.dto.ConnectedBanksDataResponse;
+import cvut.fel.sit.mojefinance.bank.data.dto.GetConnectedBanksDataResponse;
 import cvut.fel.sit.mojefinance.bank.data.entity.BankEntity;
-import org.springframework.stereotype.Repository;
 
-@Repository
+
 public interface BankRepository {
-    ConnectedBanksDataResponse getAllConnectedBanksByPrincipalName(String principalName);
+    GetConnectedBanksDataResponse getAllConnectedBanksByPrincipalName(String principalName);
 
     void addConnectedBank(BankEntity bankEntity);
 
-    void removeConnectedBankById(Long bankId);
+    void removeConnectedBankByClientRegistrationIdAndPrincipalName(String clientRegistrationId, String principalName);
 
-    void updateConnectedBankById(BankEntity bankEntity);
+    void updateConnectedBank(BankEntity bankEntity);
 }

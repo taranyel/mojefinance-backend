@@ -1,9 +1,12 @@
 package cvut.fel.sit.mojefinance.bank.api.controller;
 
 import cvut.fel.sit.mojefinance.bank.api.mapper.BankApiMapper;
-import cvut.fel.sit.mojefinance.bank.domain.dto.ConnectedBanksDomainResponse;
+import cvut.fel.sit.mojefinance.bank.domain.dto.ConnectBankDomainRequest;
+import cvut.fel.sit.mojefinance.bank.domain.dto.GetConnectedBanksDomainResponse;
+import cvut.fel.sit.mojefinance.bank.domain.entity.BankDomainEntity;
 import cvut.fel.sit.mojefinance.bank.domain.service.BankService;
 import cvut.fel.sit.mojefinance.openapi.api.BanksApi;
+import cvut.fel.sit.mojefinance.openapi.model.Bank;
 import cvut.fel.sit.mojefinance.openapi.model.ConnectedBanksResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -17,41 +20,26 @@ public class BankController implements BanksApi {
     private final BankApiMapper bankApiMapper;
 
     @Override
-    public ResponseEntity<Void> connectCeskaSporitelna(String authorization, String code) {
-        System.out.println("Received request to connect Ceska Sporitelna with code: " + code);
-        bankService.connectCeskaSporitelna(code);
-        return new ResponseEntity<>(HttpStatus.OK);
+    public ResponseEntity<Bank> connectBank(String authorization, Bank bank, String code) {
+        ConnectBankDomainRequest domainRequest = ConnectBankDomainRequest.builder()
+                .code(code)
+                .bankDomainEntity(bankApiMapper.toBankDomainEntity(bank))
+                .build();
+        BankDomainEntity bankDomainEntity = bankService.connectBank(domainRequest);
+        Bank apiBank = bankApiMapper.toBankApiEntity(bankDomainEntity);
+        return new ResponseEntity<>(apiBank, HttpStatus.CREATED);
     }
 
     @Override
-    public ResponseEntity<Void> connectCSOB(String authorization, String code) {
-        System.out.println("Received request to connect CSOB with code: " + code);
-        bankService.connectCSOB(code);
-        return new ResponseEntity<>(HttpStatus.OK);
-    }
-
-    @Override
-    public ResponseEntity<Void> connectAirBank(String authorization, String code) {
-        System.out.println("Received request to connect Air Bank with code: " + code);
-        bankService.connectAirBank(code);
-        return new ResponseEntity<>(HttpStatus.OK);    }
-
-    @Override
-    public ResponseEntity<Void> connectKB(String authorization, String code) {
-        System.out.println("Received request to connect KB with code: " + code);
-        bankService.connectKB(code);
+    public ResponseEntity<Void> disconnectBank(String authorization, String clientRegistrationId) {
+        bankService.disconnectBank(clientRegistrationId);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @Override
     public ResponseEntity<ConnectedBanksResponse> getConnectedBanks(String authorization) {
-        ConnectedBanksDomainResponse domainResponse = bankService.getConnectedBanks();
+        GetConnectedBanksDomainResponse domainResponse = bankService.getConnectedBanks();
         ConnectedBanksResponse apiResponse = bankApiMapper.toConnectedBanksResponse(domainResponse);
         return new ResponseEntity<>(apiResponse, HttpStatus.OK);
-    }
-
-    @Override
-    public ResponseEntity<Void> connectReiffeisenBank(String authorization) {
-        return BanksApi.super.connectReiffeisenBank(authorization);
     }
 }
