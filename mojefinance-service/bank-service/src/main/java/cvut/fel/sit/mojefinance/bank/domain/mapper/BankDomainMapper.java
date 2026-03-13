@@ -1,17 +1,17 @@
 package cvut.fel.sit.mojefinance.bank.domain.mapper;
 
-import cvut.fel.sit.mojefinance.bank.data.dto.ConnectAuthorizedClientRequest;
+import cvut.fel.sit.mojefinance.authorization.data.dto.ConnectAuthorizedClientRequest;
 import cvut.fel.sit.mojefinance.bank.data.dto.GetConnectedBanksDataResponse;
 import cvut.fel.sit.mojefinance.bank.data.entity.BankEntity;
 import cvut.fel.sit.mojefinance.bank.domain.dto.ConnectBankDomainRequest;
-import cvut.fel.sit.mojefinance.bank.domain.dto.GetConnectedBanksDomainResponse;
+import cvut.fel.sit.mojefinance.bank.domain.dto.ConnectedBanksDomainResponse;
 import cvut.fel.sit.mojefinance.bank.domain.entity.BankDomainEntity;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring")
 public interface BankDomainMapper {
-    GetConnectedBanksDomainResponse toConnectedBanksDomainResponse(GetConnectedBanksDataResponse dataResponse);
+    ConnectedBanksDomainResponse toConnectedBanksDomainResponse(GetConnectedBanksDataResponse dataResponse);
 
     @Mapping(target = "clientRegistrationId", source = "bankDomainEntity.clientRegistrationId")
     ConnectAuthorizedClientRequest toConnectAuthorizedClientRequest(ConnectBankDomainRequest domainRequest);

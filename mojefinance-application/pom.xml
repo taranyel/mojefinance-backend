@@ -43,7 +43,7 @@
 
         <dependency>
             <groupId>cvut.fel.sit</groupId>
-            <artifactId>account-service</artifactId>
+            <artifactId>product-service</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
 
@@ -55,7 +55,7 @@
 
         <dependency>
             <groupId>cvut.fel.sit</groupId>
-            <artifactId>user-service</artifactId>
+            <artifactId>party-service</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
     </dependencies>

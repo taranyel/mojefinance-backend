@@ -53,6 +53,7 @@ external:
       token-path: /v1/sandbox-idp/token
       authorization-path: /v1/sandbox-idp/auth
       accounts-path: /v4/account-information/my/accounts
+      apikey: ${ceska-sporitelna-apikey}
     kb:
       base-url: https://api.kb.cz/sandbox
       token-path: /oauth2/v1/token
@@ -61,14 +62,16 @@ external:
     reiffeisen-bank:
       base-url: https://api.rb.cz/rbcz
       accounts-path: /premium/mock/accounts
+      x-ibm-client-id: ${reiffeisen-bank-x-ibm-client-id}
     air-bank:
       base-url: https://api.airbank.cz/sandbox
       token-path: /oauth2/token
       authorization-url: http://developers.airbank.cz/sandbox/login
-      accounts-path: /accountInfo/v3/my/accounts
+      accounts-path: /accountInfo/v7/my/accounts
     csob:
       base-url: https://api.csob.cz/api/csob
       token-path: /oauth2/v1/token
       authorization-url: https://identita.csob.cz/mep/fs/fl/oauth2/auth
       accounts-path: /psd2/v3/ais/my/accounts
       apikey: ${csob-apikey}
+      tpp-name: ${csob-tpp-name}

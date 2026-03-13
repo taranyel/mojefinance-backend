@@ -1,0 +1,21 @@
+package cvut.fel.sit.mojefinance.product.domain.entity;
+
+import lombok.Builder;
+import lombok.Data;
+
+import java.util.List;
+
+@Data
+@Builder
+public class Product {
+    private String productId;
+    private String accountName;
+    private String bankName;
+    private ProductIdentification productIdentification;
+    private String currency;
+    private List<String> ownersNames;
+    private String productCategory;
+    private Balance balance;
+    private Boolean manuallyCreated;
+    private String bankCode;
+}

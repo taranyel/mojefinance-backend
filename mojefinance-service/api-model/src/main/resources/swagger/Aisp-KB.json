@@ -1,0 +1,2227 @@
+{
+  "openapi" : "3.0.1",
+  "info" : {
+    "title" : "AISP Sandbox",
+    "description" : "This is KB REST API supposed to be used by AISP (Account Information Service Provider) to retrieve the list of client's accounts, account balance and transaction history",
+    "contact" : {
+      "email" : "api@kb.cz"
+    },
+    "version" : "2.0.7"
+  },
+  "servers" : [ {
+    "url" : "https://api.kb.cz/sandbox/aisp/v2"
+  } ],
+  "security" : [ {
+    "AccessToken" : [ "aisp" ]
+  } ],
+  "tags" : [ {
+    "name" : "AISP",
+    "description" : "Account Information Service Provider API",
+    "externalDocs" : {
+      "description" : "Find out more",
+      "url" : "https://api-ref.kb.cz/sandbox/aisp/v2"
+    }
+  } ],
+  "paths" : {
+    "/my/accounts" : {
+      "get" : {
+        "tags" : [ "AISP" ],
+        "summary" : "Returns list of client's accounts",
+        "description" : "Returns the list of accounts of the logged-in client sorted and paged according to the  request parameters",
+        "operationId" : "getAccountList",
+        "security" : [ {
+          "AccessToken" : [ "aisp" ]
+        } ],
+        "parameters" : [ {
+          "name" : "size",
+          "in" : "query",
+          "description" : "The number of rows per page (in pagination mode)",
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 20
+          }
+        }, {
+          "name" : "page",
+          "in" : "query",
+          "description" : "The page number to be returned (in pagination mode), 0 is default",
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 0
+          }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "The list of field to be used to sort by delimiter by comma ordered by significance",
+          "schema" : {
+            "maxLength" : 100,
+            "type" : "string"
+          }
+        }, {
+          "name" : "order",
+          "in" : "query",
+          "description" : "Comma-separated list of sorting methods (asc, desc). The order matches the order of the fields in the sorting parameter",
+          "schema" : {
+            "maxLength" : 100,
+            "type" : "string",
+            "enum" : [ "DESC", "ASC" ]
+          }
+        }, {
+          "name" : "X-Request-Id",
+          "in" : "header",
+          "description" : "Unique identifier for each request specified by TPP. It is recommended to use a UUID format with a length of 36 to 60 characters.",
+          "schema" : {
+            "maxLength" : 128,
+            "type" : "string"
+          }
+        }, {
+          "name" : "User-Involved",
+          "in" : "header",
+          "description" : "The flag identifies if the end user is online and the request was made based on his activity.",
+          "schema" : {
+            "type" : "boolean"
+          }
+        }, {
+          "name" : "TPP-Name",
+          "in" : "header",
+          "description" : "The name of the original TPP that created the request. Eg. ‘ Star corporation, a.s.’.",
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "TPP-Identification",
+          "in" : "header",
+          "description" : "The identification (licence number) of the original TPP that created the request. Eg. ‘CZ013574-15’.",
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Successful operation",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/GetAccountListResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Invalid input. Please check input parameters and headers.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorCollection"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "UNAUTHORISED",
+            "headers" : {
+              "WWW_Authenticate" : {
+                "schema" : {
+                  "type" : "string"
+                }
+              }
+            },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorCollection"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "FORBIDDEN",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorCollection"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Internal server error",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorCollection"
+                }
+              }
+            }
+          }
+        },
+        "deprecated" : false
+      }
+    },
+    "/my/accounts/{id}/balance" : {
+      "get" : {
+        "tags" : [ "AISP" ],
+        "summary" : "Account balance check",
+        "description" : "Returns the current account balance of the client's account",
+        "operationId" : "getAccountBalance",
+        "security" : [ {
+          "AccessToken" : [ "aisp" ]
+        } ],
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "description" : "Account number in hashed format",
+          "required" : true,
+          "schema" : {
+            "maxLength" : 120,
+            "type" : "string"
+          }
+        }, {
+          "name" : "currency",
+          "in" : "query",
+          "description" : "ISO code for the currency the balance should be returned in (if not specified the balance is returned in the account's currency)",
+          "schema" : {
+            "maxLength" : 3,
+            "pattern" : "^[A-Z]{3,3}$",
+            "type" : "string"
+          }
+        }, {
+          "name" : "X-Request-Id",
+          "in" : "header",
+          "description" : "Unique identifier for each request specified by TPP. It is recommended to use a UUID format with a length of 36 to 60 characters.",
+          "schema" : {
+            "maxLength" : 128,
+            "type" : "string"
+          }
+        }, {
+          "name" : "User-Involved",
+          "in" : "header",
+          "description" : "The flag identifies if the end user is online and the request was made based on his activity.",
+          "schema" : {
+            "type" : "boolean"
+          }
+        }, {
+          "name" : "TPP-Name",
+          "in" : "header",
+          "description" : "The name of the original TPP that created the request. Eg. ‘ Star corporation, a.s.’.",
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "TPP-Identification",
+          "in" : "header",
+          "description" : "The identification (licence number) of the original TPP that created the request. Eg. ‘CZ013574-15’.",
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Successful operation",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/GetAccountBalanceResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Invalid input. Please check input parameters and headers.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorCollection"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "UNAUTHORISED",
+            "headers" : {
+              "WWW_Authenticate" : {
+                "schema" : {
+                  "type" : "string"
+                }
+              }
+            },
+            "content" : { }
+          },
+          "403" : {
+            "description" : "FORBIDDEN",
+            "content" : { }
+          },
+          "404" : {
+            "description" : "ID_NOT_FOUND",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorCollection"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Internal server error",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorCollection"
+                }
+              }
+            }
+          }
+        },
+        "deprecated" : false
+      }
+    },
+    "/my/accounts/{id}/transactions" : {
+      "get" : {
+        "tags" : [ "AISP" ],
+        "summary" : "Account's transaction history",
+        "description" : "Returns the history of transactions for specified client's account",
+        "operationId" : "getAccountTransactions",
+        "security" : [ {
+          "AccessToken" : [ "aisp" ]
+        } ],
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "description" : "Account number in hashed format",
+          "required" : true,
+          "schema" : {
+            "maxLength" : 120,
+            "type" : "string"
+          }
+        }, {
+          "name" : "fromDate",
+          "in" : "query",
+          "description" : "Starting (first) date of the range of the filtered transactions",
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        }, {
+          "name" : "toDate",
+          "in" : "query",
+          "description" : "Ending (last) date of the range of the filtered transactions",
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        }, {
+          "name" : "currency",
+          "in" : "query",
+          "description" : "ISO code for the currency the balance should be returned in (if not specified the balance is returned in the account's currency)",
+          "schema" : {
+            "maxLength" : 3,
+            "pattern" : "^[A-Z]{3,3}$",
+            "type" : "string"
+          }
+        }, {
+          "name" : "size",
+          "in" : "query",
+          "description" : "The number of rows per page (in pagination mode)",
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 20
+          }
+        }, {
+          "name" : "page",
+          "in" : "query",
+          "description" : "The page number to be returned (in pagination mode), 0 is default",
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 0
+          }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "The list of field to be used to sort by delimiter by comma ordered by significance",
+          "schema" : {
+            "maxLength" : 100,
+            "type" : "string"
+          }
+        }, {
+          "name" : "order",
+          "in" : "query",
+          "description" : "Comma-separated list of sorting methods (asc, desc). The order matches the order of the fields in the sorting parameter",
+          "schema" : {
+            "maxLength" : 100,
+            "type" : "string",
+            "enum" : [ "DESC", "ASC" ]
+          }
+        }, {
+          "name" : "X-Request-Id",
+          "in" : "header",
+          "description" : "Unique identifier for each request specified by TPP. It is recommended to use a UUID format with a length of 36 to 60 characters.",
+          "schema" : {
+            "maxLength" : 128,
+            "type" : "string"
+          }
+        }, {
+          "name" : "User-Involved",
+          "in" : "header",
+          "description" : "The flag identifies if the end user is online and the request was made based on his activity.",
+          "schema" : {
+            "type" : "boolean"
+          }
+        }, {
+          "name" : "TPP-Name",
+          "in" : "header",
+          "description" : "The name of the original TPP that created the request. Eg. ‘ \\ Star corporation, a.s.’.",
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "TPP-Identification",
+          "in" : "header",
+          "description" : "The identification (licence number) of the original TPP that created the request. Eg. ‘CZ013574-15’.",
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Successful operation",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/GeAccountTransactionsResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Invalid input. Please check input parameters and headers.",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorCollection"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "UNAUTHORISED",
+            "headers" : {
+              "WWW_Authenticate" : {
+                "schema" : {
+                  "type" : "string"
+                }
+              }
+            },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorCollection"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "FORBIDDEN",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorCollection"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "ID_NOT_FOUND",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorCollection"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Internal server error",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorCollection"
+                }
+              }
+            }
+          }
+        },
+        "deprecated" : false
+      }
+    },
+    "/my/standingorders" : {
+      "get" : {
+        "tags" : [ "AISP" ],
+        "summary" : "List of standing orders",
+        "description" : "Returns the list of standing orders of the logged-in client sorted and paged according to the  request parameters",
+        "operationId" : "getStandingOrders",
+        "security" : [ {
+          "AccessToken" : [ "aisp" ]
+        } ],
+        "parameters" : [ {
+          "name" : "X-Request-Id",
+          "in" : "header",
+          "description" : "Unique identifier for each request specified by TPP. It is recommended to use a UUID format with a length of 36 to 60 characters.",
+          "schema" : {
+            "maxLength" : 128,
+            "type" : "string"
+          }
+        }, {
+          "name" : "User-Involved",
+          "in" : "header",
+          "description" : "The flag identifies if the end user is online and the request was made based on his activity.",
+          "schema" : {
+            "type" : "boolean"
+          }
+        }, {
+          "name" : "TPP-Name",
+          "in" : "header",
+          "description" : "The name of the original TPP that created the request. Eg. ‘ Star corporation, a.s.’.",
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "size",
+          "in" : "query",
+          "description" : "The number of rows per page (in pagination mode)",
+          "schema" : {
+            "type" : "integer"
+          }
+        }, {
+          "name" : "page",
+          "in" : "query",
+          "description" : "The page number to be returned (in pagination mode), 0 is default",
+          "schema" : {
+            "type" : "integer"
+          }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "The list of field to be used to sort by delimiter by comma ordered by significance",
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "order",
+          "in" : "query",
+          "description" : "Comma-separated list of sorting methods (ASC, DESC). The order matches the order of the fields in the sorting parameter",
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "successful operation",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/StandingOrderList"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Input parameter is invalid",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorCollection"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Missing certificate or access token",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorCollection"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Invalid certificate or token",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorCollection"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Internal server error",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorCollection"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/my/standingorders/{transactionIdentification}" : {
+      "get" : {
+        "tags" : [ "AISP" ],
+        "summary" : "The detail of standing order",
+        "description" : "Resource for get detail about the standing order. It is at the choice of each bank whether to return details of any client standing order or just those that the client has established through a particular TPP.",
+        "security" : [ {
+          "AccessToken" : [ "aisp" ]
+        } ],
+        "parameters" : [ {
+          "name" : "transactionIdentification",
+          "in" : "path",
+          "description" : "Standing order unique identification. Sample values can be found in the response of the resource \"List of standing orders\". For example: \"5dff73c141aa4fd88adba6ebfe0b019f\".",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "X-Request-Id",
+          "in" : "header",
+          "description" : "Unique identifier for each request specified by TPP. It is recommended to use a UUID format with a length of 36 to 60 characters.",
+          "schema" : {
+            "maxLength" : 128,
+            "type" : "string"
+          }
+        }, {
+          "name" : "User-Involved",
+          "in" : "header",
+          "description" : "The flag identifies if the end user is online and the request was made based on his activity.",
+          "schema" : {
+            "type" : "boolean"
+          }
+        }, {
+          "name" : "TPP-Name",
+          "in" : "header",
+          "description" : "The name of the original TPP that created the   request. Eg. ?Star corporation, a.s.?.",
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/StandingOrderData"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Input parameter is invalid",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorCollection"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Missing certificate or access token",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorCollection"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Invalid certificate or token",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorCollection"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "ID_NOT_FOUND",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorCollection"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Internal server error",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorCollection"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components" : {
+    "schemas" : {
+      "TransactionAmount" : {
+        "title" : "TransactionAmount",
+        "type" : "number",
+        "description" : "The total transaction amount in the transaction's currency (number of decimal places according to ISO 4217 and relevant currencies)",
+        "format" : "double",
+        "example" : 15241.3
+      },
+      "CurrencyISO" : {
+        "title" : "CurrencyISO",
+        "maxLength" : 3,
+        "pattern" : "[A-Z]{3}",
+        "type" : "string",
+        "description" : "ISO code for the currency",
+        "example" : "EUR"
+      },
+      "AmountCurrencyValue" : {
+        "required" : [ "currency", "value" ],
+        "type" : "object",
+        "properties" : {
+          "value" : {
+            "$ref" : "#/components/schemas/TransactionAmount"
+          },
+          "currency" : {
+            "$ref" : "#/components/schemas/CurrencyISO"
+          }
+        },
+        "description" : "Amount (value and currency)\n"
+      },
+      "AmountCommon" : {
+        "required" : [ "instructedAmount" ],
+        "type" : "object",
+        "properties" : {
+          "instructedAmount" : {
+            "$ref" : "#/components/schemas/AmountCurrencyValue"
+          }
+        },
+        "description" : "Payment amount\n"
+      },
+      "TransactionIdentification" : {
+        "maxLength" : 35,
+        "type" : "string",
+        "description" : "Transaction identification\n",
+        "example" : "5dff73c141aa4fd88adba6ebfe0b019f"
+      },
+      "EndToEndIdentification" : {
+        "maxLength" : 35,
+        "type" : "string",
+        "description" : "Transaction identification",
+        "example" : "048885570000001020045"
+      },
+      "InstructionIdentification" : {
+        "maxLength" : 35,
+        "pattern" : "^[A-Za-z0-9]{0,35}$",
+        "type" : "string",
+        "description" : "Payment identification entered by a third party, or a constant symbol may be entered.",
+        "example" : "Platba001"
+      },
+      "StandingOrderException" : {
+        "type" : "object",
+        "properties" : {
+          "stoppages" : {
+            "type" : "array",
+            "description" : "List of months where there is no payment (only applicable with interval IRREGULAR).",
+            "items" : {
+              "$ref" : "#/components/schemas/Stoppage"
+            }
+          },
+          "breaks" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Break"
+            }
+          }
+        },
+        "description" : "Elements defining exceptions to executing a standing order."
+      },
+      "Stoppage" : {
+        "type" : "string",
+        "description" : "Attribute will only be provided within Standing Order detail info (/standingorders/{transactionIdentification}).",
+        "enum" : [ "JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE", "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER" ]
+      },
+      "Break" : {
+        "required" : [ "validFromDate", "validToDate" ],
+        "type" : "object",
+        "properties" : {
+          "validFromDate" : {
+            "type" : "string",
+            "description" : "Start date of one break period. Standing order will not be processed. Attribute will only be provided within Standing Order detail info (/standingorders/{transactionIdentification}).",
+            "format" : "date"
+          },
+          "validToDate" : {
+            "type" : "string",
+            "description" : "End date of one break period. Standing order will not be processed to this date. Attribute will only be provided within Standing Order detail info (/standingorders/{transactionIdentification}).",
+            "format" : "date"
+          }
+        },
+        "description" : "Break periods for standing order."
+      },
+      "StandingOrderIdentification" : {
+        "required" : [ "instructionIdentification" ],
+        "type" : "object",
+        "properties" : {
+          "instructionIdentification" : {
+            "$ref" : "#/components/schemas/InstructionIdentification"
+          },
+          "endToEndIdentification" : {
+            "$ref" : "#/components/schemas/EndToEndIdentification"
+          },
+          "transactionIdentification" : {
+            "$ref" : "#/components/schemas/TransactionIdentification"
+          }
+        },
+        "description" : "Standing order identification"
+      },
+      "Validity" : {
+        "type" : "object",
+        "properties" : {
+          "lastExecutionDate" : {
+            "type" : "string",
+            "description" : "Date when the standing order will be terminated. Null value responds to ending by the user.",
+            "format" : "date"
+          },
+          "maxIterations" : {
+            "type" : "integer",
+            "description" : "Maximum amount to be transferred using the standing order. Only applicable in combination with executionMode AFTER_MAX_AMOUNT_EXCEEDED.",
+            "format" : "int32",
+            "example" : 5
+          }
+        },
+        "description" : "Validity of standing order."
+      },
+      "StandingOrder" : {
+        "required" : [ "execution" ],
+        "type" : "object",
+        "properties" : {
+          "alias" : {
+            "maxLength" : 250,
+            "type" : "string",
+            "description" : "Description resp. the user-defined standing order payment name.",
+            "example" : "Payments for lunch - kindergarten Michal"
+          },
+          "execution" : {
+            "$ref" : "#/components/schemas/Execution"
+          },
+          "validity" : {
+            "$ref" : "#/components/schemas/Validity"
+          },
+          "exceptions" : {
+            "$ref" : "#/components/schemas/StandingOrderException"
+          },
+          "openDate" : {
+            "type" : "string",
+            "description" : "Standing order cretion date. Attribute will only be provided within Standing Order detail info (/standingorders/{transactionIdentification}).",
+            "format" : "date"
+          },
+          "lastDate" : {
+            "type" : "string",
+            "description" : "Standing order last payment date. Attribute will only be provided within Standing Order detail info (/standingorders/{transactionIdentification}).",
+            "format" : "date"
+          }
+        },
+        "description" : "Structure describing the parameters of the standing orders."
+      },
+      "Execution" : {
+        "required" : [ "interval", "mode", "modeDue" ],
+        "type" : "object",
+        "properties" : {
+          "mode" : {
+            "pattern" : "^(UNTIL_DATE|UNTIL_CANCELLATION|AFTER_MAX_ITERATION_EXCEEDED|MAX_AMOUNT_EXCEEDED)$",
+            "type" : "string",
+            "description" : "The execution mode defines when or how standing order will be cancelled, processed the last time.\nPossible values: UNTIL_DATE (standing order is valid until specific date - field lastExecutionDate),\nUNTIL_CANCELLATION (standing order is valid forever and must be cancelled by client), \nAFTER_MAX_ITERATION_EXCEEDED (certain count of executions is specified - field maxIterations) or \nMAX_AMOUNT_EXCEEDED (maximum amount which can be transferred for this order is specified, \nif next iteration would exceed this amount it is not executed - field maxAmount).\n",
+            "example" : "UNTIL_CANCELLATION"
+          },
+          "modeDue" : {
+            "pattern" : "^(DUE_DAY_OF_MONTH|DUE_OR_BEFORE_DAY_OF_MONTH|DUE_OR_NEXT_DAY_OF_MONTH|DUE_LAST_DAY_OF_MONTH)$",
+            "type" : "string",
+            "description" : "The execution due mode defines how the date when order should be executed is specified.\nPossible values: DUE_DAY_OF_MONTH (specific number of day in the month is defined) or\nDUE_OR_BEFORE_DAY_OF_MONTH (is defined as a specific day of the month or \nthe previous day if the day falls on a non-banking day) or DUE_OR_NEXT_DAY_OF_MONTH \n(is defined as a specific day of the month or the next day if the day falls on a non-banking day) or  \nDUE_LAST_DAY_OF_MONTH (order is executed on last day of particular month).\n",
+            "example" : "DUE_DAY_OF_MONTH"
+          },
+          "interval" : {
+            "pattern" : "^(DAILY|WEEKLY|BI_WEEKLY|MONTHLY|BI_MONTHLY|QUARTERLY|HALFYEARLY|YEARLY|IRREGULAR)$",
+            "type" : "string",
+            "description" : "Execution interval defines how often order is executed.\nPossible values: DAILY, WEEKLY, BI_WEEKLY, MONTHLY, BI_MONTHLY, QUARTERLY, HALFYEARLY, YEARLY, IRREGULAR.\n",
+            "example" : "MONTHLY"
+          }
+        },
+        "description" : "Features of execution a standing order for payment."
+      },
+      "StandingOrderData" : {
+        "required" : [ "amount", "creditorAccount", "debtorAccount", "requestedExecutionDate", "standingOrder", "standingOrderIdentification" ],
+        "type" : "object",
+        "properties" : {
+          "standingOrderIdentification" : {
+            "$ref" : "#/components/schemas/StandingOrderIdentification"
+          },
+          "amount" : {
+            "$ref" : "#/components/schemas/AmountCommon"
+          },
+          "requestedExecutionDate" : {
+            "type" : "string",
+            "description" : "Attribute will only be provided within Standing Order detail info (/standingorders/{transactionIdentification}).",
+            "format" : "date"
+          },
+          "standingOrder" : {
+            "$ref" : "#/components/schemas/StandingOrder"
+          },
+          "debtorAccount" : {
+            "$ref" : "#/components/schemas/DebtorAccount"
+          },
+          "creditorAccount" : {
+            "$ref" : "#/components/schemas/PaymentAccountCommon"
+          },
+          "remittanceInformation" : {
+            "$ref" : "#/components/schemas/RemittanceInformationCommon"
+          }
+        },
+        "description" : "Standing order"
+      },
+      "RemittanceInformationCommon" : {
+        "type" : "object",
+        "properties" : {
+          "unstructured" : {
+            "pattern" : "^[A-Za-z0-9????????????????????????????????????????????'()+,-./:?!#$&*;=@\\[\\]\\\"_`{}]{0,140}$",
+            "type" : "string",
+            "description" : "Presence: [0..1]\nDefinition: Description for payee\n"
+          },
+          "structured" : {
+            "$ref" : "#/components/schemas/StructuredRemittanceInformation"
+          },
+          "additionalRemittanceInformation" : {
+            "maxLength" : 140,
+            "pattern" : "^[A-Za-z0-9????????????????????????????????????????????'()+,-./:?!#$&*;=@\\[\\]\\\"_`{}]{0,140}$",
+            "type" : "string",
+            "description" : "Presence: [0..1]\nDefinition: Additional free text information for payer\n"
+          }
+        },
+        "description" : "Unstructured message for the recipient and information that allows matching payments with items."
+      },
+      "StructuredRemittanceInformation" : {
+        "type" : "object",
+        "properties" : {
+          "creditorReferenceInformation" : {
+            "$ref" : "#/components/schemas/CreditorReferenceInformation"
+          }
+        },
+        "description" : "Presence only in domestic payment: [0..3]\nDefinition: Information allowing the match of the variable symbol,\nspecific symbol, or a constant symbol for the items to deal with.\nStructured Remittance Information can be used to fill a maximum of one\nvariable symbol, one specific symbol, or one constant symbol.\n"
+      },
+      "CreditorReferenceInformation" : {
+        "type" : "object",
+        "properties" : {
+          "reference" : {
+            "type" : "array",
+            "description" : "Fields starting with\nVS: (for variable symbol) or\nSS: (for specific symbol) or\nKS: (for constant symbol).\nIn one iteration of the reference field, all three symbols, each on its own line, always only one repeat of each symbol.\n",
+            "example" : [ "VS:501", "KS:9", "SS:1005" ],
+            "items" : {
+              "maxLength" : 13,
+              "pattern" : "^(VS:|KS:|SS:)[0-9]{1,10}$",
+              "type" : "string",
+              "description" : "Presence only in domestic payment: [0..1]\nEx.: The value of the specific symbol is recorded as \"SS:maximum10\" digits (SS:3451859072).\n"
+            }
+          }
+        }
+      },
+      "PaymentAccountCommon" : {
+        "required" : [ "identification" ],
+        "type" : "object",
+        "properties" : {
+          "identification" : {
+            "$ref" : "#/components/schemas/AccountIdentification"
+          },
+          "currency" : {
+            "$ref" : "#/components/schemas/CurrencyISO"
+          }
+        },
+        "description" : "Presence: [1..1]\nDefinition: Unambiguous identification of the creditor's account on which a debit or credit\nitem will be made as a result of the transaction.\n"
+      },
+      "DebtorAccount" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "$ref" : "#/components/schemas/AccountId"
+          },
+          "identification" : {
+            "$ref" : "#/components/schemas/AccountIdentificationSO"
+          },
+          "currency" : {
+            "$ref" : "#/components/schemas/CurrencyISO"
+          },
+          "name" : {
+            "type" : "string",
+            "description" : "Payer account name. Attribute will only be provided within Standing Order detail info (/standingorders/{transactionIdentification})\n"
+          }
+        },
+        "description" : "Information on the account payer. It is according to the payment direction, and filled in in the case of counterparty."
+      },
+      "AccountId" : {
+        "title" : "AccountId",
+        "maxLength" : 120,
+        "type" : "string",
+        "description" : "Account number in hashed format",
+        "example" : "C2D2DDBCA5415621A34BB1BB234DC1322EA641A3"
+      },
+      "AccountIdentificationSO" : {
+        "title" : "AccountIdentificationSO",
+        "required" : [ "iban" ],
+        "type" : "object",
+        "properties" : {
+          "iban" : {
+            "$ref" : "#/components/schemas/IBAN"
+          }
+        },
+        "description" : "The identification information of the client's account"
+      },
+      "IBAN" : {
+        "title" : "IBAN",
+        "maxLength" : 34,
+        "type" : "string",
+        "description" : "International Bank Account Number",
+        "example" : "CZ9501000000001234567899"
+      },
+      "PageSize" : {
+        "title" : "PageSize",
+        "type" : "integer",
+        "description" : "The number of rows per page (in pagination mode)",
+        "format" : "int32",
+        "example" : 100
+      },
+      "PageNumber" : {
+        "title" : "PageNumber",
+        "type" : "integer",
+        "description" : "The page number to be returned (in pagination mode)",
+        "format" : "int32",
+        "example" : 5
+      },
+      "PageCount" : {
+        "title" : "PageCount",
+        "type" : "integer",
+        "description" : "The total number of pages that can be returned (in pagination mode)",
+        "format" : "int32",
+        "example" : 7
+      },
+      "StandingOrderList" : {
+        "title" : "StandingOrderListResponse",
+        "type" : "object",
+        "properties" : {
+          "pageNumber" : {
+            "$ref" : "#/components/schemas/PageNumber"
+          },
+          "pageCount" : {
+            "$ref" : "#/components/schemas/PageCount"
+          },
+          "pageSize" : {
+            "$ref" : "#/components/schemas/PageSize"
+          },
+          "standingOrders" : {
+            "$ref" : "#/components/schemas/StandingOrderData"
+          }
+        },
+        "description" : "Paged list of client?s standing orders."
+      },
+      "BalanceTypeCode" : {
+        "title" : "BalanceTypeCode",
+        "type" : "string",
+        "description" : "Code of the account balance type",
+        "example" : "PRCD",
+        "enum" : [ "PRCD", "CLDB", "CLAV" ]
+      },
+      "CreditDebitIndicator" : {
+        "title" : "CreditDebitIndicator",
+        "type" : "string",
+        "description" : "Indicates whether the account balance is positive or negative",
+        "example" : "CRDT",
+        "enum" : [ "CRDT", "DBIT" ]
+      },
+      "Bearer" : {
+        "title" : "Bearer",
+        "type" : "string",
+        "description" : "Information on payment side to which the charges will be applied",
+        "example" : "OWN",
+        "enum" : [ "OWN", "BEN", "SHA", "SLV" ]
+      },
+      "AccountIdentification" : {
+        "title" : "AccountIdentification",
+        "required" : [ "iban", "other" ],
+        "type" : "object",
+        "properties" : {
+          "iban" : {
+            "maxLength" : 34,
+            "type" : "string",
+            "description" : "International Bank Account Number",
+            "example" : "CZ9501000000001234567899"
+          },
+          "other" : {
+            "maxLength" : 34,
+            "type" : "string",
+            "description" : "Account Number in national format (without bank code)",
+            "example" : "1234567899"
+          }
+        },
+        "description" : "The identification information of the client's account"
+      },
+      "ServicingBank" : {
+        "title" : "ServicingBank",
+        "type" : "object",
+        "properties" : {
+          "bankCode" : {
+            "maxLength" : 4,
+            "type" : "string",
+            "description" : "Bank code in national format",
+            "example" : "0100"
+          },
+          "countryCode" : {
+            "maxLength" : 10,
+            "type" : "string",
+            "description" : "ISO code for the country",
+            "example" : "EU"
+          },
+          "bic" : {
+            "maxLength" : 11,
+            "type" : "string",
+            "description" : "International unique bank identifier (SWIFT/BIC)",
+            "example" : "KOMBCZPPXXX"
+          }
+        },
+        "description" : "The identification information of the bank the account is served by - bankCode - countryCode - bic"
+      },
+      "Relationship" : {
+        "title" : "Relationship",
+        "type" : "object",
+        "description" : "Indicates whether the person is the owner of the bank account or not",
+        "properties" : {
+          "isOwner" : {
+            "$ref" : "#/components/schemas/IsOwner"
+          }
+        }
+      },
+      "IsOwner" : {
+        "title" : "IsOwner",
+        "type" : "boolean",
+        "description" : "True/false if the authenticated person is/is not the owner (payer) of the account",
+        "example" : true
+      },
+      "SuitableScope" : {
+        "title" : "SuitableScope",
+        "type" : "object",
+        "properties" : {
+          "AISP" : {
+            "$ref" : "#/components/schemas/Scope"
+          },
+          "PISP" : {
+            "$ref" : "#/components/schemas/Scope"
+          },
+          "CISP" : {
+            "$ref" : "#/components/schemas/Scope"
+          }
+        },
+        "description" : "Object carrying information about the account's allowed scopes."
+      },
+      "Scope" : {
+        "title" : "Scope",
+        "type" : "string",
+        "description" : "The type of scope."
+      },
+      "Account" : {
+        "title" : "Account",
+        "required" : [ "currency", "id", "identification", "productI18N", "servicer" ],
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "maxLength" : 120,
+            "type" : "string",
+            "description" : "Account number in hashed format",
+            "example" : "C2D2DDBCA5415621A34BB1BB234DC1322EA641A3"
+          },
+          "identification" : {
+            "$ref" : "#/components/schemas/AccountIdentification"
+          },
+          "currency" : {
+            "maxLength" : 3,
+            "pattern" : "^[A-Z]{3,3}$",
+            "type" : "string",
+            "description" : "ISO code for the currency",
+            "example" : "EUR"
+          },
+          "servicer" : {
+            "$ref" : "#/components/schemas/ServicingBank"
+          },
+          "nameI18N" : {
+            "maxLength" : 100,
+            "type" : "string",
+            "description" : "The custom name of the client's account",
+            "example" : "Muj hlavni osobni ucet"
+          },
+          "productI18N" : {
+            "maxLength" : 100,
+            "type" : "string",
+            "description" : "The name of the bank's product (of the client's account)",
+            "example" : "Osobni ucet KB"
+          },
+          "ownersNames" : {
+            "type" : "array",
+            "description" : "Array of name/s of the account holder/s for consumers or trade name/s for commercial clients",
+            "items" : {
+              "maxLength" : 100,
+              "type" : "string"
+            }
+          },
+          "relationship" : {
+            "$ref" : "#/components/schemas/Relationship"
+          },
+          "suitableScope" : {
+            "$ref" : "#/components/schemas/SuitableScope"
+          }
+        },
+        "description" : "The full information about client's account"
+      },
+      "GetAccountListResponse" : {
+        "title" : "GetAccountListResponse",
+        "required" : [ "accounts", "nextPage", "pageCount", "pageNumber", "pageSize" ],
+        "type" : "object",
+        "properties" : {
+          "pageNumber" : {
+            "type" : "integer",
+            "description" : "The page number to be returned (in pagination mode)",
+            "format" : "int32",
+            "example" : 5
+          },
+          "pageCount" : {
+            "type" : "integer",
+            "description" : "The total number of pages that can be returned (in pagination mode)",
+            "format" : "int32",
+            "example" : 7
+          },
+          "pageSize" : {
+            "type" : "integer",
+            "description" : "The number of rows per page (in pagination mode)",
+            "format" : "int32",
+            "example" : 100
+          },
+          "nextPage" : {
+            "type" : "integer",
+            "description" : "The number of the next page that can be returned (in pagination mode)",
+            "format" : "int32",
+            "example" : 6
+          },
+          "accounts" : {
+            "type" : "array",
+            "description" : "Collection of the client's accounts",
+            "items" : {
+              "$ref" : "#/components/schemas/Account"
+            }
+          }
+        },
+        "description" : "The list of all the client's accounts with full account information"
+      },
+      "CodeOrProprietary" : {
+        "title" : "CodeOrProprietary",
+        "required" : [ "code" ],
+        "type" : "object",
+        "properties" : {
+          "code" : {
+            "$ref" : "#/components/schemas/BalanceTypeCode"
+          }
+        },
+        "description" : "Balance code or proprietary"
+      },
+      "BalanceType" : {
+        "title" : "BalanceType",
+        "required" : [ "codeOrProprietary" ],
+        "type" : "object",
+        "properties" : {
+          "codeOrProprietary" : {
+            "$ref" : "#/components/schemas/CodeOrProprietary"
+          }
+        },
+        "description" : "Indicates the type of balance"
+      },
+      "CreditLineAmountType" : {
+        "title" : "CreditLineAmountType",
+        "type" : "object",
+        "properties" : {
+          "value" : {
+            "type" : "number",
+            "description" : "The amount of the allowed debit",
+            "format" : "double",
+            "example" : 10000.0
+          },
+          "currency" : {
+            "maxLength" : 3,
+            "pattern" : "^[A-Z]{3,3}$",
+            "type" : "string",
+            "description" : "ISO code for the currency",
+            "example" : "EUR"
+          }
+        },
+        "description" : "Credit line amount information (allowed debit amount)"
+      },
+      "CreditLineType" : {
+        "title" : "CreditLineType",
+        "type" : "object",
+        "properties" : {
+          "included" : {
+            "type" : "boolean",
+            "description" : "Indicates whether the allowed debit is included in balance",
+            "example" : true
+          },
+          "amount" : {
+            "$ref" : "#/components/schemas/CreditLineAmountType"
+          }
+        },
+        "description" : "Credit line information (allowed debit)"
+      },
+      "BalanceAmountType" : {
+        "title" : "BalanceAmountType",
+        "required" : [ "currency", "value" ],
+        "type" : "object",
+        "properties" : {
+          "value" : {
+            "type" : "number",
+            "description" : "The balance amount of the client's account",
+            "format" : "double",
+            "example" : 15241.3
+          },
+          "currency" : {
+            "maxLength" : 3,
+            "pattern" : "^[A-Z]{3,3}$",
+            "type" : "string",
+            "description" : "ISO code for the currency",
+            "example" : "EUR"
+          }
+        },
+        "description" : "Balance amount information"
+      },
+      "BalanceDateType" : {
+        "title" : "BalanceDateType",
+        "required" : [ "dateTime" ],
+        "type" : "object",
+        "properties" : {
+          "dateTime" : {
+            "type" : "string",
+            "description" : "The date and time the balance information is valid for",
+            "format" : "date-time",
+            "example" : "2017-04-25T05:00:00Z"
+          }
+        },
+        "description" : "Balance date information"
+      },
+      "AccountBalance" : {
+        "title" : "AccountBalance",
+        "required" : [ "amount", "creditDebitIndicator", "date", "type" ],
+        "type" : "object",
+        "properties" : {
+          "type" : {
+            "$ref" : "#/components/schemas/BalanceType"
+          },
+          "creditLine" : {
+            "$ref" : "#/components/schemas/CreditLineType"
+          },
+          "amount" : {
+            "$ref" : "#/components/schemas/BalanceAmountType"
+          },
+          "creditDebitIndicator" : {
+            "$ref" : "#/components/schemas/CreditDebitIndicator"
+          },
+          "date" : {
+            "$ref" : "#/components/schemas/BalanceDateType"
+          }
+        },
+        "description" : "Account balance for specific balance type"
+      },
+      "GetAccountBalanceResponse" : {
+        "title" : "GetAccountBalanceResponse",
+        "type" : "object",
+        "properties" : {
+          "balances" : {
+            "type" : "array",
+            "description" : "Collection of the client's account balances",
+            "items" : {
+              "$ref" : "#/components/schemas/AccountBalance"
+            }
+          }
+        },
+        "description" : "The list of all the client's accounts with full account information"
+      },
+      "TransactionDetails" : {
+        "title" : "TransactionDetails",
+        "required" : [ "currency", "value" ],
+        "type" : "object",
+        "properties" : {
+          "value" : {
+            "type" : "number",
+            "description" : "The total transaction amount in the transaction's currency (number of decimal places according to ISO 4217 and relevant currencies)",
+            "format" : "double",
+            "example" : 15241.3
+          },
+          "currency" : {
+            "maxLength" : 3,
+            "pattern" : "^[A-Z]{3,3}$",
+            "type" : "string",
+            "description" : "ISO code for the currency",
+            "example" : "EUR"
+          }
+        },
+        "description" : "Details about the transaction (amount and currency)"
+      },
+      "BookingDate" : {
+        "title" : "BookingDate",
+        "required" : [ "date" ],
+        "type" : "object",
+        "properties" : {
+          "date" : {
+            "maxLength" : 30,
+            "type" : "string",
+            "description" : "The date and time the event has occured in ISODate or ISODateTime format (\"YYYY-MM-DD\"/ \"YYYY-MM-DDThh:mm:ss.sTZD\")",
+            "example" : "2017-04-24T05:00:00.000Z"
+          }
+        },
+        "description" : "The date the payment was processed/accounted by bank in ISODate or ISODateTime format (\"YYYY-MM-DD\"/ \"YYYY-MM-DDThh:mm:ss.sTZD\")"
+      },
+      "ValueDate" : {
+        "title" : "ValueDate",
+        "required" : [ "date" ],
+        "type" : "object",
+        "properties" : {
+          "date" : {
+            "maxLength" : 30,
+            "type" : "string",
+            "description" : "The date and time the event has occured in ISODate or ISODateTime format (\"YYYY-MM-DD\"/ \"YYYY-MM-DDThh:mm:ss.sTZD\")",
+            "example" : "2017-04-24T05:00:00.000Z"
+          }
+        },
+        "description" : "The payment due date in ISODate or ISODateTime format (\"YYYY-MM-DD\"/\"YYYY-MM-DDThh:mm:ss.sTZD\")"
+      },
+      "BankTransactionProprietary" : {
+        "title" : "BankTransactionProprietary",
+        "required" : [ "code", "issuer" ],
+        "type" : "object",
+        "properties" : {
+          "code" : {
+            "maxLength" : 35,
+            "type" : "string",
+            "description" : "Code of the transaction defined by CBA (Czech Bank Association) associated with specific payment. Every bank uses its own LOV for transaction codes which is derived from 1st to 3rd level of the transaction codes LOV defined by CBA standar fo CAMT.053",
+            "example" : "10000107000"
+          },
+          "issuer" : {
+            "maxLength" : 35,
+            "type" : "string",
+            "description" : "The identification of the issuer of the transaction codes LOV",
+            "example" : "Czech Banking Association"
+          }
+        },
+        "description" : "The proprietary type of the transaction defined by CBA (Czech Bank Association)"
+      },
+      "BankTransactionCodeType" : {
+        "title" : "BankTransactionCodeType",
+        "required" : [ "proprietary" ],
+        "type" : "object",
+        "properties" : {
+          "proprietary" : {
+            "$ref" : "#/components/schemas/BankTransactionProprietary"
+          }
+        },
+        "description" : "The type of the transaction defined by CBA (Czech Bank Association)"
+      },
+      "References" : {
+        "title" : "References",
+        "type" : "object",
+        "properties" : {
+          "messageIdentification" : {
+            "maxLength" : 35,
+            "type" : "string",
+            "description" : "Identification of the payment assigned by client while payment was submitted or the payment order number from payment history",
+            "example" : "321"
+          },
+          "accountServicerReference" : {
+            "maxLength" : 35,
+            "type" : "string",
+            "description" : "Identification of the payment assigned by bank, i.e. while payment was submitted via internet banking service",
+            "example" : "542"
+          },
+          "paymentInformationIdentification" : {
+            "maxLength" : 35,
+            "type" : "string",
+            "description" : "Other identification of the payment assigned by bank, i.e. for card transaction it may be the sequence number of the payment card or there can be provided specific symbol",
+            "example" : "SS9876543210"
+          },
+          "endToEndIdentification" : {
+            "maxLength" : 35,
+            "type" : "string",
+            "description" : "Unique identification of the payment/transaction provided by the client who initiated the payment and is transfered unchanged via the whole payment chain or there can be provided variable symbol",
+            "example" : "VS0123456789"
+          },
+          "mandateIdentification" : {
+            "maxLength" : 35,
+            "type" : "string",
+            "description" : "Unique mandate reference for SEPA collection or there can be provided constant symbol",
+            "example" : "KS0308"
+          },
+          "chequeNumber" : {
+            "maxLength" : 35,
+            "type" : "string",
+            "description" : "There may be provided cheque number for cheque operations or payment card number with asterisks for card operations. Payment card number is always provided in \"************1234\" format.",
+            "example" : "************1234"
+          },
+          "clearingSystemReference" : {
+            "maxLength" : 35,
+            "type" : "string",
+            "description" : "Number value defined by bank which identifies the type of payment or the string value/name of the payment type. There may be provided identification of card association for card payments.",
+            "example" : "Mastercard"
+          }
+        },
+        "description" : "Set of the references, which uniquely identifies the payment/transaction"
+      },
+      "InstructedAmount" : {
+        "title" : "InstructedAmount",
+        "required" : [ "amount" ],
+        "type" : "object",
+        "properties" : {
+          "amount" : {
+            "$ref" : "#/components/schemas/Amount1"
+          }
+        },
+        "description" : "Payment amount in specified currency, which was requested by client for money transfer"
+      },
+      "CurrencyExchange" : {
+        "title" : "CurrencyExchange",
+        "required" : [ "exchangeRate", "sourceCurrency" ],
+        "type" : "object",
+        "properties" : {
+          "sourceCurrency" : {
+            "maxLength" : 3,
+            "pattern" : "^[A-Z]{3,3}$",
+            "type" : "string",
+            "description" : "ISO code for the currency",
+            "example" : "EUR"
+          },
+          "targetCurrency" : {
+            "maxLength" : 3,
+            "pattern" : "^[A-Z]{3,3}$",
+            "type" : "string",
+            "description" : "ISO code for the currency",
+            "example" : "EUR"
+          },
+          "exchangeRate" : {
+            "type" : "number",
+            "description" : "The exchange rate value to be used for conversion",
+            "format" : "double",
+            "example" : 27.06
+          }
+        },
+        "description" : "Exchange rate from source currency (the payer's account currency) and specified payment currency"
+      },
+      "CounterValueAmount" : {
+        "title" : "CounterValueAmount",
+        "required" : [ "amount" ],
+        "type" : "object",
+        "properties" : {
+          "amount" : {
+            "$ref" : "#/components/schemas/Amount1"
+          },
+          "currencyExchange" : {
+            "$ref" : "#/components/schemas/CurrencyExchange"
+          }
+        },
+        "description" : "Payment amount in the payer's account currency, which was requested by client for money transfer"
+      },
+      "PrivatePartyIdentification" : {
+        "title" : "PrivatePartyIdentification",
+        "required" : [ "other" ],
+        "type" : "object",
+        "properties" : {
+          "other" : {
+            "$ref" : "#/components/schemas/Other"
+          }
+        },
+        "description" : "Private debtor or creditor identification"
+      },
+      "OrganisationPartyIdentification" : {
+        "title" : "OrganisationPartyIdentification",
+        "required" : [ "other" ],
+        "type" : "object",
+        "properties" : {
+          "bicOrBei" : {
+            "maxLength" : 11,
+            "type" : "string",
+            "description" : "International unique bank identifier (SWIFT/BIC)",
+            "example" : "KOMBCZPPXXX"
+          },
+          "other" : {
+            "$ref" : "#/components/schemas/Other1"
+          }
+        },
+        "description" : "Organisation debtor or creditor identification"
+      },
+      "PartyAddress" : {
+        "title" : "PartyAddress",
+        "type" : "object",
+        "properties" : {
+          "streetName" : {
+            "maxLength" : 70,
+            "type" : "string",
+            "description" : "Name of the street",
+            "example" : "Na Prikope"
+          },
+          "buildingNumber" : {
+            "maxLength" : 16,
+            "type" : "string",
+            "description" : "Street number of the building",
+            "example" : "33"
+          },
+          "postCode" : {
+            "maxLength" : 16,
+            "type" : "string",
+            "description" : "Address post code",
+            "example" : "114 07"
+          },
+          "townName" : {
+            "maxLength" : 35,
+            "type" : "string",
+            "description" : "Name of the town",
+            "example" : "Praha 1"
+          },
+          "country" : {
+            "maxLength" : 3,
+            "type" : "string",
+            "description" : "Name of the country",
+            "example" : "CZ"
+          },
+          "addressLine" : {
+            "type" : "array",
+            "items" : {
+              "maxLength" : 70,
+              "type" : "string"
+            }
+          }
+        },
+        "description" : "Postal address of creditor or debtor"
+      },
+      "TransactionParty" : {
+        "title" : "TransactionParty",
+        "required" : [ "name" ],
+        "type" : "object",
+        "properties" : {
+          "name" : {
+            "maxLength" : 100,
+            "type" : "string",
+            "description" : "Debtor's or creditor's name",
+            "example" : "Jan Novak"
+          },
+          "postalAddress" : {
+            "$ref" : "#/components/schemas/PartyAddress"
+          },
+          "identification" : {
+            "$ref" : "#/components/schemas/Identification"
+          }
+        },
+        "description" : "Identification of the party who is involved in the transaction (creditor or debtor, depends on the transaction direction)"
+      },
+      "TransactionAccountIdentification" : {
+        "title" : "TransactionAccountIdentification",
+        "required" : [ "iban" ],
+        "type" : "object",
+        "properties" : {
+          "iban" : {
+            "maxLength" : 34,
+            "type" : "string",
+            "description" : "International Bank Account Number",
+            "example" : "CZ9501000000001234567899"
+          },
+          "other" : {
+            "$ref" : "#/components/schemas/Other2"
+          }
+        },
+        "description" : "The identification information of the client's account for transaction"
+      },
+      "PartyAccount" : {
+        "title" : "PartyAccount",
+        "required" : [ "identification" ],
+        "type" : "object",
+        "properties" : {
+          "identification" : {
+            "$ref" : "#/components/schemas/TransactionAccountIdentification"
+          },
+          "currency" : {
+            "maxLength" : 3,
+            "pattern" : "^[A-Z]{3,3}$",
+            "type" : "string",
+            "description" : "ISO code for the currency",
+            "example" : "EUR"
+          },
+          "name" : {
+            "maxLength" : 70,
+            "type" : "string",
+            "description" : "Name of the transaction party's account",
+            "example" : "Deposit account"
+          }
+        },
+        "description" : "Creditor or debtor account information"
+      },
+      "RelatedTransactionParties" : {
+        "title" : "RelatedTransactionParties",
+        "type" : "object",
+        "properties" : {
+          "debtor" : {
+            "$ref" : "#/components/schemas/TransactionParty"
+          },
+          "debtorAccount" : {
+            "$ref" : "#/components/schemas/PartyAccount"
+          },
+          "creditor" : {
+            "$ref" : "#/components/schemas/TransactionParty"
+          },
+          "creditorAccount" : {
+            "$ref" : "#/components/schemas/PartyAccount"
+          }
+        },
+        "description" : "Provides information about both transaction parties (creditor/debtor) and their accounts"
+      },
+      "AgentAddress" : {
+        "title" : "AgentAddress",
+        "type" : "object",
+        "properties" : {
+          "streetName" : {
+            "maxLength" : 70,
+            "type" : "string",
+            "description" : "Name of the street",
+            "example" : "Na Prikope"
+          },
+          "buildingNumber" : {
+            "maxLength" : 16,
+            "type" : "string",
+            "description" : "Street number of the building",
+            "example" : "33"
+          },
+          "postCode" : {
+            "maxLength" : 16,
+            "type" : "string",
+            "description" : "Address post code",
+            "example" : "114 07"
+          },
+          "townName" : {
+            "maxLength" : 35,
+            "type" : "string",
+            "description" : "Name of the town",
+            "example" : "Praha 1"
+          },
+          "country" : {
+            "maxLength" : 3,
+            "type" : "string",
+            "description" : "Name of the country",
+            "example" : "CZ"
+          },
+          "addressLine" : {
+            "type" : "array",
+            "items" : {
+              "maxLength" : 70,
+              "type" : "string"
+            }
+          }
+        },
+        "description" : "Postal address of creditor's or debtor's bank"
+      },
+      "FinancialInstitutionIdentification" : {
+        "title" : "FinancialInstitutionIdentification",
+        "type" : "object",
+        "properties" : {
+          "bic" : {
+            "maxLength" : 11,
+            "type" : "string",
+            "description" : "International unique bank identifier (SWIFT/BIC)",
+            "example" : "KOMBCZPPXXX"
+          },
+          "clearingSystemMemberIdentification" : {
+            "$ref" : "#/components/schemas/ClearingSystemMemberIdentification"
+          },
+          "name" : {
+            "maxLength" : 140,
+            "type" : "string",
+            "description" : "Name of the creditor's or debtor's bank from SWIFT directory",
+            "example" : "KOMERCNI BANKA A.S."
+          },
+          "postalAddress" : {
+            "$ref" : "#/components/schemas/AgentAddress"
+          }
+        },
+        "description" : "Creditor's or debtor's bank identification in international format"
+      },
+      "TransactionAgent" : {
+        "title" : "TransactionAgent",
+        "required" : [ "financialInstitutionIdentification" ],
+        "type" : "object",
+        "properties" : {
+          "financialInstitutionIdentification" : {
+            "$ref" : "#/components/schemas/FinancialInstitutionIdentification"
+          }
+        }
+      },
+      "RelatedTransactionAgents" : {
+        "title" : "RelatedTransactionAgents",
+        "type" : "object",
+        "properties" : {
+          "debtorAgent" : {
+            "$ref" : "#/components/schemas/TransactionAgent"
+          },
+          "creditorAgent" : {
+            "$ref" : "#/components/schemas/TransactionAgent"
+          }
+        },
+        "description" : "Creditor's (payer's) and debtor's (payee's) bank identification information"
+      },
+      "TransactionPurpose" : {
+        "title" : "TransactionPurpose",
+        "required" : [ "code", "proprietary" ],
+        "type" : "object",
+        "properties" : {
+          "code" : {
+            "maxLength" : 20,
+            "type" : "string",
+            "description" : "Purpose code of the payment specified within the payment order",
+            "example" : "0001"
+          },
+          "proprietary" : {
+            "maxLength" : 35,
+            "type" : "string",
+            "description" : "Purpose of the payment in an unstructured format specified within the payment order",
+            "example" : "PLATBA ZA SLUZBY"
+          }
+        },
+        "description" : "The purpose of the payment/transaction"
+      },
+      "AccountTransactionDetails" : {
+        "title" : "AccountTransactionDetails",
+        "required" : [ "relatedAgents" ],
+        "type" : "object",
+        "properties" : {
+          "references" : {
+            "$ref" : "#/components/schemas/References"
+          },
+          "amountDetails" : {
+            "$ref" : "#/components/schemas/AmountDetails"
+          },
+          "charges" : {
+            "$ref" : "#/components/schemas/Charges"
+          },
+          "relatedParties" : {
+            "$ref" : "#/components/schemas/RelatedTransactionParties"
+          },
+          "relatedAgents" : {
+            "$ref" : "#/components/schemas/RelatedTransactionAgents"
+          },
+          "purpose" : {
+            "$ref" : "#/components/schemas/TransactionPurpose"
+          },
+          "remittanceInformation" : {
+            "$ref" : "#/components/schemas/RemittanceInformation2"
+          },
+          "additionalTransactionInformation" : {
+            "maxLength" : 500,
+            "type" : "string",
+            "description" : "Additional information about transaction provided by bank",
+            "example" : "8201701069595 BIC: GIBACZPXXXX; #71A# SHA ZALOHA DLE SMLOUVY O DODAVKACH"
+          }
+        },
+        "description" : "Details about the account payment/transaction"
+      },
+      "AccountEntryDetails" : {
+        "title" : "AccountEntryDetails",
+        "type" : "object",
+        "properties" : {
+          "transactionDetails" : {
+            "$ref" : "#/components/schemas/AccountTransactionDetails"
+          }
+        },
+        "description" : "Account cash flow details"
+      },
+      "AccountTransaction" : {
+        "title" : "AccountTransaction",
+        "required" : [ "amount", "bankTransactionCode", "creditDebitIndicator", "status" ],
+        "type" : "object",
+        "properties" : {
+          "entryReference" : {
+            "maxLength" : 35,
+            "type" : "string",
+            "description" : "Payment identification number assigned by bank",
+            "example" : "KB-1234567890"
+          },
+          "amount" : {
+            "$ref" : "#/components/schemas/TransactionDetails"
+          },
+          "creditDebitIndicator" : {
+            "$ref" : "#/components/schemas/CreditDebitIndicator"
+          },
+          "reversalIndicator" : {
+            "type" : "boolean",
+            "description" : "Indicates whether the transaction is of \"storno\" type or not",
+            "example" : false
+          },
+          "status" : {
+            "type" : "string",
+            "description" : "Status of the payment on account from bank point of view. Booked/posted items are marked as \"BOOK\", blocked items are marked as \"PDNG\"",
+            "example" : "BOOK"
+          },
+          "bookingDate" : {
+            "$ref" : "#/components/schemas/BookingDate"
+          },
+          "valueDate" : {
+            "$ref" : "#/components/schemas/ValueDate"
+          },
+          "bankTransactionCode" : {
+            "$ref" : "#/components/schemas/BankTransactionCodeType"
+          },
+          "entryDetails" : {
+            "$ref" : "#/components/schemas/AccountEntryDetails"
+          }
+        },
+        "description" : "The single account transaction details"
+      },
+      "GeAccountTransactionsResponse" : {
+        "title" : "GeAccountTransactionsResponse",
+        "required" : [ "pageCount", "pageNumber", "pageSize", "transactions" ],
+        "type" : "object",
+        "properties" : {
+          "pageNumber" : {
+            "type" : "integer",
+            "description" : "The page number to be returned (in pagination mode)",
+            "format" : "int32",
+            "example" : 5
+          },
+          "pageCount" : {
+            "type" : "integer",
+            "description" : "The total number of pages that can be returned (in pagination mode)",
+            "format" : "int32",
+            "example" : 7
+          },
+          "pageSize" : {
+            "type" : "integer",
+            "description" : "The number of rows per page (in pagination mode)",
+            "format" : "int32",
+            "example" : 100
+          },
+          "nextPage" : {
+            "type" : "integer",
+            "description" : "The number of the next page that can be returned (in pagination mode)",
+            "format" : "int32",
+            "example" : 6
+          },
+          "transactions" : {
+            "type" : "array",
+            "description" : "The list of account transactions with their details",
+            "items" : {
+              "$ref" : "#/components/schemas/AccountTransaction"
+            }
+          }
+        },
+        "description" : "The list of transactions on the client's account according to the filter set in the request"
+      },
+      "Error" : {
+        "title" : "Error",
+        "required" : [ "error" ],
+        "type" : "object",
+        "properties" : {
+          "error" : {
+            "minLength" : 1,
+            "type" : "string",
+            "description" : "Code of the error that occured. Errors are given as codes of WORDS_AND_UNDERSCORES",
+            "example" : "ER_CODE_XXX001"
+          },
+          "scope" : {
+            "type" : "string",
+            "description" : "If error is related to one of the fields in request this field contains identification of the field.",
+            "example" : "objectName.parameterName"
+          },
+          "message" : {
+            "type" : "string",
+            "description" : "Error message in plain text format",
+            "example" : "Parameter objectName.parameterName is missing"
+          }
+        }
+      },
+      "ErrorCollection" : {
+        "title" : "ErrorCollection",
+        "type" : "object",
+        "properties" : {
+          "errors" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "Amount1" : {
+        "title" : "Amount1",
+        "type" : "object",
+        "properties" : {
+          "value" : {
+            "type" : "number",
+            "description" : "The total transaction amount in the transaction's currency (number of decimal places according to ISO 4217 and relevant currencies)",
+            "format" : "double",
+            "example" : 15241.3
+          },
+          "currency" : {
+            "maxLength" : 3,
+            "pattern" : "^[A-Z]{3,3}$",
+            "type" : "string",
+            "description" : "ISO code for the currency",
+            "example" : "EUR"
+          }
+        }
+      },
+      "AmountDetails" : {
+        "title" : "AmountDetails",
+        "type" : "object",
+        "properties" : {
+          "instructedAmount" : {
+            "$ref" : "#/components/schemas/InstructedAmount"
+          },
+          "counterValueAmount" : {
+            "$ref" : "#/components/schemas/CounterValueAmount"
+          }
+        }
+      },
+      "basePath" : {
+        "title" : "basePath",
+        "type" : "string",
+        "enum" : [ "v2" ]
+      },
+      "Charges" : {
+        "title" : "Charges",
+        "type" : "object",
+        "properties" : {
+          "bearer" : {
+            "$ref" : "#/components/schemas/Bearer"
+          }
+        },
+        "description" : "Information about charge/fee applied for payment"
+      },
+      "ClearingSystemIdentification" : {
+        "title" : "ClearingSystemIdentification",
+        "required" : [ "code", "proprietary" ],
+        "type" : "object",
+        "properties" : {
+          "code" : {
+            "maxLength" : 20,
+            "type" : "string",
+            "description" : "Bank code in local payment system format",
+            "example" : "0100"
+          },
+          "proprietary" : {
+            "maxLength" : 100,
+            "type" : "string",
+            "description" : "Other identification of the bank in an unstructured format in local payment system format",
+            "example" : "Komercni banka a.s."
+          }
+        },
+        "description" : "Bank identification in local payment system"
+      },
+      "ClearingSystemMemberIdentification" : {
+        "title" : "ClearingSystemMemberIdentification",
+        "required" : [ "clearingSystemIdentification", "memberIdentification" ],
+        "type" : "object",
+        "properties" : {
+          "clearingSystemIdentification" : {
+            "$ref" : "#/components/schemas/ClearingSystemIdentification"
+          },
+          "memberIdentification" : {
+            "maxLength" : 4,
+            "type" : "string",
+            "description" : "Bank code in national format",
+            "example" : "0100"
+          }
+        },
+        "description" : "Bank code in national format (national code, local payment system code or text description)"
+      },
+      "CreditorReferenceInformation2" : {
+        "title" : "CreditorReferenceInformation2",
+        "type" : "object",
+        "properties" : {
+          "reference" : {
+            "type" : "array",
+            "description" : "Array of payment symbols",
+            "items" : {
+              "maxLength" : 35,
+              "type" : "string"
+            }
+          }
+        },
+        "description" : "Payment symbols"
+      },
+      "enviroment" : {
+        "title" : "enviroment",
+        "type" : "string",
+        "enum" : [ "-sit", "-uat", "-dev", "-p4m", "-ref" ]
+      },
+      "Identification" : {
+        "title" : "Identification",
+        "type" : "object",
+        "properties" : {
+          "organisationIdentification" : {
+            "$ref" : "#/components/schemas/OrganisationPartyIdentification"
+          },
+          "privateIdentification" : {
+            "$ref" : "#/components/schemas/PrivatePartyIdentification"
+          }
+        },
+        "description" : "Debtor's or creditor's identification (private or organisation)"
+      },
+      "order" : {
+        "title" : "order",
+        "type" : "string",
+        "enum" : [ "DESC", "ASC" ]
+      },
+      "Other" : {
+        "title" : "Other",
+        "required" : [ "identification" ],
+        "type" : "object",
+        "properties" : {
+          "identification" : {
+            "maxLength" : 100,
+            "type" : "string",
+            "description" : "Other identification of the private party in an unstructured format",
+            "example" : "123456789"
+          },
+          "schemaName" : {
+            "$ref" : "#/components/schemas/SchemaName"
+          },
+          "issuer" : {
+            "maxLength" : 35,
+            "type" : "string",
+            "description" : "The name of the entity who defined/assigned the schemaName",
+            "example" : "WIENA"
+          }
+        },
+        "description" : "Other private party identification"
+      },
+      "Other1" : {
+        "title" : "Other1",
+        "required" : [ "identification" ],
+        "type" : "object",
+        "properties" : {
+          "identification" : {
+            "maxLength" : 35,
+            "type" : "string",
+            "description" : "Other identification of the organisation party in an unstructured format",
+            "example" : "CZ1234567890"
+          },
+          "schemaName" : {
+            "$ref" : "#/components/schemas/SchemaName1"
+          },
+          "issuer" : {
+            "maxLength" : 35,
+            "type" : "string",
+            "description" : "The name of the entity who defined/assigned the schemaName",
+            "example" : "WIENA"
+          }
+        },
+        "description" : "Other organisation party identification"
+      },
+      "Other2" : {
+        "title" : "Other2",
+        "required" : [ "identification" ],
+        "type" : "object",
+        "properties" : {
+          "identification" : {
+            "maxLength" : 34,
+            "type" : "string",
+            "description" : "Account Number in national format (without bank code)",
+            "example" : "1234567899"
+          }
+        },
+        "description" : "Account number identification in different or local format"
+      },
+      "RemittanceInformation2" : {
+        "title" : "RemittanceInformation2",
+        "type" : "object",
+        "properties" : {
+          "unstructured" : {
+            "maxLength" : 140,
+            "type" : "string",
+            "description" : "Supplementary information about payment in unstructured format",
+            "example" : "VS/0123456789/KS/0308/SS/9876543210"
+          },
+          "structured" : {
+            "$ref" : "#/components/schemas/Structured"
+          }
+        },
+        "description" : "Supplementary information about the payment (VS/SS/KS)"
+      },
+      "SchemaName" : {
+        "title" : "SchemaName",
+        "required" : [ "code", "proprietary" ],
+        "type" : "object",
+        "properties" : {
+          "code" : {
+            "maxLength" : 100,
+            "type" : "string",
+            "description" : "Type code for creditor/debtor identification as private person in ISO LOV code format",
+            "example" : "CUST"
+          },
+          "proprietary" : {
+            "maxLength" : 100,
+            "type" : "string",
+            "description" : "Type code for creditor/debtor identification as private person in text format",
+            "example" : "123456789"
+          }
+        },
+        "description" : "Type code for creditor/debtor identification as private person"
+      },
+      "SchemaName1" : {
+        "title" : "SchemaName1",
+        "required" : [ "code", "proprietary" ],
+        "type" : "object",
+        "properties" : {
+          "code" : {
+            "maxLength" : 10,
+            "type" : "string",
+            "description" : "Type code for creditor/debtor identification as organisation person in ISO LOV code format",
+            "example" : "TXID"
+          },
+          "proprietary" : {
+            "maxLength" : 35,
+            "type" : "string",
+            "description" : "Type code for creditor/debtor identification as organisation person in text format",
+            "example" : "CZ1234567890"
+          }
+        },
+        "description" : "Type code for creditor/debtor identification as organisation person"
+      },
+      "Structured" : {
+        "title" : "Structured",
+        "type" : "object",
+        "properties" : {
+          "creditorReferenceInformation" : {
+            "$ref" : "#/components/schemas/CreditorReferenceInformation2"
+          }
+        },
+        "description" : "List of payment symbols"
+      }
+    },
+    "securitySchemes" : {
+      "AccessToken" : {
+        "type" : "http",
+        "scheme" : "bearer",
+        "bearerFormat" : "JWT",
+        "description" : "PSD2 API OAuth2 access token can be generated by PSD2 OAuth2 API."
+      }
+    }
+  }
+}

@@ -1,0 +1,595 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "PSD2 Account Information Service (AIS) APIs",
+    "version": "3.0",
+    "description": "# Introduction \nThe AIS API offers information services about the bank clients’ payment accounts.\nTo call these APIs, you need to possess valid PSD2 certificate containing the `AISP` scope.    \n\n# Authorization \nWhen making requests to access the bank clients data or make transactions on their behalf, the clients need to authorize such calls.\nTo prove that a bank client gave a consent to access their accounts data or make transactions on their behalf, CSOB API offers two forms of authorization:\n  - API Key\n  - OAuth2\n  \nOAuth enables clients to access protected resources by obtaining an access token, which is defined in \"The OAuth 2.0 Authorization\nFramework\" [RFC6749](https://tools.ietf.org/html/rfc6749) as \"a string representing an access authorization issued to the client\",\nrather than using the resource owner's credentials directly. At this moment we support the [Authorization Code Grant](https://tools.ietf.org/html/rfc6749#page-24).\n"
+  },
+  "servers": [
+    {
+      "url": "https://api.csob.cz/api/csob/psd2",
+      "description": "CSOB API Gateway - Production"
+    },
+    {
+      "url": "https://api.acc.csob.cz/api/csob/psd2",
+      "description": "CSOB API Gateway - Acceptance"
+    },
+    {
+      "url": "https://api.int.csob.cz/api/csob/psd2",
+      "description": "CSOB API Gateway - Integration"
+    }
+  ],
+  "security": [
+    {
+      "OAuth2": []
+    },
+    {
+      "ApiKey": []
+    }
+  ],
+  "tags": [
+    {
+      "name": "Account Informations"
+    }
+  ],
+  "paths": {
+    "/v3/ais/my/accounts": {
+      "get": {
+        "operationId": "GetAccounts",
+        "summary": "Account list",
+        "description": "Get a list of bank accounts that belong to the user who authorized the operation.\nSorting is not supported. The accounts are sorted in ascending order according to the IBAN.\n\n### Supported features\n\n| Feature   | Supported |\n| --------- | :-------: |\n| Paging    | &#x2714;  |\n| Sorting   | &#x2714;  |\n| Filtering | &#x2718;  |\n\n### Paging-Implementation-specific\nIf you use `page` and `size` parameters, they MUST be used together. Please, do not use only one parameter in the request.\n\n### Operation-specific errors\n\n| HTTP status code | Error | Description |\n| ---------------- | ----- | ----------- |\n| 403              | AG01  | Consent to check account balance not granted |\n",
+        "x-code-samples": [
+          {
+            "lang": "http",
+            "label": "HTTP",
+            "source": "GET /api/csob/psd2/v3/ais/my/accounts HTTP/1.1\nHost: api.csob.cz\nAPIKEY: l7xxca45406f0e934f7eb5df07d150a38e7b\nAuthorization: Bearer 3/FPLYXU5t3muiv1DiOYWRiAZj9DXM3hYbwh2u4miKG7gg1aUPpWsVP5Nkrv9W8Zdn\nX-Request-ID: 9b1390ae-8c87-4f92-b9ae-7982bdde7e1a\nUser-Involved: true\nTPP-Name: Star Corporation\nCache-Control: no-cache\n"
+          },
+          {
+            "lang": "shell",
+            "label": "cURL",
+            "source": "curl -X GET \\\n  https://api.csob.cz/api/csob/psd2/v3/ais/my/accounts \\\n  -H 'APIKEY: l7xxca45406f0e934f7eb5df07d150a38e7b' \\\n  -H 'Authorization: Bearer 3/FPLYXU5t3muiv1DiOYWRiAZj9DXM3hYbwh2u4miKG7gg1aUPpWsVP5Nkrv9W8Zdn' \\\n  -H 'X-Request-ID: 9b1390ae-8c87-4f92-b9ae-7982bdde7e1a' \\\n  -H 'User-Involved: true' \\\n  -H 'TPP-Name: Star Corporation' \\\n  -H 'Cache-Control: no-cache'\n"
+          }
+        ],
+        "tags": [
+          "Account Informations"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/xRequestIdReq"
+          },
+          {
+            "$ref": "#/components/parameters/userInvolved"
+          },
+          {
+            "$ref": "#/components/parameters/tppName"
+          },
+          {
+            "$ref": "#/components/parameters/Page"
+          },
+          {
+            "$ref": "#/components/parameters/SizeAccounts"
+          },
+          {
+            "$ref": "#/components/parameters/Sort"
+          },
+          {
+            "$ref": "#/components/parameters/Order"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "headers": {
+              "X-Request-ID": {
+                "$ref": "#/components/headers/xRequestIdRes"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetAccountsRes"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidRequestErr"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedErr"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenErr"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerErr"
+          },
+          "503": {
+            "$ref": "#/components/responses/ServiceUnavailableErr"
+          },
+          "504": {
+            "$ref": "#/components/responses/GatewayTimeoutErr"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "OAuth2": {
+        "description": "The Bearer Token to access OAuth 2.0 protected resources as defined in [RFC 6750](https://tools.ietf.org/html/rfc6750).\n",
+        "type": "http",
+        "scheme": "bearer"
+      },
+      "ApiKey": {
+        "description": "The API key issued for TPP is part of the communication configuration for better identification of third-party call access settings.\nEach application that wants to use APIs, have to be registered in Developer Portal (follow the the registration procedure so that you get your API key).\n",
+        "type": "apiKey",
+        "in": "header",
+        "name": "APIKEY"
+      }
+    },
+    "parameters": {
+      "xRequestIdReq": {
+        "name": "X-Request-ID",
+        "in": "header",
+        "description": "Unique identifier for each request specified by TPP. It is recommended to use a UUID format with a length of 36 to 60 characters.\n",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "maxLength": 60,
+          "example": "f713da2b-6908-4c3f-9461-784f74b86710"
+        }
+      },
+      "userInvolved": {
+        "name": "User-Involved",
+        "in": "header",
+        "description": "The flag identifies if the end user is online and the request was made based on his activity.\n",
+        "required": true,
+        "schema": {
+          "type": "boolean",
+          "example": true
+        }
+      },
+      "tppName": {
+        "name": "TPP-Name",
+        "in": "header",
+        "description": "The name of the original TPP that created the request. Eg. ‘Star corporation, a.s.’.\n",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "example": "Star Corporation, a.s."
+        }
+      },
+      "Page": {
+        "in": "query",
+        "name": "page",
+        "description": "The number of the requested page to be returned.",
+        "schema": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 0
+        }
+      },
+      "SizeAccounts": {
+        "in": "query",
+        "name": "size",
+        "description": "The maximum number of elements per page to be present.",
+        "schema": {
+          "type": "integer",
+          "minimum": 20,
+          "maximum": 1000,
+          "default": 1000
+        }
+      },
+      "Sort": {
+        "in": "query",
+        "name": "sort",
+        "description": "The attribute name(s) by which the result should be sorted.",
+        "schema": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "example": "AccountingDate"
+          }
+        },
+        "style": "form",
+        "explode": false
+      },
+      "Order": {
+        "in": "query",
+        "name": "order",
+        "description": "The order of returned elements.\\\n`ASC` - for ascending order.\\\n`DESC` - for descending order.\n",
+        "schema": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "style": "form",
+        "explode": false
+      }
+    },
+    "headers": {
+      "xRequestIdRes": {
+        "description": "Unique identifier for each request specified by TPP. It is recommended to use a UUID format with a length of 36 to 60 characters.\n",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "maxLength": 60,
+          "example": "f713da2b-6908-4c3f-9461-784f74b86710"
+        }
+      }
+    },
+    "schemas": {
+      "pageNumber": {
+        "description": "Current page number.",
+        "type": "integer",
+        "default": 0,
+        "example": 0
+      },
+      "pageCount": {
+        "description": "Total number of pages.",
+        "type": "integer",
+        "default": 0,
+        "example": 0
+      },
+      "nextPage": {
+        "description": "Next page number.",
+        "type": "integer",
+        "default": 1,
+        "example": 1
+      },
+      "pageSize": {
+        "description": "Number of records returned on current page.",
+        "type": "integer",
+        "example": 30
+      },
+      "totalCount": {
+        "description": "Number of all records returned on all pages.",
+        "type": "integer",
+        "example": 5
+      },
+      "accountId": {
+        "description": "Account identifier returned by the Get accounts call.\\\n**Warning:** *The ID for an account changes over time, so make sure it is fresh and valid before making this call.*\n",
+        "type": "string",
+        "example": "20180410165435228a532fc7dde66413697ecf33d27464f8"
+      },
+      "iban": {
+        "description": "International Bank Account Number (IBAN).",
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 34,
+        "pattern": "^[A-Z]{2}[0-9]{2}[A-Z0-9]{1,30}$",
+        "example": "CZ9103000000001019382023"
+      },
+      "OtherAccountFormat": {
+        "description": "Account no. in other/local format of account no.",
+        "type": "object",
+        "properties": {
+          "identification": {
+            "description": "Local BBAN format of the account number.",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 34,
+            "example": "000000-1019382023/0300"
+          }
+        }
+      },
+      "AccountIdentification": {
+        "description": "Identification of an account.",
+        "type": "object",
+        "properties": {
+          "iban": {
+            "$ref": "#/components/schemas/iban"
+          }
+        },
+        "example": {
+          "iban": "CZ7503000000000009519482"
+        }
+      },
+      "currency": {
+        "description": "Currency code according to ISO 4217 = 3 capital letters.",
+        "type": "string",
+        "maxLength": 3,
+        "pattern": "^[A-Z]{3}$",
+        "example": "CZK"
+      },
+      "country": {
+        "description": "Two-letter country codes as defined in ISO 3166 = 2 capital letters.",
+        "type": "string",
+        "pattern": "^[A-Z]{2}$",
+        "example": "CZ"
+      },
+      "bic": {
+        "description": "BIC/SWIFT code of the bank.",
+        "type": "string",
+        "maxLength": 35,
+        "pattern": "^[A-Z]{6,6}[A-Z2-9][A-NP-Z0-9]([A-Z0-9]{3,3}){0,1}$",
+        "example": "CEKOCZPP"
+      },
+      "AccountServicer": {
+        "description": "Account servicer.",
+        "type": "object",
+        "properties": {
+          "bankCode": {
+            "description": "Local bank code.",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 35,
+            "example": "0300"
+          },
+          "country": {
+            "$ref": "#/components/schemas/country"
+          },
+          "bic": {
+            "$ref": "#/components/schemas/bic"
+          }
+        }
+      },
+      "AccountInfo": {
+        "description": "Client account informations.",
+        "type": "object",
+        "required": [
+          "id",
+          "identification"
+        ],
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/accountId"
+          },
+          "identification": {
+            "$ref": "#/components/schemas/AccountIdentification"
+          },
+          "currency": {
+            "$ref": "#/components/schemas/currency"
+          },
+          "servicer": {
+            "$ref": "#/components/schemas/AccountServicer"
+          },
+          "nameI18N": {
+            "description": "Account name.",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 40,
+            "example": "Muj hlavni ucet"
+          },
+          "productI18N": {
+            "description": "Product name.",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 60,
+            "example": "ČSOB Spoř.účet s krátk.výp.lh. v Kč"
+          },
+          "ownersNames": {
+            "description": "Array of name/s of the account holder/s for consumers or trade name/s for commercial clientsArray of name/s of the account holder/s for consumers or trade name/s for commercial clients.",
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            },
+            "example": [
+              "NOVAK JOSEF",
+              "NOVAKOVA ZDENKA"
+            ]
+          }
+        }
+      },
+      "GetAccountsRes": {
+        "description": "List of client accounts response.",
+        "type": "object",
+        "required": [
+          "pageNumber",
+          "pageCount",
+          "pageSize",
+          "accounts"
+        ],
+        "properties": {
+          "pageNumber": {
+            "$ref": "#/components/schemas/pageNumber"
+          },
+          "pageCount": {
+            "$ref": "#/components/schemas/pageCount"
+          },
+          "nextPage": {
+            "$ref": "#/components/schemas/nextPage"
+          },
+          "pageSize": {
+            "$ref": "#/components/schemas/pageSize"
+          },
+          "totalCount": {
+            "$ref": "#/components/schemas/totalCount"
+          },
+          "accounts": {
+            "description": "List of accounts.",
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "$ref": "#/components/schemas/AccountInfo"
+            }
+          }
+        }
+      },
+      "Error": {
+        "description": "An application error item.",
+        "type": "object",
+        "required": [
+          "error"
+        ],
+        "properties": {
+          "error": {
+            "description": "Error code.",
+            "type": "string",
+            "example": "ERROR_CODE"
+          },
+          "parameters": {
+            "description": "The array of additional elements specific to the given error code. These parameters are always specified in the description of a specific error code.",
+            "type": "object"
+          },
+          "scope": {
+            "description": "Specifies the JSON path of the requestu element that caused the error state to be invoked.",
+            "type": "string"
+          },
+          "message": {
+            "description": "Optional text error description. It is not intended for interpretation to the end user, but for example to enrich the error log.",
+            "type": "string",
+            "example": "Invalid request."
+          }
+        }
+      },
+      "Errors": {
+        "description": "Collection of application errors.",
+        "type": "object",
+        "properties": {
+          "errors": {
+            "description": "List of application errors.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      }
+    },
+    "responses": {
+      "InvalidRequestErr": {
+        "description": "Bad request.",
+        "headers": {
+          "X-Request-ID": {
+            "$ref": "#/components/headers/xRequestIdRes"
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Errors"
+            },
+            "example": {
+              "errors": [
+                {
+                  "error": "INVALID_REQUEST",
+                  "message": "Invalid request."
+                }
+              ]
+            }
+          }
+        }
+      },
+      "UnauthorizedErr": {
+        "description": "Unauthorized.",
+        "headers": {
+          "X-Request-ID": {
+            "$ref": "#/components/headers/xRequestIdRes"
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Errors"
+            },
+            "example": {
+              "errors": [
+                {
+                  "error": "UNAUTHORIZED",
+                  "message": "Attempt to call a method without a proper licence or invalid certificate."
+                }
+              ]
+            }
+          }
+        }
+      },
+      "ForbiddenErr": {
+        "description": "Forbidden.",
+        "headers": {
+          "X-Request-ID": {
+            "$ref": "#/components/headers/xRequestIdRes"
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Errors"
+            },
+            "example": {
+              "errors": [
+                {
+                  "error": "FORBIDDEN",
+                  "message": "No disposal rights."
+                }
+              ]
+            }
+          }
+        }
+      },
+      "InternalServerErr": {
+        "description": "Internal Server Error.",
+        "headers": {
+          "X-Request-ID": {
+            "$ref": "#/components/headers/xRequestIdRes"
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Errors"
+            },
+            "example": {
+              "errors": [
+                {
+                  "error": "SERVER_ERROR",
+                  "message": "Internal server error."
+                }
+              ]
+            }
+          }
+        }
+      },
+      "ServiceUnavailableErr": {
+        "description": "Service Unavailable.",
+        "headers": {
+          "X-Request-ID": {
+            "$ref": "#/components/headers/xRequestIdRes"
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Errors"
+            },
+            "example": {
+              "errors": [
+                {
+                  "error": "SERVER_ERROR",
+                  "message": "Service is temporarily unavailable."
+                }
+              ]
+            }
+          }
+        }
+      },
+      "GatewayTimeoutErr": {
+        "description": "Gateway Timeout.",
+        "headers": {
+          "X-Request-ID": {
+            "$ref": "#/components/headers/xRequestIdRes"
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Errors"
+            },
+            "example": {
+              "errors": [
+                {
+                  "error": "SERVER_ERROR",
+                  "message": "Service is temporarily unavailable."
+                }
+              ]
+            }
+          }
+        }
+      }
+    }
+  }
+}

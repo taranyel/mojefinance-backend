@@ -7,18 +7,9 @@
         <groupId>cvut.fel.sit</groupId>
         <artifactId>mojefinance-service</artifactId>
         <version>1.0-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>bank-service</artifactId>
+    <artifactId>shared-service</artifactId>
     <packaging>jar</packaging>
 
-    <dependencies>
-        <dependency>
-            <groupId>cvut.fel.sit</groupId>
-            <artifactId>authorization-service</artifactId>
-            <version>1.0-SNAPSHOT</version>
-            <scope>compile</scope>
-        </dependency>
-    </dependencies>
 </project>

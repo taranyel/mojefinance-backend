@@ -61,7 +61,7 @@
                         </goals>
                         <configuration>
                             <inputSpec>
-                                ${project.basedir}/src/main/resources/swagger/AccountDirectAccessAPI-KB.json
+                                ${project.basedir}/src/main/resources/swagger/Aisp-KB.json
                             </inputSpec>
                             <generatorName>spring</generatorName>
                             <apiPackage>cvut.fel.sit.kb.openapi.api</apiPackage>
@@ -75,29 +75,6 @@
                             </configOptions>
                         </configuration>
                     </execution>
-
-                    <execution>
-                        <id>kb-oauth-api</id>
-                        <goals>
-                            <goal>generate</goal>
-                        </goals>
-                        <configuration>
-                            <inputSpec>
-                                ${project.basedir}/src/main/resources/swagger/OAuth2-KB.json
-                            </inputSpec>
-                            <generatorName>spring</generatorName>
-                            <apiPackage>cvut.fel.sit.kb.openapi.api</apiPackage>
-                            <modelPackage>cvut.fel.sit.kb.openapi.model</modelPackage>
-                            <supportingFilesToGenerate>
-                                ApiUtil.java
-                            </supportingFilesToGenerate>
-                            <configOptions>
-                                <useSpringSecurity>true</useSpringSecurity>
-                                <interfaceOnly>true</interfaceOnly>
-                            </configOptions>
-                        </configuration>
-                    </execution>
-
                     <execution>
                         <id>reif-api</id>
                         <goals>
@@ -119,29 +96,6 @@
                             </configOptions>
                         </configuration>
                     </execution>
-
-                    <execution>
-                        <id>cs-oauth-api</id>
-                        <goals>
-                            <goal>generate</goal>
-                        </goals>
-                        <configuration>
-                            <inputSpec>
-                                ${project.basedir}/src/main/resources/swagger/cs-oauth-api.json
-                            </inputSpec>
-                            <generatorName>spring</generatorName>
-                            <apiPackage>cvut.fel.sit.cs.openapi.api</apiPackage>
-                            <modelPackage>cvut.fel.sit.cs.openapi.model</modelPackage>
-                            <supportingFilesToGenerate>
-                                ApiUtil.java
-                            </supportingFilesToGenerate>
-                            <configOptions>
-                                <useSpringSecurity>true</useSpringSecurity>
-                                <interfaceOnly>true</interfaceOnly>
-                            </configOptions>
-                        </configuration>
-                    </execution>
-
                     <execution>
                         <id>cs-account-info-api</id>
                         <goals>
@@ -185,7 +139,27 @@
                             </configOptions>
                         </configuration>
                     </execution>
-
+                    <execution>
+                        <id>csob-api</id>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <inputSpec>
+                                ${project.basedir}/src/main/resources/swagger/CSOB-v3-GetAccounts.json
+                            </inputSpec>
+                            <generatorName>spring</generatorName>
+                            <apiPackage>cvut.fel.sit.csob.openapi.api</apiPackage>
+                            <modelPackage>cvut.fel.sit.csob.openapi.model</modelPackage>
+                            <supportingFilesToGenerate>
+                                ApiUtil.java
+                            </supportingFilesToGenerate>
+                            <configOptions>
+                                <useSpringSecurity>true</useSpringSecurity>
+                                <interfaceOnly>true</interfaceOnly>
+                            </configOptions>
+                        </configuration>
+                    </execution>
                     <execution>
                         <id>mojefinance-api</id>
                         <goals>

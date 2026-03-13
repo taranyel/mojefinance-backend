@@ -1,19 +1,19 @@
 package cvut.fel.sit.mojefinance.bank.domain.service;
 
 import com.nimbusds.oauth2.sdk.util.StringUtils;
-import cvut.fel.sit.mojefinance.bank.data.dto.AuthorizedClientServiceRequest;
-import cvut.fel.sit.mojefinance.bank.data.dto.ConnectAuthorizedClientRequest;
+import cvut.fel.sit.mojefinance.authorization.AuthorizationService;
+import cvut.fel.sit.mojefinance.authorization.data.dto.AuthorizedClientServiceRequest;
+import cvut.fel.sit.mojefinance.authorization.data.dto.ConnectAuthorizedClientRequest;
 import cvut.fel.sit.mojefinance.bank.data.dto.GetConnectedBanksDataResponse;
 import cvut.fel.sit.mojefinance.bank.data.entity.BankEntity;
-import cvut.fel.sit.mojefinance.bank.data.exception.ClientRegistrationNotFoundException;
-import cvut.fel.sit.mojefinance.bank.data.repository.AuthorizedClientService;
+import cvut.fel.sit.mojefinance.authorization.data.exception.ClientRegistrationNotFoundException;
 import cvut.fel.sit.mojefinance.bank.data.repository.BankRepository;
 import cvut.fel.sit.mojefinance.bank.domain.dto.ConnectBankDomainRequest;
-import cvut.fel.sit.mojefinance.bank.domain.dto.GetConnectedBanksDomainResponse;
+import cvut.fel.sit.mojefinance.bank.domain.dto.ConnectedBanksDomainResponse;
 import cvut.fel.sit.mojefinance.bank.domain.entity.BankConnectionStatus;
 import cvut.fel.sit.mojefinance.bank.domain.entity.BankDomainEntity;
 import cvut.fel.sit.mojefinance.bank.domain.mapper.BankDomainMapper;
-import cvut.fel.sit.mojefinance.bank.util.Constants;
+import cvut.fel.sit.shared.util.Constants;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
@@ -29,7 +29,7 @@ import java.util.Objects;
 public class BankServiceImpl implements BankService {
     private final BankDomainMapper bankDomainMapper;
     private final BankRepository bankRepository;
-    private final AuthorizedClientService authorizedClientService;
+    private final AuthorizationService authorizationService;
 
     @Override
     public BankDomainEntity connectBank(ConnectBankDomainRequest domainRequest) {
@@ -40,7 +40,7 @@ public class BankServiceImpl implements BankService {
         ConnectAuthorizedClientRequest authorizedClientRequest = bankDomainMapper.toConnectAuthorizedClientRequest(domainRequest);
         boolean manuallyCreated = false;
         try {
-            authorizedClientService.connectAuthorizedClient(authorizedClientRequest);
+            authorizationService.connectAuthorizedClient(authorizedClientRequest);
         } catch (ClientRegistrationNotFoundException e) {
             if (!Objects.equals(bankDomainEntity.getClientRegistrationId(), Constants.REIFFEISEN_BANK_CLIENT_REGISTRATION_ID)) {
                 log.info("Bank {} not found in authorized client service. Marking as fake connection.", bankDomainEntity.getBankName());
@@ -67,14 +67,14 @@ public class BankServiceImpl implements BankService {
         String principalName = authentication.getName();
 
         AuthorizedClientServiceRequest authorizedClientServiceRequest = getAuthorizedClientServiceRequest(clientRegistrationId, principalName);
-        authorizedClientService.disconnectAuthorizedClient(authorizedClientServiceRequest);
+        authorizationService.disconnectAuthorizedClient(authorizedClientServiceRequest);
 
         bankRepository.removeConnectedBankByClientRegistrationIdAndPrincipalName(clientRegistrationId, principalName);
         log.info("Bank with client registration ID {} disconnected successfully.", clientRegistrationId);
     }
 
     @Override
-    public GetConnectedBanksDomainResponse getConnectedBanks() {
+    public ConnectedBanksDomainResponse getConnectedBanks() {
         log.info("Retrieving connected banks for authorized user.");
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String principalName = authentication.getName();
@@ -84,7 +84,7 @@ public class BankServiceImpl implements BankService {
 
         updateBankConnectionStatus(notManuallyCreatedConnectedBanks, principalName);
 
-        GetConnectedBanksDomainResponse domainResponse = bankDomainMapper.toConnectedBanksDomainResponse(internalResponse);
+        ConnectedBanksDomainResponse domainResponse = bankDomainMapper.toConnectedBanksDomainResponse(internalResponse);
         log.info("Connected banks: {}", domainResponse);
         return domainResponse;
     }
@@ -104,7 +104,7 @@ public class BankServiceImpl implements BankService {
 
     private boolean authorizedClientDoesNotExist(String principalName, String clientRegistrationId) {
         AuthorizedClientServiceRequest authorizedClientRequest = getAuthorizedClientServiceRequest(clientRegistrationId, principalName);
-        return !authorizedClientService.authorizedClientExists(authorizedClientRequest);
+        return !authorizationService.authorizedClientExists(authorizedClientRequest);
     }
 
     private List<BankEntity> getNotManuallyCreatedConnectedBanks(GetConnectedBanksDataResponse banksDataResponse) {
