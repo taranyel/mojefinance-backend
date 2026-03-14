@@ -7,18 +7,19 @@ spring:
   config:
     import:
       - classpath:client-registration.yaml
+      - classpath:external-api-specification.yaml
 
   jpa:
     show-sql: false
     generate-ddl: true
     defer-datasource-initialization: true
     hibernate:
-      ddl-auto: create-drop
-  sql:
-    init:
-      mode: always
-      data-locations:
-        - classpath:db/scripts/data.sql
+      ddl-auto: update
+#  sql:
+#    init:
+#      mode: always
+#      data-locations:
+#        - classpath:db/scripts/data.sql
 
   ssl:
     bundle:

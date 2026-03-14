@@ -113,7 +113,6 @@
                             </configOptions>
                         </configuration>
                     </execution>
-
                     <execution>
                         <id>air-bank-api</id>
                         <goals>
@@ -136,7 +135,7 @@
                         </configuration>
                     </execution>
                     <execution>
-                        <id>csob-api</id>
+                        <id>csob-accounts</id>
                         <goals>
                             <goal>generate</goal>
                         </goals>
@@ -145,8 +144,29 @@
                                 ${project.basedir}/src/main/resources/swagger/CSOB-v3-GetAccounts.json
                             </inputSpec>
                             <generatorName>spring</generatorName>
-                            <apiPackage>cvut.fel.sit.csob.openapi.api</apiPackage>
-                            <modelPackage>cvut.fel.sit.csob.openapi.model</modelPackage>
+                            <apiPackage>cvut.fel.sit.csob.accounts.openapi.api</apiPackage>
+                            <modelPackage>cvut.fel.sit.csob.accounts.openapi.model</modelPackage>
+                            <supportingFilesToGenerate>
+                                ApiUtil.java
+                            </supportingFilesToGenerate>
+                            <configOptions>
+                                <useSpringSecurity>true</useSpringSecurity>
+                                <interfaceOnly>true</interfaceOnly>
+                            </configOptions>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>csob-balances</id>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <inputSpec>
+                                ${project.basedir}/src/main/resources/swagger/CSOB-v3-GetAccountBalance.json
+                            </inputSpec>
+                            <generatorName>spring</generatorName>
+                            <apiPackage>cvut.fel.sit.csob.balances.openapi.api</apiPackage>
+                            <modelPackage>cvut.fel.sit.csob.balances.openapi.model</modelPackage>
                             <supportingFilesToGenerate>
                                 ApiUtil.java
                             </supportingFilesToGenerate>
