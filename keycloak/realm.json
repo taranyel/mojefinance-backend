@@ -33,6 +33,15 @@
       "enabled": true,
       "emailVerified": true,
       "credentials": [{ "type": "password", "value": "test" }]
+    },
+    {
+      "username": "test1",
+      "email": "test1@gmail.com",
+      "firstName": "test1",
+      "lastName": "test1",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [{ "type": "password", "value": "test1" }]
     }
   ]
 }

@@ -4,7 +4,6 @@ import cvut.fel.sit.mojefinance.authorization.data.dto.AuthorizedClientServiceRe
 import cvut.fel.sit.mojefinance.authorization.data.dto.ConnectAuthorizedClientRequest;
 import cvut.fel.sit.mojefinance.authorization.data.exception.ClientRegistrationNotFoundException;
 import cvut.fel.sit.mojefinance.authorization.data.util.ExchangeTokenHelper;
-import cvut.fel.sit.shared.util.Constants;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
@@ -14,6 +13,8 @@ import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
 import org.springframework.stereotype.Service;
+
+import static cvut.fel.sit.shared.util.Constants.REIFFEISEN_BANK_CLIENT_REGISTRATION_ID;
 
 
 @Slf4j
@@ -44,7 +45,7 @@ public class AuthorizedClientServiceImpl implements AuthorizedClientService {
         if (clientRegistrationId == null) {
             throw new IllegalArgumentException("Client registration ID must be provided");
         }
-        if (Constants.REIFFEISEN_BANK_CLIENT_REGISTRATION_ID.equals(clientRegistrationId)) {
+        if (REIFFEISEN_BANK_CLIENT_REGISTRATION_ID.equals(clientRegistrationId)) {
             return null;
         }
 

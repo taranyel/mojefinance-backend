@@ -16,7 +16,7 @@ public class Product {
     private String currency;
     private List<String> ownersNames;
     private String productCategory;
-    private Balance balance;
+    private Amount balance;
     private Boolean manuallyCreated;
     private String bankCode;
     private BankDetails bankDetails;

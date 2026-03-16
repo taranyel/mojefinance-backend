@@ -1,6 +1,5 @@
 package cvut.fel.sit.mojefinance.authorization.config;
 
-import cvut.fel.sit.shared.util.Constants;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -36,6 +35,10 @@ import org.springframework.web.client.RestTemplate;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+
+import static cvut.fel.sit.shared.util.Constants.CSOB_CLIENT_REGISTRATION_ID;
+import static cvut.fel.sit.shared.util.Constants.KB_CLIENT_REGISTRATION_ID;
+import static cvut.fel.sit.shared.util.Constants.CSOB_API_KEY_HEADER;
 
 @Configuration
 @RequiredArgsConstructor
@@ -75,8 +78,8 @@ public class Oauth2ClientManagerConfig {
             @Qualifier("defaultRestTemplate") RestTemplate defaultTemplate) {
 
         Map<String, DefaultAuthorizationCodeTokenResponseClient> clients = Map.of(
-                Constants.KB_CLIENT_REGISTRATION_ID, createAuthClient(kbTemplate),
-                Constants.CSOB_CLIENT_REGISTRATION_ID, createAuthClient(csobTemplate)
+                KB_CLIENT_REGISTRATION_ID, createAuthClient(kbTemplate),
+                CSOB_CLIENT_REGISTRATION_ID, createAuthClient(csobTemplate)
         );
 
         DefaultAuthorizationCodeTokenResponseClient fallbackClient = createAuthClient(defaultTemplate);
@@ -94,8 +97,8 @@ public class Oauth2ClientManagerConfig {
             @Qualifier("defaultRestTemplate") RestTemplate defaultTemplate) {
 
         Map<String, DefaultRefreshTokenTokenResponseClient> clients = Map.of(
-                Constants.KB_CLIENT_REGISTRATION_ID, createRefreshClient(kbTemplate),
-                Constants.CSOB_CLIENT_REGISTRATION_ID, createRefreshClient(csobTemplate)
+                KB_CLIENT_REGISTRATION_ID, createRefreshClient(kbTemplate),
+                CSOB_CLIENT_REGISTRATION_ID, createRefreshClient(csobTemplate)
         );
 
         DefaultRefreshTokenTokenResponseClient fallbackClient = createRefreshClient(defaultTemplate);
@@ -186,8 +189,8 @@ public class Oauth2ClientManagerConfig {
             headers.putAll(entity.getHeaders());
 
             String registrationId = request.getClientRegistration().getRegistrationId();
-            if (Constants.CSOB_CLIENT_REGISTRATION_ID.equals(registrationId)) {
-                headers.add(Constants.CSOB_API_KEY_HEADER, csobApiKey);
+            if (CSOB_CLIENT_REGISTRATION_ID.equals(registrationId)) {
+                headers.add(CSOB_API_KEY_HEADER, csobApiKey);
             }
 
             return new RequestEntity<>(entity.getBody(), headers, entity.getMethod(), entity.getUrl());

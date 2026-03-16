@@ -6,7 +6,7 @@ import cvut.fel.sit.cs.openapi.model.AccountDetail;
 import cvut.fel.sit.cs.openapi.model.MyAccountsGet200Response;
 import cvut.fel.sit.csob.accounts.openapi.model.AccountInfo;import cvut.fel.sit.csob.accounts.openapi.model.GetAccountsRes;import cvut.fel.sit.kb.openapi.model.Account;
 import cvut.fel.sit.kb.openapi.model.GetAccountListResponse;
-import cvut.fel.sit.mojefinance.product.domain.dto.GetProductsResponse;
+import cvut.fel.sit.mojefinance.product.domain.dto.ProductsDomainResponse;
 import cvut.fel.sit.mojefinance.product.domain.entity.BankDetails;
 import cvut.fel.sit.mojefinance.product.domain.entity.Product;
 import cvut.fel.sit.reif.openapi.model.GetAccounts200Response;
@@ -19,19 +19,19 @@ import org.mapstruct.Mapping;
 public interface ProductsApiMapper {
 
     @Mapping(target = "products", source = "accounts")
-    GetProductsResponse toGetProductsResponse(AccountList accountList, @Context BankDetails bankDetails);
+    ProductsDomainResponse toProductsResponse(AccountList accountList, @Context BankDetails bankDetails);
 
     @Mapping(target = "products", source = "accounts")
-    GetProductsResponse toGetProductsResponse(MyAccountsGet200Response myAccountsGet200Response, @Context BankDetails bankDetails);
+    ProductsDomainResponse toProductsResponse(MyAccountsGet200Response myAccountsGet200Response, @Context BankDetails bankDetails);
 
     @Mapping(target = "products", source = "accounts")
-    GetProductsResponse toGetProductsResponse(GetAccountsRes getAccountsRes, @Context BankDetails bankDetails);
+    ProductsDomainResponse toProductsResponse(GetAccountsRes getAccountsRes, @Context BankDetails bankDetails);
 
     @Mapping(target = "products", source = "accounts")
-    GetProductsResponse toGetProductsResponse(GetAccountListResponse getAccountListResponse, @Context BankDetails bankDetails);
+    ProductsDomainResponse toProductsResponse(GetAccountListResponse getAccountListResponse, @Context BankDetails bankDetails);
 
     @Mapping(target = "products", source = "accounts")
-    GetProductsResponse toGetProductsResponse(GetAccounts200Response getAccounts200Response, @Context BankDetails bankDetails);
+    ProductsDomainResponse toProductsResponse(GetAccounts200Response getAccounts200Response, @Context BankDetails bankDetails);
 
     @Mapping(target = "productId", source = "id")
     @Mapping(target = "productIdentification.iban", source = "identification.iban")

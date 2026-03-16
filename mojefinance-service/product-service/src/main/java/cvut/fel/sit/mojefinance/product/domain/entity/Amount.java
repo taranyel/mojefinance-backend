@@ -9,7 +9,7 @@ import java.math.BigDecimal;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Balance {
+public class Amount {
     private String currency;
-    private BigDecimal amount;
+    private BigDecimal value;
 }

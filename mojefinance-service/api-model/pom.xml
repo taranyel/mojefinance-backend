@@ -111,6 +111,12 @@
                                 <useSpringSecurity>true</useSpringSecurity>
                                 <interfaceOnly>true</interfaceOnly>
                             </configOptions>
+                            <typeMappings>
+                                <typeMapping>Date=cvut.fel.sit.cs.openapi.model.Date</typeMapping>
+                            </typeMappings>
+                            <importMappings>
+                                <importMapping>Date=cvut.fel.sit.cs.openapi.model.Date</importMapping>
+                            </importMappings>
                         </configuration>
                     </execution>
                     <execution>
@@ -167,6 +173,27 @@
                             <generatorName>spring</generatorName>
                             <apiPackage>cvut.fel.sit.csob.balances.openapi.api</apiPackage>
                             <modelPackage>cvut.fel.sit.csob.balances.openapi.model</modelPackage>
+                            <supportingFilesToGenerate>
+                                ApiUtil.java
+                            </supportingFilesToGenerate>
+                            <configOptions>
+                                <useSpringSecurity>true</useSpringSecurity>
+                                <interfaceOnly>true</interfaceOnly>
+                            </configOptions>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>csob-transactions</id>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <inputSpec>
+                                ${project.basedir}/src/main/resources/swagger/CSOB-v3-GetTransactionHistory.json
+                            </inputSpec>
+                            <generatorName>spring</generatorName>
+                            <apiPackage>cvut.fel.sit.csob.transactions.openapi.api</apiPackage>
+                            <modelPackage>cvut.fel.sit.csob.transactions.openapi.model</modelPackage>
                             <supportingFilesToGenerate>
                                 ApiUtil.java
                             </supportingFilesToGenerate>

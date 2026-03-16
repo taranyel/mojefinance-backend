@@ -2,9 +2,10 @@ package cvut.fel.sit.mojefinance.product.api.controller;
 
 import cvut.fel.sit.mojefinance.openapi.api.ProductsApi;
 import cvut.fel.sit.mojefinance.openapi.model.ProductsResponse;
+import cvut.fel.sit.mojefinance.openapi.model.TransactionsResponse;
 import cvut.fel.sit.mojefinance.product.api.mapper.ProductsMapper;
-import cvut.fel.sit.mojefinance.product.domain.dto.GetProductsResponse;
-import cvut.fel.sit.mojefinance.product.domain.service.ProductService;
+import cvut.fel.sit.mojefinance.product.domain.dto.AccountInfoRequest;import cvut.fel.sit.mojefinance.product.domain.dto.ProductsDomainResponse;
+import cvut.fel.sit.mojefinance.product.domain.dto.TransactionsDomainResponse;import cvut.fel.sit.mojefinance.product.domain.entity.BankDetails;import cvut.fel.sit.mojefinance.product.domain.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,8 +19,20 @@ public class ProductController implements ProductsApi {
 
     @Override
     public ResponseEntity<ProductsResponse> getProducts(String authorization) {
-        GetProductsResponse domainResponse = productService.getProducts();
+        ProductsDomainResponse domainResponse = productService.getProducts();
         ProductsResponse apiResponse = productsMapper.toProductsResponse(domainResponse);
         return new ResponseEntity<>(apiResponse, HttpStatus.OK);
     }
-}
+
+    @Override
+    public ResponseEntity<TransactionsResponse> getTransactions(String authorization, String accountId, String clientRegistrationId) {
+        AccountInfoRequest request = AccountInfoRequest.builder()
+                .bankDetails(BankDetails.builder()
+                        .clientRegistrationId(clientRegistrationId)
+                        .build())
+                .accountId(accountId)
+                .build();
+        TransactionsDomainResponse domainResponse = productService.getTransactions(request);
+        TransactionsResponse apiResponse = productsMapper.toTransactionsResponse(domainResponse);
+        return new ResponseEntity<>(apiResponse, HttpStatus.OK);
+    }}

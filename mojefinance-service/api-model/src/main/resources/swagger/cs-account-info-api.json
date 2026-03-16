@@ -484,7 +484,7 @@
           },
           "amount": { "$ref": "#/components/schemas/AmountBalance" },
           "creditDebitIndicator": { "type": "string", "enum": ["DBIT", "CRDT"] },
-          "date": { "$ref": "#/components/schemas/CustomDate"}
+          "date": { "$ref": "#/components/schemas/Date"}
         }
       },
       "AccountTransaction": {
@@ -496,8 +496,8 @@
           "amount": { "$ref": "#/components/schemas/AmountTransaction" },
           "creditDebitIndicator": { "type": "string", "enum": ["CRDT", "DBIT"] },
           "status": { "type": "string", "enum": ["BOOK", "INFO"] },
-          "bookingDate": { "$ref": "#/components/schemas/CustomDate"},
-          "valueDate": { "$ref": "#/components/schemas/CustomDate"},
+          "bookingDate": { "$ref": "#/components/schemas/Date"},
+          "valueDate": { "$ref": "#/components/schemas/Date"},
           "bankTransactionCode": {
             "type": "object",
             "required": [ "proprietary" ],
@@ -722,11 +722,11 @@
           }
         }
       },
-      "CustomDate": {
+      "Date": {
         "type": "object",
-        "required": [ "dateTime" ],
+        "required": [ "date" ],
         "properties": {
-          "dateTime": { "type": "string" }
+          "date": { "type": "string" }
         }
       },
       "AmountBalance": {

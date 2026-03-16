@@ -14,7 +14,7 @@ import cvut.fel.sit.kb.openapi.model.BalanceAmountType;
 import cvut.fel.sit.kb.openapi.model.BalanceType;
 import cvut.fel.sit.kb.openapi.model.CodeOrProprietary;
 import cvut.fel.sit.kb.openapi.model.GetAccountBalanceResponse;
-import cvut.fel.sit.mojefinance.product.domain.entity.Balance;
+import cvut.fel.sit.mojefinance.product.domain.entity.Amount;
 import cvut.fel.sit.reif.openapi.model.GetBalance200Response;
 import cvut.fel.sit.reif.openapi.model.GetBalance200ResponseCurrencyFoldersInnerBalancesInner;
 import org.springframework.stereotype.Component;
@@ -25,13 +25,14 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+import static cvut.fel.sit.shared.util.Constants.CLAV_TYPE_CODE;
+import static cvut.fel.sit.shared.util.Constants.DEBIT_INDICATOR;
+import static cvut.fel.sit.shared.util.Constants.CZK_CURRENCY_CODE;
+
 @Component
 public class AccountBalanceApiMapper {
-    private static final String CLAV_TYPE_CODE = "CLAV";
-    private static final String DEBIT_INDICATOR = "DBIT";
-    private static final String CZK = "CZK";
 
-    public Balance toDomainBalance(BalanceList response) {
+    public Amount toDomainBalance(BalanceList response) {
         if (response == null) return null;
         return extractBalanceTemplate(
                 response.getBalances(),
@@ -42,7 +43,7 @@ public class AccountBalanceApiMapper {
         );
     }
 
-    public Balance toDomainBalance(MyAccountsIdBalanceGet200Response response) {
+    public Amount toDomainBalance(MyAccountsIdBalanceGet200Response response) {
         if (response == null) return null;
         return extractBalanceTemplate(
                 response.getBalances(),
@@ -53,7 +54,7 @@ public class AccountBalanceApiMapper {
         );
     }
 
-    public Balance toDomainBalance(GetAccountBalanceRes response) {
+    public Amount toDomainBalance(GetAccountBalanceRes response) {
         if (response == null) return null;
         return extractBalanceTemplate(
                 response.getBalances(),
@@ -64,7 +65,7 @@ public class AccountBalanceApiMapper {
         );
     }
 
-    public Balance toDomainBalance(GetAccountBalanceResponse response) {
+    public Amount toDomainBalance(GetAccountBalanceResponse response) {
         if (response == null) return null;
         return extractBalanceTemplate(
                 response.getBalances(),
@@ -75,11 +76,11 @@ public class AccountBalanceApiMapper {
         );
     }
 
-    public Balance toDomainBalance(GetBalance200Response response) {
+    public Amount toDomainBalance(GetBalance200Response response) {
         if (response == null || response.getCurrencyFolders() == null) return null;
 
         return response.getCurrencyFolders().stream()
-                .filter(folder -> CZK.equals(folder.getCurrency()))
+                .filter(folder -> CZK_CURRENCY_CODE.equals(folder.getCurrency()))
                 .findFirst()
                 .map(folder -> extractBalanceTemplate(
                         folder.getBalances(),
@@ -91,7 +92,7 @@ public class AccountBalanceApiMapper {
                 .orElse(null);
     }
 
-    private <T> Balance extractBalanceTemplate(
+    private <T> Amount extractBalanceTemplate(
             List<T> balances,
             Predicate<T> isClavPredicate,
             Function<T, BigDecimal> amountExtractor,
@@ -112,8 +113,8 @@ public class AccountBalanceApiMapper {
             amount = amount.negate();
         }
 
-        return Balance.builder()
-                .amount(amount)
+        return Amount.builder()
+                .value(amount)
                 .currency(currencyExtractor.apply(selectedBalance))
                 .build();
     }

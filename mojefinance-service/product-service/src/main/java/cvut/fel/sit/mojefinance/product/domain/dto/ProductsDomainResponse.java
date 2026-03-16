@@ -10,6 +10,6 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class GetProductsResponse {
+public class ProductsDomainResponse {
     private List<Product> products;
 }

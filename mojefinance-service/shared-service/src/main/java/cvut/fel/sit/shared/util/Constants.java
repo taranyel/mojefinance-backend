@@ -16,4 +16,8 @@ public class Constants {
 
     public static final String AIR_BANK_CLIENT_REGISTRATION_ID = "air-bank";
     public static final String AIR_BANK_NAME = "Air Bank";
+
+    public static final String CZK_CURRENCY_CODE = "CZK";
+    public static final String CLAV_TYPE_CODE = "CLAV";
+    public static final String DEBIT_INDICATOR = "DBIT";
 }

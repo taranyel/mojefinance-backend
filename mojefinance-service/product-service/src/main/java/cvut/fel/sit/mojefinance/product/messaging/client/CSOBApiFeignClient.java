@@ -2,12 +2,13 @@ package cvut.fel.sit.mojefinance.product.messaging.client;
 
 import cvut.fel.sit.csob.accounts.openapi.model.GetAccountsRes;
 import cvut.fel.sit.csob.balances.openapi.model.GetAccountBalanceRes;
-import cvut.fel.sit.mojefinance.product.messaging.config.CsobFeignConfig;
+import cvut.fel.sit.csob.transactions.openapi.model.GetTransactionHistoryRes;import cvut.fel.sit.mojefinance.product.messaging.config.CsobFeignConfig;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @FeignClient(
         name = "CSOBApiFeignClient",
@@ -35,5 +36,18 @@ public interface CSOBApiFeignClient {
             @RequestHeader("APIKEY") String apiKey,
             @RequestHeader("Content-Type") String contentType,
             @PathVariable String id
+    );
+
+    @GetMapping(value = "${external.api.csob.transactions-path}")
+    ResponseEntity<GetTransactionHistoryRes> getTransactions(
+            @RequestHeader("Authorization") String authorization,
+            @RequestHeader("X-Request-ID") String xRequestId,
+            @RequestHeader("User-Involved") Boolean userInvolved,
+            @RequestHeader("TPP-Name") String tppName,
+            @RequestHeader("APIKEY") String apiKey,
+            @RequestHeader("Content-Type") String contentType,
+            @PathVariable String id,
+            @RequestParam("fromDate") String fromDate,
+            @RequestParam("toDate") String toDate
     );
 }

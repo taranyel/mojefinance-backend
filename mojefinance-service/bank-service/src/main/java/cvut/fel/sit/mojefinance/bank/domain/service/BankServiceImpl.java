@@ -13,7 +13,6 @@ import cvut.fel.sit.mojefinance.bank.domain.dto.ConnectedBanksDomainResponse;
 import cvut.fel.sit.mojefinance.bank.domain.entity.BankConnectionStatus;
 import cvut.fel.sit.mojefinance.bank.domain.entity.BankDomainEntity;
 import cvut.fel.sit.mojefinance.bank.domain.mapper.BankDomainMapper;
-import cvut.fel.sit.shared.util.Constants;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
@@ -22,6 +21,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Objects;
+
+import static cvut.fel.sit.shared.util.Constants.REIFFEISEN_BANK_CLIENT_REGISTRATION_ID;
 
 @Slf4j
 @Service
@@ -42,7 +43,7 @@ public class BankServiceImpl implements BankService {
         try {
             authorizationService.connectAuthorizedClient(authorizedClientRequest);
         } catch (ClientRegistrationNotFoundException e) {
-            if (!Objects.equals(bankDomainEntity.getClientRegistrationId(), Constants.REIFFEISEN_BANK_CLIENT_REGISTRATION_ID)) {
+            if (!Objects.equals(bankDomainEntity.getClientRegistrationId(), REIFFEISEN_BANK_CLIENT_REGISTRATION_ID)) {
                 log.info("Bank {} not found in authorized client service. Marking as fake connection.", bankDomainEntity.getBankName());
                 manuallyCreated = true;
             }
@@ -93,7 +94,7 @@ public class BankServiceImpl implements BankService {
         for (BankEntity connectedBank : notManuallyCreatedConnectedBanks) {
             String clientRegistrationId = connectedBank.getId().getClientRegistrationId();
             boolean authorizedClientDoesNotExist = authorizedClientDoesNotExist(principalName, clientRegistrationId);
-            boolean bankIsNotReiffeisenbank = !Constants.REIFFEISEN_BANK_CLIENT_REGISTRATION_ID.equals(clientRegistrationId);
+            boolean bankIsNotReiffeisenbank = !REIFFEISEN_BANK_CLIENT_REGISTRATION_ID.equals(clientRegistrationId);
 
             if (authorizedClientDoesNotExist && bankIsNotReiffeisenbank) {
                 connectedBank.setBankConnectionStatus(BankConnectionStatus.DISCONNECTED.name());

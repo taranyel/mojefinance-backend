@@ -8,4 +8,5 @@ import lombok.Data;
 public class ProductsMessagingRequest {
     private String authorization;
     private BankDetails bankDetails;
+    private String principalName;
 }

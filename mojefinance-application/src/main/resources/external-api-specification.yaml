@@ -6,6 +6,7 @@ external:
       authorization-path: /v1/sandbox-idp/auth
       accounts-path: /v4/account-information/my/accounts
       balances-path: /v4/account-information/my/accounts/{id}/balance
+      transactions-path: /v4/account-information/my/accounts/{id}/transactions
       apikey: ${ceska-sporitelna-apikey}
     kb:
       base-url: https://api.kb.cz/sandbox
@@ -13,10 +14,12 @@ external:
       authorization-url: https://api-gateway.kb.cz/sandbox/oauth2-authorization-ui/v3
       accounts-path: /aisp/v2/my/accounts
       balances-path: /aisp/v2/my/accounts/{id}/balance
+      transactions-path: /aisp/my/accounts/{id}/transactions
     reiffeisen-bank:
       base-url: https://api.rb.cz/rbcz
       accounts-path: /premium/mock/accounts1
       balances-path: /premium/mock/accounts/{accountNumber}/balance
+      transactions-path: premium/mock/accounts/{accountNumber}/{currencyCode}/transactions
       x-ibm-client-id: ${reiffeisen-bank-x-ibm-client-id}
     air-bank:
       base-url: https://api.airbank.cz/sandbox
@@ -24,11 +27,13 @@ external:
       authorization-url: http://developers.airbank.cz/sandbox/login
       accounts-path: /accountInfo/v7/my/accounts
       balances-path: /accountInfo/v7/my/accounts/{id}/balance
+      transactions-path: /accountInfo/v7/my/accounts/{accountId}/transactions
     csob:
       base-url: https://api.csob.cz/api/csob
       token-path: /oauth2/v1/token
       authorization-url: https://identita.csob.cz/mep/fs/fl/oauth2/auth
       accounts-path: /psd2/v3/ais/my/accounts
       balances-path: /psd2/v3/ais/my/accounts/{id}/balance
+      transactions-path: /psd2/v3/ais/my/accounts/{id}/transactions
       apikey: ${csob-apikey}
       tpp-name: ${csob-tpp-name}
