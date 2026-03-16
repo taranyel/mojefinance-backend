@@ -290,8 +290,8 @@ components:
           type: string
         accountName:
           type: string
-        bankName:
-          type: string
+        bankDetails:
+          $ref: '#/components/schemas/BankDetails'
         productIdentification:
           $ref: '#/components/schemas/ProductIdentification'
         currency:
@@ -315,6 +315,14 @@ components:
         iban:
           type: string
         productNumber:
+          type: string
+
+    BankDetails:
+      type: object
+      properties:
+        bankName:
+          type: string
+        clientRegistrationId:
           type: string
 
     Balance:

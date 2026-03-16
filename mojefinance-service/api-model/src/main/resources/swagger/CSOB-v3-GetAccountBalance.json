@@ -1,0 +1,553 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "PSD2 Account Information Service (AIS) APIs",
+    "version": "3.0",
+    "description": "# Introduction \nThe AIS API offers information services about the bank clients’ payment accounts.\nTo call these APIs, you need to possess valid PSD2 certificate containing the `AISP` scope.    \n\n# Authorization \nWhen making requests to access the bank clients data or make transactions on their behalf, the clients need to authorize such calls.\nTo prove that a bank client gave a consent to access their accounts data or make transactions on their behalf, CSOB API offers two forms of authorization:\n  - API Key\n  - OAuth2\n  \nOAuth enables clients to access protected resources by obtaining an access token, which is defined in \"The OAuth 2.0 Authorization\nFramework\" [RFC6749](https://tools.ietf.org/html/rfc6749) as \"a string representing an access authorization issued to the client\",\nrather than using the resource owner's credentials directly. At this moment we support the [Authorization Code Grant](https://tools.ietf.org/html/rfc6749#page-24).\n"
+  },
+  "servers": [
+    {
+      "url": "https://api.csob.cz/api/csob/psd2",
+      "description": "CSOB API Gateway - Production"
+    },
+    {
+      "url": "https://api.acc.csob.cz/api/csob/psd2",
+      "description": "CSOB API Gateway - Acceptance"
+    },
+    {
+      "url": "https://api.int.csob.cz/api/csob/psd2",
+      "description": "CSOB API Gateway - Integration"
+    }
+  ],
+  "security": [
+    {
+      "OAuth2": []
+    },
+    {
+      "ApiKey": []
+    }
+  ],
+  "tags": [
+    {
+      "name": "Account Informations"
+    }
+  ],
+  "paths": {
+    "/v3/ais/my/accounts/{id}/balance": {
+      "get": {
+        "operationId": "GetAccountBalance",
+        "summary": "Account ballance",
+        "description": "Get balance of the account.\n\n### Supported features\n\n| Feature   | Supported |\n| --------- | :-------: |\n| Paging    | &#x2718;  |\n| Sorting   | &#x2718;  |\n| Filtering | &#x2718;  |\n\n### Operation-specific errors\n\n| HTTP status code | Error | Description |\n| ---------------- | ----- | ----------- |\n| 400              | FIELD_MISSING  | Missing account number |\n| 400              | AC01  | Invalid account number |\n| 403              | AG01  | Consent to check account balance not granted |\n| 404              | NOT_FOUND  | Account not found |\n",
+        "x-code-samples": [
+          {
+            "lang": "http",
+            "label": "HTTP",
+            "source": "GET /api/csob/psd2/v3/ais/my/accounts/20180410165435228a532fc7dde66413697ecf33d27464f8/balance HTTP/1.1\nHost: api.csob.cz\nAPIKEY: l7xxca45406f0e934f7eb5df07d150a38e7b\nAuthorization: Bearer 3/TgBurw1ownSm9QUAZXjnZP584CD59OeFt2z0ksJWvNRrFZ2bwiH2rYr54rrlcEVv\nX-Request-ID: 9b1390ae-8c87-4f92-b9ae-7982bdde7e1a\nUser-Involved: true\nTPP-Name: Star Corporation\nCache-Control: no-cache          \n"
+          },
+          {
+            "lang": "shell",
+            "label": "cURL",
+            "source": "curl -X GET https://api.csob.cz/api/csob/psd2/v3/ais/my/accounts/20180410165435228a532fc7dde66413697ecf33d27464f8/balance \\\n  -H 'APIKEY: l7xxca45406f0e934f7eb5df07d150a38e7b' \\\n  -H 'Authorization: Bearer 3/TgBurw1ownSm9QUAZXjnZP584CD59OeFt2z0ksJWvNRrFZ2bwiH2rYr54rrlcEVv' \\\n  -H 'X-Request-ID: 9b1390ae-8c87-4f92-b9ae-7982bdde7e1a' \\\n  -H 'User-Involved: true' \\\n  -H 'TPP-Name: Star Corporation' \\\n  -H 'Cache-Control: no-cache'          \n"
+          }
+        ],
+        "tags": [
+          "Account Informations"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/xRequestIdReq"
+          },
+          {
+            "$ref": "#/components/parameters/userInvolved"
+          },
+          {
+            "$ref": "#/components/parameters/tppName"
+          },
+          {
+            "$ref": "#/components/parameters/AccountId"
+          },
+          {
+            "$ref": "#/components/parameters/Currency"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "headers": {
+              "X-Request-ID": {
+                "$ref": "#/components/headers/xRequestIdRes"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetAccountBalanceRes"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidRequestErr"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedErr"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenErr"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundErr"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerErr"
+          },
+          "503": {
+            "$ref": "#/components/responses/ServiceUnavailableErr"
+          },
+          "504": {
+            "$ref": "#/components/responses/GatewayTimeoutErr"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "OAuth2": {
+        "description": "The Bearer Token to access OAuth 2.0 protected resources as defined in [RFC 6750](https://tools.ietf.org/html/rfc6750).\n",
+        "type": "http",
+        "scheme": "bearer"
+      },
+      "ApiKey": {
+        "description": "The API key issued for TPP is part of the communication configuration for better identification of third-party call access settings.\nEach application that wants to use APIs, have to be registered in Developer Portal (follow the the registration procedure so that you get your API key).\n",
+        "type": "apiKey",
+        "in": "header",
+        "name": "APIKEY"
+      }
+    },
+    "parameters": {
+      "xRequestIdReq": {
+        "name": "X-Request-ID",
+        "in": "header",
+        "description": "Unique identifier for each request specified by TPP. It is recommended to use a UUID format with a length of 36 to 60 characters.\n",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "maxLength": 60,
+          "example": "f713da2b-6908-4c3f-9461-784f74b86710"
+        }
+      },
+      "userInvolved": {
+        "name": "User-Involved",
+        "in": "header",
+        "description": "The flag identifies if the end user is online and the request was made based on his activity.\n",
+        "required": true,
+        "schema": {
+          "type": "boolean",
+          "example": true
+        }
+      },
+      "tppName": {
+        "name": "TPP-Name",
+        "in": "header",
+        "description": "The name of the original TPP that created the request. Eg. ‘Star corporation, a.s.’.\n",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "example": "Star Corporation, a.s."
+        }
+      },
+      "AccountId": {
+        "in": "path",
+        "name": "id",
+        "description": "Account identifier returned by the Get accounts call.\\\n**Warning:** *The ID for an account changes over time, so make sure it is fresh and valid before making this call.*\n",
+        "required": true,
+        "schema": {
+          "$ref": "#/components/schemas/accountId"
+        }
+      },
+      "Currency": {
+        "in": "query",
+        "name": "currency",
+        "description": "Three-digit currency code conforming to ISO 4217. Applicable to multi-currency accounts.\n",
+        "schema": {
+          "type": "string",
+          "maxLength": 3,
+          "pattern": "^[A-Z]{3}$",
+          "example": "CZK"
+        }
+      }
+    },
+    "schemas": {
+      "accountId": {
+        "description": "Account identifier returned by the Get accounts call.\\\n**Warning:** *The ID for an account changes over time, so make sure it is fresh and valid before making this call.*\n",
+        "type": "string",
+        "example": "20180410165435228a532fc7dde66413697ecf33d27464f8"
+      },
+      "CodeOrProprietary": {
+        "type": "object",
+        "required": [
+          "code"
+        ],
+        "properties": {
+          "code": {
+            "description": "Indicates the type of balance to which the balance information relates.\\\n`CLBD`(mandatory) - ClosingBooked(účetní zůstatek).\\\n`CLAV`(optional) - ClosingAvailable(disponibilní zůstatek).\n",
+            "type": "string",
+            "enum": [
+              "CLBD",
+              "CLAV",
+              "PRCD"
+            ]
+          }
+        }
+      },
+      "BalanceType": {
+        "description": "Determines the balance type to which Information on account balance applies.",
+        "type": "object",
+        "required": [
+          "codeOrProprietary"
+        ],
+        "properties": {
+          "codeOrProprietary": {
+            "$ref": "#/components/schemas/CodeOrProprietary"
+          }
+        }
+      },
+      "amountValue": {
+        "description": "The amount value.",
+        "type": "number",
+        "minimum": 0,
+        "maximum": 9999999999999.99,
+        "multipleOf": 0.01,
+        "example": "6850"
+      },
+      "currency": {
+        "description": "Currency code according to ISO 4217 = 3 capital letters.",
+        "type": "string",
+        "maxLength": 3,
+        "pattern": "^[A-Z]{3}$",
+        "example": "CZK"
+      },
+      "CreditLineAmount": {
+        "type": "object",
+        "description": "Amount of agreed permitted debit/overdraft.",
+        "required": [
+          "value",
+          "currency"
+        ],
+        "properties": {
+          "value": {
+            "$ref": "#/components/schemas/amountValue"
+          },
+          "currency": {
+            "$ref": "#/components/schemas/currency"
+          }
+        }
+      },
+      "CreditLine": {
+        "description": "Amount of agreed permitted debit/overdraft.",
+        "type": "object",
+        "properties": {
+          "included": {
+            "type": "boolean",
+            "example": true
+          },
+          "amount": {
+            "$ref": "#/components/schemas/CreditLineAmount"
+          }
+        }
+      },
+      "BalanceAmount": {
+        "type": "object",
+        "description": "Value/amount of account balance according to balance type. The currency corresponds to the currency of the account to which the balance information is generated.",
+        "required": [
+          "value",
+          "currency"
+        ],
+        "properties": {
+          "value": {
+            "$ref": "#/components/schemas/amountValue"
+          },
+          "currency": {
+            "$ref": "#/components/schemas/currency"
+          }
+        }
+      },
+      "creditDebitIndicator": {
+        "description": "Indication of whether the balance in the account for which the balance information is generated.\nThe indication of whether this is a debit or credit payment is marked with one of the following codes:\\\n`DBIT` - To the debit of.\\\n`CRDT` - In other cases.\n",
+        "type": "string",
+        "enum": [
+          "DBIT",
+          "CRDT"
+        ],
+        "example": "DBIT"
+      },
+      "BalanceInfo": {
+        "description": "Account balance information.",
+        "type": "object",
+        "required": [
+          "type",
+          "amount",
+          "creditDebitIndicator",
+          "date"
+        ],
+        "properties": {
+          "type": {
+            "$ref": "#/components/schemas/BalanceType"
+          },
+          "creditLine": {
+            "$ref": "#/components/schemas/CreditLine"
+          },
+          "amount": {
+            "$ref": "#/components/schemas/BalanceAmount"
+          },
+          "creditDebitIndicator": {
+            "$ref": "#/components/schemas/creditDebitIndicator"
+          },
+          "date": {
+            "description": "Date (and time) of balance of the account for which the balance information is generated.",
+            "type": "object",
+            "properties": {
+              "dateTime": {
+                "type": "string",
+                "format": "date-time",
+                "example": "2020-02-21T08:00:30+02:00"
+              }
+            }
+          }
+        }
+      },
+      "GetAccountBalanceRes": {
+        "description": "List of account ballances of client account response.",
+        "type": "object",
+        "required": [
+          "balances"
+        ],
+        "properties": {
+          "balances": {
+            "description": "List of account balances.",
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "$ref": "#/components/schemas/BalanceInfo"
+            }
+          }
+        }
+      },
+      "Error": {
+        "description": "An application error item.",
+        "type": "object",
+        "required": [
+          "error"
+        ],
+        "properties": {
+          "error": {
+            "description": "Error code.",
+            "type": "string",
+            "example": "ERROR_CODE"
+          },
+          "parameters": {
+            "description": "The array of additional elements specific to the given error code. These parameters are always specified in the description of a specific error code.",
+            "type": "object"
+          },
+          "scope": {
+            "description": "Specifies the JSON path of the requestu element that caused the error state to be invoked.",
+            "type": "string"
+          },
+          "message": {
+            "description": "Optional text error description. It is not intended for interpretation to the end user, but for example to enrich the error log.",
+            "type": "string",
+            "example": "Invalid request."
+          }
+        }
+      },
+      "Errors": {
+        "description": "Collection of application errors.",
+        "type": "object",
+        "properties": {
+          "errors": {
+            "description": "List of application errors.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      }
+    },
+    "headers": {
+      "xRequestIdRes": {
+        "description": "Unique identifier for each request specified by TPP. It is recommended to use a UUID format with a length of 36 to 60 characters.\n",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "maxLength": 60,
+          "example": "f713da2b-6908-4c3f-9461-784f74b86710"
+        }
+      }
+    },
+    "responses": {
+      "InvalidRequestErr": {
+        "description": "Bad request.",
+        "headers": {
+          "X-Request-ID": {
+            "$ref": "#/components/headers/xRequestIdRes"
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Errors"
+            },
+            "example": {
+              "errors": [
+                {
+                  "error": "INVALID_REQUEST",
+                  "message": "Invalid request."
+                }
+              ]
+            }
+          }
+        }
+      },
+      "UnauthorizedErr": {
+        "description": "Unauthorized.",
+        "headers": {
+          "X-Request-ID": {
+            "$ref": "#/components/headers/xRequestIdRes"
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Errors"
+            },
+            "example": {
+              "errors": [
+                {
+                  "error": "UNAUTHORIZED",
+                  "message": "Attempt to call a method without a proper licence or invalid certificate."
+                }
+              ]
+            }
+          }
+        }
+      },
+      "ForbiddenErr": {
+        "description": "Forbidden.",
+        "headers": {
+          "X-Request-ID": {
+            "$ref": "#/components/headers/xRequestIdRes"
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Errors"
+            },
+            "example": {
+              "errors": [
+                {
+                  "error": "FORBIDDEN",
+                  "message": "No disposal rights."
+                }
+              ]
+            }
+          }
+        }
+      },
+      "NotFoundErr": {
+        "description": "Not Found.",
+        "headers": {
+          "X-Request-ID": {
+            "$ref": "#/components/headers/xRequestIdRes"
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Errors"
+            },
+            "example": {
+              "errors": [
+                {
+                  "error": "NOT_FOUND",
+                  "message": "Resource with the requested ID not found."
+                }
+              ]
+            }
+          }
+        }
+      },
+      "InternalServerErr": {
+        "description": "Internal Server Error.",
+        "headers": {
+          "X-Request-ID": {
+            "$ref": "#/components/headers/xRequestIdRes"
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Errors"
+            },
+            "example": {
+              "errors": [
+                {
+                  "error": "SERVER_ERROR",
+                  "message": "Internal server error."
+                }
+              ]
+            }
+          }
+        }
+      },
+      "ServiceUnavailableErr": {
+        "description": "Service Unavailable.",
+        "headers": {
+          "X-Request-ID": {
+            "$ref": "#/components/headers/xRequestIdRes"
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Errors"
+            },
+            "example": {
+              "errors": [
+                {
+                  "error": "SERVER_ERROR",
+                  "message": "Service is temporarily unavailable."
+                }
+              ]
+            }
+          }
+        }
+      },
+      "GatewayTimeoutErr": {
+        "description": "Gateway Timeout.",
+        "headers": {
+          "X-Request-ID": {
+            "$ref": "#/components/headers/xRequestIdRes"
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Errors"
+            },
+            "example": {
+              "errors": [
+                {
+                  "error": "SERVER_ERROR",
+                  "message": "Service is temporarily unavailable."
+                }
+              ]
+            }
+          }
+        }
+      }
+    }
+  }
+}

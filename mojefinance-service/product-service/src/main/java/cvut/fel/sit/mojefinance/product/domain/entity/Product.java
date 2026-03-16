@@ -10,7 +10,6 @@ import java.util.List;
 public class Product {
     private String productId;
     private String accountName;
-    private String bankName;
     private ProductIdentification productIdentification;
     private String currency;
     private List<String> ownersNames;
@@ -18,4 +17,5 @@ public class Product {
     private Balance balance;
     private Boolean manuallyCreated;
     private String bankCode;
+    private BankDetails bankDetails;
 }
