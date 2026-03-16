@@ -17,7 +17,7 @@ import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.ResponseEntity;
+import org.springframework.cache.annotation.Cacheable;import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
@@ -52,6 +52,7 @@ public class ExternalApiProviderImpl implements ExternalApiProvider {
     private String reiffeisenBankXIbmClientId;
 
     @Override
+    @Cacheable(value = "products", key = "#request.bankDetails.clientRegistrationId")
     public GetProductsResponse getProducts(ProductsMessagingRequest request) {
         BankDetails bankDetails = request.getBankDetails();
         log.info("Fetching products from bank: {}", request.getBankDetails());
@@ -97,6 +98,7 @@ public class ExternalApiProviderImpl implements ExternalApiProvider {
     }
 
     @Override
+    @Cacheable(value = "balances", key = "#request.bankDetails.clientRegistrationId + '-' + #request.accountId")
     public Balance getAccountBalance(AccountBalancesMessagingRequest request) {
         String clientRegistrationId = request.getBankDetails().getClientRegistrationId();
         log.info("Fetching products from bank with client id: {}", request.getBankDetails().getClientRegistrationId());

@@ -5,6 +5,11 @@ spring:
     username: ${db-username}
     password: ${db-password}
 
+  data:
+    redis:
+      host: redis
+      port: 6379
+
   security:
     oauth2:
       resourceserver:

@@ -9,6 +9,11 @@ spring:
       - classpath:client-registration.yaml
       - classpath:external-api-specification.yaml
 
+  data:
+    redis:
+      host: ${redis-host}
+      port: 6379
+
   jpa:
     show-sql: false
     generate-ddl: true
@@ -44,3 +49,9 @@ spring:
             location: "classpath:certs/kb-certificate.pfx"
             password: ${csob-keystore-password}
             type: PKCS12
+
+security:
+  oauth2:
+    encryption:
+      password: ${encryption-password}
+      salt: ${encryption-salt}

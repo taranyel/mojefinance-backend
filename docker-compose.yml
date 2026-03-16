@@ -34,6 +34,13 @@ services:
     ports:
       - "5500:5432"
 
+  redis:
+    image: redis:latest
+    container_name: redis
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+
   mojefinance-backend:
     build:
       context: .

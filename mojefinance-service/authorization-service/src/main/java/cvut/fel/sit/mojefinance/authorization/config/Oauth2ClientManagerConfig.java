@@ -115,8 +115,14 @@ public class Oauth2ClientManagerConfig {
     @Bean
     public OAuth2AuthorizedClientService authorizedClientService(
             JdbcTemplate jdbcTemplate,
-            ClientRegistrationRepository clientRegistrationRepository) {
-        return new JdbcOAuth2AuthorizedClientService(jdbcTemplate, clientRegistrationRepository);
+            ClientRegistrationRepository clientRegistrationRepository,
+            @Value("${security.oauth2.encryption.password}") String password,
+            @Value("${security.oauth2.encryption.salt}") String salt) {
+
+        JdbcOAuth2AuthorizedClientService jdbcService =
+                new JdbcOAuth2AuthorizedClientService(jdbcTemplate, clientRegistrationRepository);
+
+        return new EncryptingOAuth2AuthorizedClientService(jdbcService, password, salt);
     }
 
     @Bean
