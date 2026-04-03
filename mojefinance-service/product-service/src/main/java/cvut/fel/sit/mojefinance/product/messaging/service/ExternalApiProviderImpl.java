@@ -27,17 +27,16 @@ import static cvut.fel.sit.shared.util.Constants.*;
 @Service
 @RequiredArgsConstructor
 public class ExternalApiProviderImpl implements ExternalApiProvider {
-
     private final AirBankApiFeignClient airBankApiFeignClient;
     private final CeskaSporitelnaApiFeignClient ceskaSporitelnaApiFeignClient;
     private final CSOBApiFeignClient csobApiFeignClient;
     private final KBApiFeignClient kbApiFeignClient;
-    private final ReiffeisenBankApiFeignClient reiffeisenBankApiFeignClient;
+    private final RaiffeisenBankApiFeignClient raiffeisenBankApiFeignClient;
     private final ProductsApiMapper productsApiMapper;
     private final AccountBalanceApiMapper accountBalanceApiMapper;
     private final TransactionsApiMapper transactionsApiMapper;
 
-    private static final String CONTENT_TYPE = "application/json";
+    private static final String APPLICATION_JSON_CONTENT_TYPE = "application/json";
 
     @Value("${external.api.csob.apikey}")
     private String csobApiKey;
@@ -48,8 +47,8 @@ public class ExternalApiProviderImpl implements ExternalApiProvider {
     @Value("${external.api.ceska-sporitelna.apikey}")
     private String ceskaSporitelnaApiKey;
 
-    @Value("${external.api.reiffeisen-bank.x-ibm-client-id}")
-    private String reiffeisenBankXIbmClientId;
+    @Value("${external.api.raiffeisen-bank.x-ibm-client-id}")
+    private String raiffeisenBankXIbmClientId;
 
     @Override
     @Cacheable(value = "products", key = "#request.principalName + '-' + #request.bankDetails.clientRegistrationId")
@@ -75,7 +74,7 @@ public class ExternalApiProviderImpl implements ExternalApiProvider {
             );
 
             case CSOB_CLIENT_REGISTRATION_ID -> executeApiCall(
-                    () -> csobApiFeignClient.getAccounts(authorization, requestId, true, csobTppName, csobApiKey, CONTENT_TYPE),
+                    () -> csobApiFeignClient.getAccounts(authorization, requestId, true, csobTppName, csobApiKey, APPLICATION_JSON_CONTENT_TYPE),
                     response -> productsApiMapper.toProductsResponse(response, bankDetails),
                     bankDetails.getBankName()
             );
@@ -86,8 +85,8 @@ public class ExternalApiProviderImpl implements ExternalApiProvider {
                     bankDetails.getBankName()
             );
 
-            case REIFFEISEN_BANK_CLIENT_REGISTRATION_ID -> executeApiCall(
-                    () -> reiffeisenBankApiFeignClient.getAccounts(reiffeisenBankXIbmClientId, requestId),
+            case RAIFFEISEN_BANK_CLIENT_REGISTRATION_ID -> executeApiCall(
+                    () -> raiffeisenBankApiFeignClient.getAccounts(raiffeisenBankXIbmClientId, requestId),
                     response -> productsApiMapper.toProductsResponse(response, bankDetails),
                     bankDetails.getBankName()
             );
@@ -121,7 +120,7 @@ public class ExternalApiProviderImpl implements ExternalApiProvider {
             );
 
             case CSOB_CLIENT_REGISTRATION_ID -> executeApiCall(
-                    () -> csobApiFeignClient.getAccountBalance(authorization, requestId, true, csobTppName, csobApiKey, CONTENT_TYPE, accountId),
+                    () -> csobApiFeignClient.getAccountBalance(authorization, requestId, true, csobTppName, csobApiKey, APPLICATION_JSON_CONTENT_TYPE, accountId),
                     accountBalanceApiMapper::toDomainBalance,
                     bankName
             );
@@ -132,8 +131,8 @@ public class ExternalApiProviderImpl implements ExternalApiProvider {
                     bankName
             );
 
-            case REIFFEISEN_BANK_CLIENT_REGISTRATION_ID -> executeApiCall(
-                    () -> reiffeisenBankApiFeignClient.getAccountBalance(reiffeisenBankXIbmClientId, requestId, accountId),
+            case RAIFFEISEN_BANK_CLIENT_REGISTRATION_ID -> executeApiCall(
+                    () -> raiffeisenBankApiFeignClient.getAccountBalance(raiffeisenBankXIbmClientId, requestId, accountId),
                     accountBalanceApiMapper::toDomainBalance,
                     bankName
             );
@@ -169,7 +168,7 @@ public class ExternalApiProviderImpl implements ExternalApiProvider {
             );
 
             case CSOB_CLIENT_REGISTRATION_ID -> executeApiCall(
-                    () -> csobApiFeignClient.getTransactions(authorization, requestId, true, csobTppName, csobApiKey, CONTENT_TYPE, accountId, fromDate, toDate),
+                    () -> csobApiFeignClient.getTransactions(authorization, requestId, true, csobTppName, csobApiKey, APPLICATION_JSON_CONTENT_TYPE, accountId, fromDate, toDate),
                     transactionsApiMapper::toTransactionsResponse,
                     bankName
             );
@@ -180,8 +179,8 @@ public class ExternalApiProviderImpl implements ExternalApiProvider {
                     bankName
             );
 
-            case REIFFEISEN_BANK_CLIENT_REGISTRATION_ID -> executeApiCall(
-                    () -> reiffeisenBankApiFeignClient.getTransactions(reiffeisenBankXIbmClientId, requestId, accountId, CZK_CURRENCY_CODE, fromDate, toDate),
+            case RAIFFEISEN_BANK_CLIENT_REGISTRATION_ID -> executeApiCall(
+                    () -> raiffeisenBankApiFeignClient.getTransactions(raiffeisenBankXIbmClientId, requestId, accountId, CZK_CURRENCY_CODE, fromDate, toDate),
                     transactionsApiMapper::toTransactionsResponse,
                     bankName
             );

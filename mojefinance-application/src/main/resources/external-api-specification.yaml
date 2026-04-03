@@ -15,12 +15,12 @@ external:
       accounts-path: /aisp/v2/my/accounts
       balances-path: /aisp/v2/my/accounts/{id}/balance
       transactions-path: /aisp/my/accounts/{id}/transactions
-    reiffeisen-bank:
+    raiffeisen-bank:
       base-url: https://api.rb.cz/rbcz
       accounts-path: /premium/mock/accounts1
       balances-path: /premium/mock/accounts/{accountNumber}/balance
       transactions-path: premium/mock/accounts/{accountNumber}/{currencyCode}/transactions
-      x-ibm-client-id: ${reiffeisen-bank-x-ibm-client-id}
+      x-ibm-client-id: ${raiffeisen-bank-x-ibm-client-id}
     air-bank:
       base-url: https://api.airbank.cz/sandbox
       token-path: /oauth2/token

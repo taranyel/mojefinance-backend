@@ -1,2 +1,2 @@
-INSERT INTO connected_bank (bank_connection_status, bank_name, client_registration_id, principal_name, manually_created)
-VALUES ('CONNECTED', 'test bank', 'test bank', '3a76e227-9d30-42a7-8937-6267f55c6dea', true);
+INSERT INTO bank_connection (bank_connection_status, bank_name, client_registration_id, principal_name, manually_created)
+VALUES ('CONNECTED', 'test bankConnection', 'test bankConnection', '3a76e227-9d30-42a7-8937-6267f55c6dea', true);

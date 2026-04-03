@@ -4,8 +4,10 @@ import cvut.fel.sit.mojefinance.openapi.api.ProductsApi;
 import cvut.fel.sit.mojefinance.openapi.model.ProductsResponse;
 import cvut.fel.sit.mojefinance.openapi.model.TransactionsResponse;
 import cvut.fel.sit.mojefinance.product.api.mapper.ProductsMapper;
+import cvut.fel.sit.mojefinance.product.api.mapper.TransactionsMapper;
 import cvut.fel.sit.mojefinance.product.domain.dto.AccountInfoRequest;import cvut.fel.sit.mojefinance.product.domain.dto.ProductsDomainResponse;
 import cvut.fel.sit.mojefinance.product.domain.dto.TransactionsDomainResponse;import cvut.fel.sit.mojefinance.product.domain.entity.BankDetails;import cvut.fel.sit.mojefinance.product.domain.service.ProductService;
+import cvut.fel.sit.mojefinance.product.domain.service.TransactionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,7 +17,9 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class ProductController implements ProductsApi {
     private final ProductService productService;
+    private final TransactionService transactionService;
     private final ProductsMapper productsMapper;
+    private final TransactionsMapper transactionsMapper;
 
     @Override
     public ResponseEntity<ProductsResponse> getProducts(String authorization) {
@@ -32,7 +36,7 @@ public class ProductController implements ProductsApi {
                         .build())
                 .accountId(accountId)
                 .build();
-        TransactionsDomainResponse domainResponse = productService.getTransactions(request);
-        TransactionsResponse apiResponse = productsMapper.toTransactionsResponse(domainResponse);
+        TransactionsDomainResponse domainResponse = transactionService.getTransactions(request);
+        TransactionsResponse apiResponse = transactionsMapper.toTransactionsResponse(domainResponse);
         return new ResponseEntity<>(apiResponse, HttpStatus.OK);
     }}

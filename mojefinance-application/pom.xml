@@ -44,7 +44,7 @@
         </dependency>
         <dependency>
             <groupId>cvut.fel.sit</groupId>
-            <artifactId>bank-service</artifactId>
+            <artifactId>bank-connection-service</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
         <dependency>

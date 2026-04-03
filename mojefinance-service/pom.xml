@@ -17,7 +17,7 @@
         <module>api-model</module>
         <module>product-service</module>
         <module>party-service</module>
-        <module>bank-service</module>
+        <module>bank-connection-service</module>
         <module>authorization-service</module>
         <module>shared-service</module>
     </modules>

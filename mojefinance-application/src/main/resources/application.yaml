@@ -39,10 +39,10 @@ spring:
             location: "classpath:certs/kb-certificate.pfx"
             password: ${kb-keystore-password}
             type: PKCS12
-        reiffeisen-bank-mtls:
+        raiffeisen-bank-mtls:
           keystore:
-            location: "classpath:certs/reiffeisen-bank-certificate.p12"
-            password: ${reiffeisen-bank-keystore-password}
+            location: "classpath:certs/raiffeisen-bank-certificate.p12"
+            password: ${raiffeisen-bank-keystore-password}
             type: PKCS12
         csob-mtls:
           keystore:
