@@ -13,7 +13,7 @@ import org.mapstruct.Mapping;
 public interface BankConnectionDomainMapper {
     ConnectedBanksDomainResponse toConnectedBanksDomainResponse(ConnectedBanksDataResponse dataResponse);
 
-    @Mapping(target = "clientRegistrationId", source = "bankDomainEntity.clientRegistrationId")
+    @Mapping(target = "clientRegistrationId", source = "bankConnection.clientRegistrationId")
     ConnectAuthorizedClientRequest toConnectAuthorizedClientRequest(ConnectBankDomainRequest domainRequest);
 
     @Mapping(target = "id.clientRegistrationId", source = "clientRegistrationId")
