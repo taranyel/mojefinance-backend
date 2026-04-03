@@ -20,5 +20,5 @@ public interface BankConnectionDomainMapper {
     BankConnectionEntity toBankConnectionEntity(BankConnection bankConnection);
 
     @Mapping(target = "clientRegistrationId", source = "id.clientRegistrationId")
-    BankConnection toBankConnectionDomainEntity(BankConnectionEntity bankConnectionEntity);
+    BankConnection toBankConnection(BankConnectionEntity bankConnectionEntity);
 }

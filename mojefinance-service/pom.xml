@@ -20,6 +20,7 @@
         <module>bank-connection-service</module>
         <module>authorization-service</module>
         <module>shared-service</module>
+        <module>categorization-service</module>
     </modules>
 
     <properties>

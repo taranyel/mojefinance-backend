@@ -9,5 +9,5 @@ import java.util.List;
 @Data
 @Builder
 public class ConnectedBanksDomainResponse {
-    private List<BankConnection> connectedBankConnections;
+    private List<BankConnection> connectedBanks;
 }

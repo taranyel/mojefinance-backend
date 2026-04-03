@@ -36,7 +36,7 @@ public class ProductHelper {
     }
 
     public List<BankConnection> filterBanksWithActiveConnection(ConnectedBanksDomainResponse connectedBanks) {
-        return connectedBanks.getConnectedBankConnections().stream()
+        return connectedBanks.getConnectedBanks().stream()
                 .filter(connectedBank -> BankConnectionStatus.CONNECTED.equals(connectedBank.getBankConnectionStatus()))
                 .toList();
     }

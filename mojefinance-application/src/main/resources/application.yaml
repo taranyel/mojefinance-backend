@@ -20,11 +20,11 @@ spring:
     defer-datasource-initialization: true
     hibernate:
       ddl-auto: update
-#  sql:
-#    init:
-#      mode: always
-#      data-locations:
-#        - classpath:db/scripts/data.sql
+  sql:
+    init:
+      mode: always
+      data-locations:
+        - classpath:db/scripts/data.sql
 
   ssl:
     bundle:
@@ -55,3 +55,7 @@ security:
     encryption:
       password: ${encryption-password}
       salt: ${encryption-salt}
+
+google:
+  api:
+    key: AIzaSyAb_bGoaQsBAGVc3DO4IJ-hUffXrpkd0Mg

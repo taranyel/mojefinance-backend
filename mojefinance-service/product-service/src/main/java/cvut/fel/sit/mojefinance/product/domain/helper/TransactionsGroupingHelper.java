@@ -21,11 +21,11 @@ import java.util.TreeMap;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
-import static cvut.fel.sit.mojefinance.product.domain.entity.TransactionCategory.UNCATEGORIZED;
 import static cvut.fel.sit.shared.util.Constants.CZK_CURRENCY_CODE;
 
 @Component
 public class TransactionsGroupingHelper {
+    private static final String OTHER_TRANSACTION_CATEGORY = "Other";
 
     public TransactionsDomainResponse groupTransactions(List<Transaction> transactions) {
         Map<YearMonth, Map<String, List<Transaction>>> bookedTransactionsMap = getBookedTransactionsMap(transactions);
@@ -100,7 +100,7 @@ public class TransactionsGroupingHelper {
 
     private Collector<Transaction, ?, Map<String, List<Transaction>>> groupByCategory() {
         return Collectors.groupingBy(
-                t -> t.getCategory() != null ? t.getCategory().name() : UNCATEGORIZED.name(),
+                t -> t.getCategory() != null ? t.getCategory() : OTHER_TRANSACTION_CATEGORY,
                 TreeMap::new,
                 Collectors.toList()
         );

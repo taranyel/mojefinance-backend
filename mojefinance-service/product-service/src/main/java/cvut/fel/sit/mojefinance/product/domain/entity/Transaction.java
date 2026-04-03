@@ -26,5 +26,5 @@ public class Transaction {
 
     private String counterpartyName;
     private RelatedParties relatedParties;
-    private TransactionCategory category;
+    private String category;
 }
