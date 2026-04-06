@@ -14,7 +14,7 @@ external:
       authorization-url: https://api-gateway.kb.cz/sandbox/oauth2-authorization-ui/v3
       accounts-path: /aisp/v2/my/accounts
       balances-path: /aisp/v2/my/accounts/{id}/balance
-      transactions-path: /aisp/my/accounts/{id}/transactions
+      transactions-path: /aisp/v2/my/accounts/{id}/transactions
     raiffeisen-bank:
       base-url: https://api.rb.cz/rbcz
       accounts-path: /premium/mock/accounts1

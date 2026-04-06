@@ -3,7 +3,7 @@ package cvut.fel.sit.mojefinance.product.domain.helper;
 import cvut.fel.sit.mojefinance.bank.domain.dto.ConnectedBanksDomainResponse;
 import cvut.fel.sit.mojefinance.bank.domain.entity.BankConnection;
 import cvut.fel.sit.mojefinance.bank.domain.entity.BankConnectionStatus;
-import cvut.fel.sit.mojefinance.product.domain.dto.AccountInfoRequest;
+import cvut.fel.sit.mojefinance.product.domain.dto.AccountBalancesMessagingRequest;
 import cvut.fel.sit.mojefinance.product.domain.entity.BankDetails;
 import cvut.fel.sit.mojefinance.product.messaging.dto.ProductsMessagingRequest;
 import org.springframework.stereotype.Component;
@@ -13,8 +13,8 @@ import java.util.List;
 @Component
 public class ProductHelper {
 
-    public AccountInfoRequest buildAccountBalancesMessagingRequest(String productId, BankDetails bankDetails, String authorization, String principalName) {
-        return AccountInfoRequest.builder()
+    public AccountBalancesMessagingRequest buildAccountBalancesMessagingRequest(String productId, BankDetails bankDetails, String authorization, String principalName) {
+        return AccountBalancesMessagingRequest.builder()
                 .accountId(productId)
                 .bankDetails(bankDetails)
                 .authorization(authorization)

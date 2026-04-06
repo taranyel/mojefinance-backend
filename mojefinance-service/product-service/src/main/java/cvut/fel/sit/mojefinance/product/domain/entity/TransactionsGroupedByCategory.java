@@ -14,5 +14,6 @@ import java.util.List;
 public class TransactionsGroupedByCategory {
     private String groupName;
     private List<Transaction> transactions;
-    private Amount totalAmount;
+    private Amount totalIncome;
+    private Amount totalExpense;
 }

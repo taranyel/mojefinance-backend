@@ -55,8 +55,8 @@ public interface TransactionsApiMapper {
 
     @Mapping(target = "direction", source = "creditDebitIndicator.value", qualifiedByName = "mapTransactionDirection")
     @Mapping(target = "status", source = "status.value", qualifiedByName = "mapTransactionStatus")
-    @Mapping(target = "bookingDate", source = "bookingDate.date", qualifiedByName = "mapDateFromOffsetDateTime")
-    @Mapping(target = "valueDate", source = "valueDate.date", qualifiedByName = "mapDateFromOffsetDateTime")
+    @Mapping(target = "bookingDate", source = "bookingDate.date")
+    @Mapping(target = "valueDate", source = "valueDate.date")
     @Mapping(target = "relatedParties.debtorName", source = "entryDetails.transactionDetails.relatedParties.debtor.name")
     @Mapping(target = "relatedParties.creditorName", source = "entryDetails.transactionDetails.relatedParties.creditor.name")
     @Mapping(target = "relatedParties.creditorAccountIban", source = "entryDetails.transactionDetails.relatedParties.creditorAccount.identification.iban")

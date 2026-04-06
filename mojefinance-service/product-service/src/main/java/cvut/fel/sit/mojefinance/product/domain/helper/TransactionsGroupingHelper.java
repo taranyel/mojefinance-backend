@@ -1,11 +1,7 @@
 package cvut.fel.sit.mojefinance.product.domain.helper;
 
 import cvut.fel.sit.mojefinance.product.domain.dto.TransactionsDomainResponse;
-import cvut.fel.sit.mojefinance.product.domain.entity.Amount;
-import cvut.fel.sit.mojefinance.product.domain.entity.Transaction;
-import cvut.fel.sit.mojefinance.product.domain.entity.TransactionStatus;
-import cvut.fel.sit.mojefinance.product.domain.entity.TransactionsGroupedByCategory;
-import cvut.fel.sit.mojefinance.product.domain.entity.TransactionsGroupedByMonth;
+import cvut.fel.sit.mojefinance.product.domain.entity.*;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
@@ -25,7 +21,7 @@ import static cvut.fel.sit.shared.util.Constants.CZK_CURRENCY_CODE;
 
 @Component
 public class TransactionsGroupingHelper {
-    private static final String OTHER_TRANSACTION_CATEGORY = "Other";
+    private static final String UNCATEGORIZED_TRANSACTION_CATEGORY = "Uncategorized";
 
     public TransactionsDomainResponse groupTransactions(List<Transaction> transactions) {
         Map<YearMonth, Map<String, List<Transaction>>> bookedTransactionsMap = getBookedTransactionsMap(transactions);
@@ -64,23 +60,31 @@ public class TransactionsGroupingHelper {
         String categoryName = categoryEntry.getKey();
         List<Transaction> categoryTransactions = categoryEntry.getValue();
 
-        BigDecimal total = getTotalGroupAmount(categoryTransactions);
+        BigDecimal totalIncomeAmount = getTotalAmount(categoryTransactions, TransactionDirection.INCOME);
+        BigDecimal totalExpenseAmount = getTotalAmount(categoryTransactions, TransactionDirection.OUTCOME);
         String currency = categoryTransactions.isEmpty() ? CZK_CURRENCY_CODE : categoryTransactions.get(0).getAmount().getCurrency();
 
-        Amount totalAmount = Amount.builder()
-                .value(total)
-                .currency(currency)
-                .build();
+        Amount totalIncomeAmountObject = getAmountObject(totalIncomeAmount, currency);
+        Amount totalExpenseAmountObject = getAmountObject(totalExpenseAmount, currency);
 
         return TransactionsGroupedByCategory.builder()
                 .groupName(categoryName)
-                .totalAmount(totalAmount)
+                .totalIncome(totalIncomeAmountObject)
+                .totalExpense(totalExpenseAmountObject)
                 .transactions(categoryTransactions)
                 .build();
     }
 
-    private BigDecimal getTotalGroupAmount(List<Transaction> transactions) {
+    private Amount getAmountObject(BigDecimal totalExpenseAmount, String currency) {
+        return Amount.builder()
+                .value(totalExpenseAmount)
+                .currency(currency)
+                .build();
+    }
+
+    private BigDecimal getTotalAmount(List<Transaction> transactions, TransactionDirection direction) {
         return transactions.stream()
+                .filter(transaction -> direction.equals(transaction.getDirection()))
                 .map(Transaction::getAmount)
                 .filter(Objects::nonNull)
                 .map(Amount::getValue)
@@ -100,7 +104,7 @@ public class TransactionsGroupingHelper {
 
     private Collector<Transaction, ?, Map<String, List<Transaction>>> groupByCategory() {
         return Collectors.groupingBy(
-                t -> t.getCategory() != null ? t.getCategory() : OTHER_TRANSACTION_CATEGORY,
+                t -> t.getCategory() != null ? t.getCategory() : UNCATEGORIZED_TRANSACTION_CATEGORY,
                 TreeMap::new,
                 Collectors.toList()
         );

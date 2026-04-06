@@ -96,7 +96,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
-  /products/{accountId}/transactions:
+  /products/{clientRegistrationId}/{accountId}/transactions:
     get:
       summary: Get transactions
       operationId: getTransactions
@@ -112,10 +112,20 @@ paths:
           schema:
             type: string
         - name: clientRegistrationId
-          in: query
+          in: path
           required: true
           schema:
             type: string
+        - name: fromDate
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: toDate
+          in: query
+          schema:
+            type: string
+            format: date
       responses:
         '200':
           description: OK
@@ -254,7 +264,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UserPrivate'
+              $ref: '#/components/schemas/User'
       responses:
         '201':
           description: CREATED
@@ -358,7 +368,9 @@ components:
       properties:
         groupName:
           type: string
-        totalAmount:
+        totalIncome:
+          $ref: '#/components/schemas/Amount'
+        totalExpense:
           $ref: '#/components/schemas/Amount'
         transactions:
           type: array
@@ -451,21 +463,12 @@ components:
       type: object
       properties:
         user:
-          $ref: '#/components/schemas/UserPrivate'
+          $ref: '#/components/schemas/User'
 
-    UserPublic:
-      description: Public information about user
+    User:
+      description: User information
       type: object
       properties:
-        username:
-          type: string
-
-    UserPrivate:
-      description: Private information about user
-      type: object
-      properties:
-        userId:
-          type: integer
         firstName:
           type: string
         lastName:

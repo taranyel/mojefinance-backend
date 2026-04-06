@@ -4,7 +4,7 @@ import cvut.fel.sit.mojefinance.authorization.AuthorizationService;
 import cvut.fel.sit.mojefinance.bank.domain.dto.ConnectedBanksDomainResponse;
 import cvut.fel.sit.mojefinance.bank.domain.entity.BankConnection;
 import cvut.fel.sit.mojefinance.bank.domain.service.BankConnectionService;
-import cvut.fel.sit.mojefinance.product.domain.dto.AccountInfoRequest;
+import cvut.fel.sit.mojefinance.product.domain.dto.AccountBalancesMessagingRequest;
 import cvut.fel.sit.mojefinance.product.domain.dto.ProductsDomainResponse;
 import cvut.fel.sit.mojefinance.product.domain.entity.Amount;
 import cvut.fel.sit.mojefinance.product.domain.entity.BankDetails;
@@ -67,8 +67,8 @@ public class ProductServiceImpl implements ProductService {
         for (Product product : retrievedProducts) {
             String productId = product.getProductId();
             log.info("Retrieving account balance for account id: {} client registration id: {}", productId, bankDetails.getClientRegistrationId());
-            AccountInfoRequest accountInfoRequest = productHelper.buildAccountBalancesMessagingRequest(productId, bankDetails, authorization, principalName);
-            Amount balance = externalApiProvider.getAccountBalance(accountInfoRequest);
+            AccountBalancesMessagingRequest accountBalancesMessagingRequest = productHelper.buildAccountBalancesMessagingRequest(productId, bankDetails, authorization, principalName);
+            Amount balance = externalApiProvider.getAccountBalance(accountBalancesMessagingRequest);
             product.setBalance(balance);
         }
     }

@@ -5,7 +5,7 @@ import cvut.fel.sit.mojefinance.categorization.CategorizationService;
 import cvut.fel.sit.mojefinance.categorization.domain.dto.CategorizeTransactionsRequest;
 import cvut.fel.sit.mojefinance.categorization.domain.dto.CategorizeTransactionsResponse;
 import cvut.fel.sit.mojefinance.categorization.domain.entity.TransactionCategory;
-import cvut.fel.sit.mojefinance.product.domain.dto.AccountInfoRequest;
+import cvut.fel.sit.mojefinance.product.domain.dto.TransactionsRequest;
 import cvut.fel.sit.mojefinance.product.domain.dto.TransactionsDomainResponse;
 import cvut.fel.sit.mojefinance.product.domain.entity.RelatedParties;
 import cvut.fel.sit.mojefinance.product.domain.entity.Transaction;
@@ -19,6 +19,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -36,7 +37,7 @@ public class TransactionServiceImpl implements TransactionService {
     private static final String BEARER_PREFIX = "Bearer";
 
     @Override
-    public TransactionsDomainResponse getTransactions(AccountInfoRequest request) {
+    public TransactionsDomainResponse getTransactions(TransactionsRequest request) {
         log.info("Getting transactions for authorized user.");
         Authentication principal = SecurityContextHolder.getContext().getAuthentication();
         request.setPrincipalName(principal.getName());
@@ -49,7 +50,8 @@ public class TransactionServiceImpl implements TransactionService {
         List<Transaction> transactions = messagingResponse.getTransactions();
         enrichTransactions(transactions);
 
-        log.info("Retrieved: {} transactions for client registration id: {} for account id: {}", transactions.size(), clientRegistrationId, request.getAccountId());
+        log.info("Retrieved: {} transactions for client registration id: {} for account id: {}, from date: {}, to date: {}",
+                transactions.size(), clientRegistrationId, request.getAccountId(), request.getFromDate(), request.getToDate());
         return transactionsGroupingHelper.groupTransactions(transactions);
     }
 
@@ -66,7 +68,7 @@ public class TransactionServiceImpl implements TransactionService {
         transactions.forEach(transaction -> {
             TransactionCategory category = categoryMap.get(transaction.getCounterpartyName() + " " + transaction.getDirection().name());
             if (category == null) {
-                category = TransactionCategory.OTHER;
+                category = TransactionCategory.UNCATEGORIZED;
             }
             transaction.setCategory(category.getDisplayName());
         });
@@ -85,19 +87,29 @@ public class TransactionServiceImpl implements TransactionService {
         if (parties == null || transaction.getDirection() == null) {
             return;
         }
-        String name = NOT_SPECIFIED_COUNTERPARTY_NAME;
         if (TransactionDirection.OUTCOME.equals(transaction.getDirection())) {
-            if (parties.getCreditorName() != null || parties.getCreditorAccountIban() != null) {
-                name = parties.getCreditorName() != null ? parties.getCreditorName() : parties.getCreditorAccountIban();
-            }
-            transaction.setCounterpartyName(name);
-            transaction.getAmount().setValue(transaction.getAmount().getValue().negate());
+            String counterpartyName = getCounterpartyName(parties.getCreditorName(), parties.getCreditorAccountIban());
+            transaction.setCounterpartyName(counterpartyName);
+            negateTransactionAmountValue(transaction);
 
         } else if (TransactionDirection.INCOME.equals(transaction.getDirection())) {
-            if (parties.getDebtorName() != null || parties.getDebtorAccountIban() != null) {
-                name = parties.getDebtorName() != null ? parties.getDebtorName() : parties.getDebtorAccountIban();
-            }
-            transaction.setCounterpartyName(name);
+            String counterpartyName = getCounterpartyName(parties.getDebtorName(), parties.getDebtorAccountIban());
+            transaction.setCounterpartyName(counterpartyName);
+        }
+    }
+
+    private String getCounterpartyName(String partyName1, String partyName2) {
+        String counterpartyName = NOT_SPECIFIED_COUNTERPARTY_NAME;
+        if (partyName1 != null || partyName2 != null) {
+            counterpartyName = partyName1 != null ? partyName1 : partyName2;
+        }
+        return counterpartyName;
+    }
+
+    private void negateTransactionAmountValue(Transaction transaction) {
+        BigDecimal amountValue = transaction.getAmount().getValue();
+        if (amountValue.compareTo(BigDecimal.ZERO) > 0) {
+            transaction.getAmount().setValue(amountValue.negate());
         }
     }
 }

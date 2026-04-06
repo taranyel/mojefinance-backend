@@ -58,4 +58,4 @@ security:
 
 google:
   api:
-    key: AIzaSyAb_bGoaQsBAGVc3DO4IJ-hUffXrpkd0Mg
+    key: ${google.api.key}

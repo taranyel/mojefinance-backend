@@ -1,6 +1,7 @@
 package keycloak;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -17,9 +18,9 @@ import java.util.Map;
 public class RegistrationProvider implements EventListenerProvider {
     private final KeycloakSession session;
 
-    //change this to "http://host.docker.internal:8081" if you run your backend app on local,
-    //currently setup is for docker env.
-    private static final String BACKEND_URL = "http://mojefinance-backend:8081";
+    //"http://host.docker.internal:8081" if you run your backend app on local,
+    //"http://mojefinance-backend:8081" if you run your backend app in docker,
+    private static final String BACKEND_URL = "http://host.docker.internal:8081";
 
     public RegistrationProvider(KeycloakSession session) {
         this.session = session;
@@ -28,6 +29,7 @@ public class RegistrationProvider implements EventListenerProvider {
     @Override
     public void onEvent(Event event) {
         if (event.getType() == EventType.REGISTER) {
+            System.out.println("Registering new user");
             UserModel user = session.users().getUserById(session.getContext().getRealm(), event.getUserId());
 
             try {
@@ -43,7 +45,10 @@ public class RegistrationProvider implements EventListenerProvider {
                 HttpPost post = new HttpPost(BACKEND_URL + "/mojefinance/api/registration");
                 post.setHeader("Content-Type", "application/json");
                 post.setEntity(new StringEntity(json));
-                client.execute(post);
+
+                System.out.println("Sending registration data to backend.");
+                CloseableHttpResponse response = client.execute(post);
+                System.out.println("Backend response status: " + response.getStatusLine());
             } catch (Exception e) {
                 e.printStackTrace();
             }

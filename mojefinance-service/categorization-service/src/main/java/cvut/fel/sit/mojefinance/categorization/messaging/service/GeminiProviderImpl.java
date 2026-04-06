@@ -27,7 +27,8 @@ public class GeminiProviderImpl implements GeminiProvider {
             TransactionCategory.ENTERTAINMENT,
             TransactionCategory.EDUCATION,
             TransactionCategory.FEES_AND_CHARGES,
-            TransactionCategory.OTHER
+            TransactionCategory.OTHER_INCOME,
+            TransactionCategory.OTHER_EXPENSE
     );
     private static final String GEMINI_MODEL_NAME = "gemini-3.1-flash-lite-preview";
 
@@ -56,13 +57,13 @@ public class GeminiProviderImpl implements GeminiProvider {
                     null);
         } catch (Exception e) {
             log.error("Error while categorizing transaction with Gemini.", e);
-            return TransactionCategory.OTHER;
+            return TransactionCategory.UNCATEGORIZED;
         }
 
         String apiResponse = Objects.requireNonNull(response.text()).trim();
         log.info("Gemini categorized '{}' as: {}", transactionName, apiResponse);
 
-        TransactionCategory transactionCategory = TransactionCategory.OTHER;
+        TransactionCategory transactionCategory = TransactionCategory.UNCATEGORIZED;
         try {
             transactionCategory = TransactionCategory.valueOf(apiResponse);
         } catch (IllegalArgumentException e) {

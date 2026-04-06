@@ -10,7 +10,7 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>party-service</artifactId>
+    <artifactId>user-service</artifactId>
     <packaging>jar</packaging>
 
     <dependencies>

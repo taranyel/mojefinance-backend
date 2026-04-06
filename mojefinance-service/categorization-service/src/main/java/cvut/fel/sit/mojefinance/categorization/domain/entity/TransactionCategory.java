@@ -22,7 +22,9 @@ public enum TransactionCategory {
     EDUCATION("Education"),
 
     FEES_AND_CHARGES("Fees and Charges"),
-    OTHER("Other");
+    OTHER_INCOME("Other income"),
+    OTHER_EXPENSE("Other expense"),
+    UNCATEGORIZED("Uncategorized");
 
     private final String displayName;
 }

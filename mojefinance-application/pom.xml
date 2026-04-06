@@ -49,7 +49,7 @@
         </dependency>
         <dependency>
             <groupId>cvut.fel.sit</groupId>
-            <artifactId>party-service</artifactId>
+            <artifactId>user-service</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
     </dependencies>
