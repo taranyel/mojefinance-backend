@@ -55,7 +55,3 @@ security:
     encryption:
       password: ${encryption-password}
       salt: ${encryption-salt}
-
-google:
-  api:
-    key: ${google.api.key}

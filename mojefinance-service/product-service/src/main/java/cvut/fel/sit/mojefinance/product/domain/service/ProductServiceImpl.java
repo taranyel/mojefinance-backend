@@ -4,8 +4,12 @@ import cvut.fel.sit.mojefinance.authorization.AuthorizationService;
 import cvut.fel.sit.mojefinance.bank.domain.dto.ConnectedBanksDomainResponse;
 import cvut.fel.sit.mojefinance.bank.domain.entity.BankConnection;
 import cvut.fel.sit.mojefinance.bank.domain.service.BankConnectionService;
+import cvut.fel.sit.mojefinance.categorization.CategorizationService;
+import cvut.fel.sit.mojefinance.categorization.domain.dto.CategorizeProductsRequest;
+import cvut.fel.sit.mojefinance.categorization.domain.dto.CategorizeProductsResponse;
+import cvut.fel.sit.mojefinance.categorization.domain.entity.ProductCategory;
 import cvut.fel.sit.mojefinance.product.domain.dto.AccountBalancesMessagingRequest;
-import cvut.fel.sit.mojefinance.product.domain.dto.ProductsDomainResponse;
+import cvut.fel.sit.mojefinance.product.domain.dto.ProductsResponse;
 import cvut.fel.sit.mojefinance.product.domain.entity.Amount;
 import cvut.fel.sit.mojefinance.product.domain.entity.BankDetails;
 import cvut.fel.sit.mojefinance.product.domain.entity.Product;
@@ -20,6 +24,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -29,9 +35,10 @@ public class ProductServiceImpl implements ProductService {
     private final AuthorizationService authorizationService;
     private final BankConnectionService bankConnectionService;
     private final ProductHelper productHelper;
+    private final CategorizationService categorizationService;
 
     @Override
-    public ProductsDomainResponse getProducts() {
+    public ProductsResponse getProducts() {
         log.info("Getting products for authorized user.");
         List<Product> products = new ArrayList<>();
 
@@ -46,30 +53,60 @@ public class ProductServiceImpl implements ProductService {
 
             BankDetails bankDetails = productHelper.mapBankDetails(realBankConnection);
             List<Product> retrievedProducts = getProductsFromExternalApi(bankDetails, authorization, principal.getName());
-            setProductsBalances(retrievedProducts, bankDetails, authorization, principal.getName());
+            enrichProducts(retrievedProducts, bankDetails, authorization, principal.getName());
 
             products.addAll(retrievedProducts);
         }
 
         log.info("Retrieved {} products for authorized user.", products.size());
-        return ProductsDomainResponse.builder()
+        return ProductsResponse.builder()
                 .products(products)
                 .build();
     }
 
     private List<Product> getProductsFromExternalApi(BankDetails bankDetails, String authorization, String principalName) {
         ProductsMessagingRequest productsMessagingRequest = productHelper.buildGetProductsMessagingRequest(bankDetails, authorization, principalName);
-        ProductsDomainResponse messagingResponse = externalApiProvider.getProducts(productsMessagingRequest);
+        ProductsResponse messagingResponse = externalApiProvider.getProducts(productsMessagingRequest);
+        log.info("Retrieved {} products from external API for bank: {}", messagingResponse.getProducts().size(), bankDetails.getBankName());
         return messagingResponse.getProducts();
     }
 
-    private void setProductsBalances(List<Product> retrievedProducts, BankDetails bankDetails, String authorization, String principalName) {
-        for (Product product : retrievedProducts) {
-            String productId = product.getProductId();
-            log.info("Retrieving account balance for account id: {} client registration id: {}", productId, bankDetails.getClientRegistrationId());
-            AccountBalancesMessagingRequest accountBalancesMessagingRequest = productHelper.buildAccountBalancesMessagingRequest(productId, bankDetails, authorization, principalName);
-            Amount balance = externalApiProvider.getAccountBalance(accountBalancesMessagingRequest);
+    private void enrichProducts(List<Product> products, BankDetails bankDetails, String authorization, String principalName) {
+        Map<String, ProductCategory> categoryMap = getProductCategoryMap(products);
+        for (Product product : products) {
+            setProductCategory(product, categoryMap);
+            Amount balance = fetchProductBalances(product, bankDetails, authorization, principalName);
             product.setBalance(balance);
         }
+    }
+
+    private void setProductCategory(Product product, Map<String, ProductCategory> categoryMap) {
+        ProductCategory category = categoryMap.get(product.getProductName());
+        if (category == null) {
+            category = ProductCategory.OTHER;
+        }
+        product.setProductCategory(category.getDisplayName());
+    }
+
+    private Map<String, ProductCategory> getProductCategoryMap(List<Product> products) {
+        CategorizeProductsRequest categorizeProductsRequest = buildCategorizeProductsRequest(products);
+        CategorizeProductsResponse categorizeProductsResponse = categorizationService
+                .categorizeProducts(categorizeProductsRequest);
+        return categorizeProductsResponse.getCategorizedProducts();
+    }
+
+    private CategorizeProductsRequest buildCategorizeProductsRequest(List<Product> products) {
+        return CategorizeProductsRequest.builder()
+                .productNames(products.stream()
+                        .map(Product::getProductName)
+                        .collect(Collectors.toSet()))
+                .build();
+    }
+
+    private Amount fetchProductBalances(Product product, BankDetails bankDetails, String authorization, String principalName) {
+        String productId = product.getProductId();
+        log.info("Retrieving account balance for account id: {} client registration id: {}", productId, bankDetails.getClientRegistrationId());
+        AccountBalancesMessagingRequest accountBalancesMessagingRequest = productHelper.buildAccountBalancesMessagingRequest(productId, bankDetails, authorization, principalName);
+        return externalApiProvider.getAccountBalance(accountBalancesMessagingRequest);
     }
 }

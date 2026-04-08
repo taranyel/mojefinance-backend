@@ -1,11 +1,10 @@
 package cvut.fel.sit.mojefinance.product.api.controller;
 
 import cvut.fel.sit.mojefinance.openapi.api.ProductsApi;
-import cvut.fel.sit.mojefinance.openapi.model.ProductsResponse;
 import cvut.fel.sit.mojefinance.openapi.model.TransactionsResponse;
 import cvut.fel.sit.mojefinance.product.api.mapper.ProductsMapper;
 import cvut.fel.sit.mojefinance.product.api.mapper.TransactionsMapper;
-import cvut.fel.sit.mojefinance.product.domain.dto.ProductsDomainResponse;
+import cvut.fel.sit.mojefinance.product.domain.dto.ProductsResponse;
 import cvut.fel.sit.mojefinance.product.domain.dto.TransactionsRequest;
 import cvut.fel.sit.mojefinance.product.domain.dto.TransactionsDomainResponse;
 import cvut.fel.sit.mojefinance.product.domain.entity.BankDetails;
@@ -27,9 +26,9 @@ public class ProductController implements ProductsApi {
     private final TransactionsMapper transactionsMapper;
 
     @Override
-    public ResponseEntity<ProductsResponse> getProducts(String authorization) {
-        ProductsDomainResponse domainResponse = productService.getProducts();
-        ProductsResponse apiResponse = productsMapper.toProductsResponse(domainResponse);
+    public ResponseEntity<cvut.fel.sit.mojefinance.openapi.model.ProductsResponse> getProducts(String authorization) {
+        ProductsResponse domainResponse = productService.getProducts();
+        cvut.fel.sit.mojefinance.openapi.model.ProductsResponse apiResponse = productsMapper.toProductsResponse(domainResponse);
         return new ResponseEntity<>(apiResponse, HttpStatus.OK);
     }
 

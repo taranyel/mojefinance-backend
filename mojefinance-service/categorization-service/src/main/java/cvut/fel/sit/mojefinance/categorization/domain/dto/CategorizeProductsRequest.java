@@ -7,6 +7,6 @@ import java.util.Set;
 
 @Data
 @Builder
-public class CategorizeTransactionsRequest {
-    private Set<String> transactionNames;
+public class CategorizeProductsRequest {
+    private Set<String> productNames;
 }

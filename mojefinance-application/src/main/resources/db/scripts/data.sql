@@ -15,3 +15,17 @@ VALUES (2,'GROCERIES'),
        (15,'OTHER')
 
 ON CONFLICT DO NOTHING;
+
+INSERT INTO product_category (product_category_id, category_name)
+VALUES (1, 'CHECKING_ACCOUNT'),
+       (2, 'SAVINGS_ACCOUNT'),
+       (3, 'CREDIT_CARD'),
+       (4, 'LOAN'),
+       (5, 'MORTGAGE'),
+       (6, 'INVESTMENT'),
+       (7, 'PENSION'),
+       (8, 'INSURANCE'),
+       (9, 'OTHER'),
+       (10, 'SHORT_TERM_DEPOSIT')
+
+ON CONFLICT DO NOTHING;

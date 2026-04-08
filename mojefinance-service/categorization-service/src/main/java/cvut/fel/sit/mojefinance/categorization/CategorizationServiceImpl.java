@@ -1,38 +1,44 @@
 package cvut.fel.sit.mojefinance.categorization;
 
-import cvut.fel.sit.mojefinance.categorization.data.entity.TransactionCategoryEntity;
+import cvut.fel.sit.mojefinance.categorization.data.entity.ProductMappingEntity;
 import cvut.fel.sit.mojefinance.categorization.data.entity.TransactionMappingEntity;
-import cvut.fel.sit.mojefinance.categorization.data.repository.TransactionMappingRepository;
+import cvut.fel.sit.mojefinance.categorization.domain.dto.CategorizeProductsRequest;
+import cvut.fel.sit.mojefinance.categorization.domain.dto.CategorizeProductsResponse;
 import cvut.fel.sit.mojefinance.categorization.domain.dto.CategorizeTransactionsRequest;
 import cvut.fel.sit.mojefinance.categorization.domain.dto.CategorizeTransactionsResponse;
+import cvut.fel.sit.mojefinance.categorization.domain.entity.ProductCategory;
 import cvut.fel.sit.mojefinance.categorization.domain.entity.TransactionCategory;
-import cvut.fel.sit.mojefinance.categorization.messaging.service.GeminiProviderImpl;
+import cvut.fel.sit.mojefinance.categorization.domain.helper.ProductCategorizationHelper;
+import cvut.fel.sit.mojefinance.categorization.domain.helper.TransactionCategorizationHelper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 
 @Service
 @RequiredArgsConstructor
 public class CategorizationServiceImpl implements CategorizationService {
-    private final TransactionMappingRepository transactionMappingRepository;
-    private final GeminiProviderImpl geminiProvider;
+    private final TransactionCategorizationHelper transactionCategorizationHelper;
+    private final ProductCategorizationHelper productCategorizationHelper;
 
     @Override
+    @Cacheable(value = "categorized_transactions", key = "#categorizeTransactionsRequest.transactionNames")
     public CategorizeTransactionsResponse categorizeTransactions(CategorizeTransactionsRequest categorizeTransactionsRequest) {
-        Set<String> requestedTransactionsNames = categorizeTransactionsRequest.getTransactionsNames();
-        List<TransactionMappingEntity> transactionDataMappings = transactionMappingRepository
-                .getAllTransactionMappingsByTransactionsNames(requestedTransactionsNames);
+        Set<String> requestedTransactionNames = categorizeTransactionsRequest.getTransactionNames();
+        List<TransactionMappingEntity> transactionDataMappings = transactionCategorizationHelper
+                .getAllTransactionMappingsByTransactionNames(requestedTransactionNames);
 
-        Map<String, TransactionCategory> existingTransactionMappings = mapExistingTransactionMappings(transactionDataMappings);
+        Map<String, TransactionCategory> existingTransactionMappings = transactionCategorizationHelper
+                .mapExistingTransactionMappings(transactionDataMappings);
 
-        Set<String> unmappedTransactions = filterUnmappedTransactions(requestedTransactionsNames, existingTransactionMappings);
-        Map<String, TransactionCategory> savedTransactionMappings = saveNewTransactionMappings(unmappedTransactions);
+        Set<String> unmappedTransactions = transactionCategorizationHelper
+                .filterUnmappedTransactions(requestedTransactionNames, existingTransactionMappings);
+        Map<String, TransactionCategory> savedTransactionMappings = transactionCategorizationHelper
+                .saveNewTransactionMappings(unmappedTransactions);
         existingTransactionMappings.putAll(savedTransactionMappings);
 
         return CategorizeTransactionsResponse.builder()
@@ -40,37 +46,24 @@ public class CategorizationServiceImpl implements CategorizationService {
                 .build();
     }
 
-    private Map<String, TransactionCategory> mapExistingTransactionMappings(List<TransactionMappingEntity> transactionDataMappings) {
-        return transactionDataMappings.stream()
-                .collect(Collectors.toMap(
-                        TransactionMappingEntity::getTransactionName,
-                        mapping -> TransactionCategory.valueOf(mapping.getTransactionCategory().getCategoryName())
-                ));
-    }
+    @Override
+    @Cacheable(value = "categorized_products", key = "#categorizeProductsRequest.productNames")
+    public CategorizeProductsResponse categorizeProducts(CategorizeProductsRequest categorizeProductsRequest) {
+        Set<String> requestedProductNames = categorizeProductsRequest.getProductNames();
+        List<ProductMappingEntity> productDataMappings = productCategorizationHelper
+                .getAllProductMappingsByProductNames(requestedProductNames);
 
-    private Map<String, TransactionCategory> saveNewTransactionMappings(Set<String> unmappedTransactions) {
-        Map<String, TransactionCategory> transactionMappings = new HashMap<>();
+        Map<String, ProductCategory> existingProductMappings = productCategorizationHelper
+                .mapExistingProductMappings(productDataMappings);
 
-        for (String unmappedTransactionName : unmappedTransactions) {
-            TransactionCategory mappedCategory = geminiProvider.categorizeTransactionWithAI(unmappedTransactionName);
-            TransactionCategoryEntity transactionCategoryDataEntity = transactionMappingRepository
-                    .getTransactionCategoryByCategoryName(mappedCategory.name());
+        Set<String> unmappedProducts = productCategorizationHelper
+                .filterUnmappedProducts(requestedProductNames, existingProductMappings);
+        Map<String, ProductCategory> savedTransactionMappings = productCategorizationHelper
+                .saveNewProductMappings(unmappedProducts);
+        existingProductMappings.putAll(savedTransactionMappings);
 
-            TransactionMappingEntity mappingToSave = TransactionMappingEntity.builder()
-                    .transactionCategory(transactionCategoryDataEntity)
-                    .transactionName(unmappedTransactionName)
-                    .build();
-
-            transactionMappingRepository.addTransactionMapping(mappingToSave);
-            transactionMappings.put(unmappedTransactionName, mappedCategory);
-        }
-        return transactionMappings;
-    }
-
-    private Set<String> filterUnmappedTransactions(Set<String> requestedTransactionsNames, Map<String, TransactionCategory> existingTransactionMappings) {
-        return requestedTransactionsNames.stream()
-                .filter(requestedTransactionName -> existingTransactionMappings.keySet().stream()
-                        .noneMatch(existingTransactionName -> existingTransactionName.equals(requestedTransactionName)))
-                .collect(Collectors.toSet());
+        return CategorizeProductsResponse.builder()
+                .categorizedProducts(existingProductMappings)
+                .build();
     }
 }

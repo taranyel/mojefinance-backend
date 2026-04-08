@@ -23,8 +23,8 @@ public class TransactionMappingRepositoryImpl implements TransactionMappingRepos
     }
 
     @Override
-    public List<TransactionMappingEntity> getAllTransactionMappingsByTransactionsNames(Set<String> transactionsNames) {
-        return transactionMappingJpaRepository.findAllByTransactionNameIn(transactionsNames);
+    public List<TransactionMappingEntity> getAllTransactionMappingsByTransactionNames(Set<String> transactionNames) {
+        return transactionMappingJpaRepository.findAllByTransactionNameIn(transactionNames);
     }
 
     @Override

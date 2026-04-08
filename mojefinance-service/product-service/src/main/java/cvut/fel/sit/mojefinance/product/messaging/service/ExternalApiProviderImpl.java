@@ -1,7 +1,7 @@
 package cvut.fel.sit.mojefinance.product.messaging.service;
 
 import cvut.fel.sit.mojefinance.product.domain.dto.AccountBalancesMessagingRequest;
-import cvut.fel.sit.mojefinance.product.domain.dto.ProductsDomainResponse;
+import cvut.fel.sit.mojefinance.product.domain.dto.ProductsResponse;
 import cvut.fel.sit.mojefinance.product.domain.dto.TransactionsRequest;
 import cvut.fel.sit.mojefinance.product.domain.entity.Amount;
 import cvut.fel.sit.mojefinance.product.domain.entity.BankDetails;
@@ -57,7 +57,7 @@ public class ExternalApiProviderImpl implements ExternalApiProvider {
 
     @Override
     @Cacheable(value = "products", key = "#request.principalName + '-' + #request.bankDetails.clientRegistrationId")
-    public ProductsDomainResponse getProducts(ProductsMessagingRequest request) {
+    public ProductsResponse getProducts(ProductsMessagingRequest request) {
         BankDetails bankDetails = request.getBankDetails();
         log.info("Fetching products from bank: {}", bankDetails.getClientRegistrationId());
 

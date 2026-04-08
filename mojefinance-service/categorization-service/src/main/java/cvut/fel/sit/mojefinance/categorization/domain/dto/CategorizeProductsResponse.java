@@ -1,6 +1,6 @@
 package cvut.fel.sit.mojefinance.categorization.domain.dto;
 
-import cvut.fel.sit.mojefinance.categorization.domain.entity.TransactionCategory;
+import cvut.fel.sit.mojefinance.categorization.domain.entity.ProductCategory;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -12,6 +12,6 @@ import java.util.Map;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class CategorizeTransactionsResponse {
-    private Map<String, TransactionCategory> categorizedTransactions;
+public class CategorizeProductsResponse {
+    private Map<String, ProductCategory> categorizedProducts;
 }

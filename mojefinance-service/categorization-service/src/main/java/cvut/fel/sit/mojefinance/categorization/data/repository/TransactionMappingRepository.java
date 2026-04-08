@@ -10,7 +10,7 @@ import java.util.Set;
 public interface TransactionMappingRepository {
     void addTransactionMapping(TransactionMappingEntity transactionMappingEntity);
 
-    List<TransactionMappingEntity> getAllTransactionMappingsByTransactionsNames(Set<String> transactionsNames);
+    List<TransactionMappingEntity> getAllTransactionMappingsByTransactionNames(Set<String> transactionNames);
 
     TransactionCategoryEntity getTransactionCategoryByCategoryName(String categoryName);
 }

@@ -18,5 +18,11 @@
             <artifactId>google-genai</artifactId>
             <version>1.0.0</version>
         </dependency>
+        <dependency>
+            <groupId>com.nimbusds</groupId>
+            <artifactId>oauth2-oidc-sdk</artifactId>
+            <version>11.26.1</version>
+            <scope>compile</scope>
+        </dependency>
     </dependencies>
 </project>

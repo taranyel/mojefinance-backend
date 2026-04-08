@@ -5,8 +5,8 @@ import cvut.fel.sit.mojefinance.categorization.CategorizationService;
 import cvut.fel.sit.mojefinance.categorization.domain.dto.CategorizeTransactionsRequest;
 import cvut.fel.sit.mojefinance.categorization.domain.dto.CategorizeTransactionsResponse;
 import cvut.fel.sit.mojefinance.categorization.domain.entity.TransactionCategory;
-import cvut.fel.sit.mojefinance.product.domain.dto.TransactionsRequest;
 import cvut.fel.sit.mojefinance.product.domain.dto.TransactionsDomainResponse;
+import cvut.fel.sit.mojefinance.product.domain.dto.TransactionsRequest;
 import cvut.fel.sit.mojefinance.product.domain.entity.RelatedParties;
 import cvut.fel.sit.mojefinance.product.domain.entity.Transaction;
 import cvut.fel.sit.mojefinance.product.domain.entity.TransactionDirection;
@@ -46,8 +46,7 @@ public class TransactionServiceImpl implements TransactionService {
         String authorization = BEARER_PREFIX + " " + authorizationService.authorizeClient(clientRegistrationId);
         request.setAuthorization(authorization);
 
-        TransactionsMessagingResponse messagingResponse = externalApiProvider.getTransactions(request);
-        List<Transaction> transactions = messagingResponse.getTransactions();
+        List<Transaction> transactions = getTransactionsFromExternalApi(request);
         enrichTransactions(transactions);
 
         log.info("Retrieved: {} transactions for client registration id: {} for account id: {}, from date: {}, to date: {}",
@@ -55,16 +54,18 @@ public class TransactionServiceImpl implements TransactionService {
         return transactionsGroupingHelper.groupTransactions(transactions);
     }
 
+    private List<Transaction> getTransactionsFromExternalApi(TransactionsRequest request) {
+        TransactionsMessagingResponse messagingResponse = externalApiProvider.getTransactions(request);
+        return messagingResponse.getTransactions();
+    }
+
     private void enrichTransactions(List<Transaction> transactions) {
-        transactions.forEach(this::enrichSingleTransaction);
+        setCounterparties(transactions);
         setTransactionCategories(transactions);
     }
 
     private void setTransactionCategories(List<Transaction> transactions) {
-        CategorizeTransactionsRequest categorizeTransactionsRequest = buildCategorizeTransactionsRequest(transactions);
-        CategorizeTransactionsResponse categorizeTransactionsResponse = categorizationService.categorizeTransactions(categorizeTransactionsRequest);
-        Map<String, TransactionCategory> categoryMap = categorizeTransactionsResponse.getCategorizedTransactions();
-
+        Map<String, TransactionCategory> categoryMap = getTransactionCategoryMap(transactions);
         transactions.forEach(transaction -> {
             TransactionCategory category = categoryMap.get(transaction.getCounterpartyName() + " " + transaction.getDirection().name());
             if (category == null) {
@@ -74,27 +75,36 @@ public class TransactionServiceImpl implements TransactionService {
         });
     }
 
+    private Map<String, TransactionCategory> getTransactionCategoryMap(List<Transaction> transactions) {
+        CategorizeTransactionsRequest categorizeTransactionsRequest = buildCategorizeTransactionsRequest(transactions);
+        CategorizeTransactionsResponse categorizeTransactionsResponse = categorizationService
+                .categorizeTransactions(categorizeTransactionsRequest);
+        return categorizeTransactionsResponse.getCategorizedTransactions();
+    }
+
     private CategorizeTransactionsRequest buildCategorizeTransactionsRequest(List<Transaction> transactions) {
         return CategorizeTransactionsRequest.builder()
-                .transactionsNames(transactions.stream()
+                .transactionNames(transactions.stream()
                         .map(transaction -> transaction.getCounterpartyName() + " " + transaction.getDirection().name())
                         .collect(Collectors.toSet()))
                 .build();
     }
 
-    private void enrichSingleTransaction(Transaction transaction) {
-        RelatedParties parties = transaction.getRelatedParties();
-        if (parties == null || transaction.getDirection() == null) {
-            return;
-        }
-        if (TransactionDirection.OUTCOME.equals(transaction.getDirection())) {
-            String counterpartyName = getCounterpartyName(parties.getCreditorName(), parties.getCreditorAccountIban());
-            transaction.setCounterpartyName(counterpartyName);
-            negateTransactionAmountValue(transaction);
+    private void setCounterparties(List<Transaction> transactions) {
+        for (Transaction transaction : transactions) {
+            RelatedParties parties = transaction.getRelatedParties();
+            if (parties == null || transaction.getDirection() == null) {
+                return;
+            }
+            if (TransactionDirection.OUTCOME.equals(transaction.getDirection())) {
+                String counterpartyName = getCounterpartyName(parties.getCreditorName(), parties.getCreditorAccountIban());
+                transaction.setCounterpartyName(counterpartyName);
+                negateTransactionAmountValue(transaction);
 
-        } else if (TransactionDirection.INCOME.equals(transaction.getDirection())) {
-            String counterpartyName = getCounterpartyName(parties.getDebtorName(), parties.getDebtorAccountIban());
-            transaction.setCounterpartyName(counterpartyName);
+            } else if (TransactionDirection.INCOME.equals(transaction.getDirection())) {
+                String counterpartyName = getCounterpartyName(parties.getDebtorName(), parties.getDebtorAccountIban());
+                transaction.setCounterpartyName(counterpartyName);
+            }
         }
     }
 

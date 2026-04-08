@@ -9,5 +9,5 @@ import java.util.Set;
 
 @Repository
 public interface TransactionMappingJpaRepository extends JpaRepository<TransactionMappingEntity, Long> {
-    List<TransactionMappingEntity> findAllByTransactionNameIn(Set<String> transactionsNames);
+    List<TransactionMappingEntity> findAllByTransactionNameIn(Set<String> transactionNames);
 }
