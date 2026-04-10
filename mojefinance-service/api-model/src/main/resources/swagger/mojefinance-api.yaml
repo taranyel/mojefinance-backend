@@ -96,6 +96,48 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
+  /products/assets-liabilities:
+    get:
+      summary: Get assets and liabilities
+      operationId: getAssetsAndLiabilities
+      parameters:
+        - name: Authorization
+          in: header
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AssetsAndLiabilitiesResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
   /products/{clientRegistrationId}/{accountId}/transactions:
     get:
       summary: Get transactions
@@ -344,6 +386,30 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Product'
+
+    AssetsAndLiabilitiesResponse:
+      type: object
+      properties:
+        assets:
+          type: array
+          items:
+            $ref: '#/components/schemas/GroupedProducts'
+        liabilities:
+          type: array
+          items:
+            $ref: '#/components/schemas/GroupedProducts'
+
+    GroupedProducts:
+      type: object
+      properties:
+        groupName:
+          type: string
+        products:
+          type: array
+          items:
+            $ref: '#/components/schemas/Product'
+        totalAmount:
+          $ref: '#/components/schemas/Amount'
 
     TransactionsResponse:
       type: object

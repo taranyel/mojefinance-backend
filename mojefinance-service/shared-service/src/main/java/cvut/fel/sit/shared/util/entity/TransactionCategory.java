@@ -1,4 +1,4 @@
-package cvut.fel.sit.mojefinance.categorization.domain.entity;
+package cvut.fel.sit.shared.util.entity;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

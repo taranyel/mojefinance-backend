@@ -38,4 +38,4 @@ external:
       apikey: ${csob-apikey}
       tpp-name: ${csob-tpp-name}
     google:
-        apikey: AIzaSyDlqvPY_6T1lBIpxF4KUvdL62RbJO_J_Xg
+        apikey: ${google-apikey}

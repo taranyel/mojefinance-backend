@@ -1,7 +1,13 @@
 package cvut.fel.sit.mojefinance.product.domain.helper;
 
 import cvut.fel.sit.mojefinance.product.domain.dto.TransactionsDomainResponse;
-import cvut.fel.sit.mojefinance.product.domain.entity.*;
+import cvut.fel.sit.mojefinance.product.domain.entity.Amount;
+import cvut.fel.sit.mojefinance.product.domain.entity.Transaction;
+import cvut.fel.sit.mojefinance.product.domain.entity.TransactionDirection;
+import cvut.fel.sit.mojefinance.product.domain.entity.TransactionStatus;
+import cvut.fel.sit.mojefinance.product.domain.entity.TransactionsGroupedByCategory;
+import cvut.fel.sit.mojefinance.product.domain.entity.TransactionsGroupedByMonth;
+import cvut.fel.sit.shared.util.entity.TransactionCategory;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
@@ -21,11 +27,10 @@ import static cvut.fel.sit.shared.util.Constants.CZK_CURRENCY_CODE;
 
 @Component
 public class TransactionsGroupingHelper {
-    private static final String UNCATEGORIZED_TRANSACTION_CATEGORY = "Uncategorized";
 
     public TransactionsDomainResponse groupTransactions(List<Transaction> transactions) {
-        Map<YearMonth, Map<String, List<Transaction>>> bookedTransactionsMap = getBookedTransactionsMap(transactions);
-        Map<YearMonth, Map<String, List<Transaction>>> pendingTransactionsMap = getPendingTransactionsMap(transactions);
+        Map<YearMonth, Map<TransactionCategory, List<Transaction>>> bookedTransactionsMap = getBookedTransactionsMap(transactions);
+        Map<YearMonth, Map<TransactionCategory, List<Transaction>>> pendingTransactionsMap = getPendingTransactionsMap(transactions);
 
         List<TransactionsGroupedByMonth> pendingTransactionsMonthlyGroups = pendingTransactionsMap.entrySet().stream()
                 .map(this::buildMonthGroup)
@@ -42,7 +47,7 @@ public class TransactionsGroupingHelper {
                 .build();
     }
 
-    private TransactionsGroupedByMonth buildMonthGroup(Map.Entry<YearMonth, Map<String, List<Transaction>>> monthEntry) {
+    private TransactionsGroupedByMonth buildMonthGroup(Map.Entry<YearMonth, Map<TransactionCategory, List<Transaction>>> monthEntry) {
         YearMonth yearMonth = monthEntry.getKey();
         String monthName = yearMonth.getMonth().getDisplayName(TextStyle.FULL, Locale.ENGLISH) + " " + yearMonth.getYear();
 
@@ -56,8 +61,8 @@ public class TransactionsGroupingHelper {
                 .build();
     }
 
-    private TransactionsGroupedByCategory buildCategoryGroup(Map.Entry<String, List<Transaction>> categoryEntry) {
-        String categoryName = categoryEntry.getKey();
+    private TransactionsGroupedByCategory buildCategoryGroup(Map.Entry<TransactionCategory, List<Transaction>> categoryEntry) {
+        TransactionCategory categoryName = categoryEntry.getKey();
         List<Transaction> categoryTransactions = categoryEntry.getValue();
 
         BigDecimal totalIncomeAmount = getTotalAmount(categoryTransactions, TransactionDirection.INCOME);
@@ -92,30 +97,30 @@ public class TransactionsGroupingHelper {
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
-    private Map<YearMonth, Map<String, List<Transaction>>> getBookedTransactionsMap(List<Transaction> transactions) {
+    private Map<YearMonth, Map<TransactionCategory, List<Transaction>>> getBookedTransactionsMap(List<Transaction> transactions) {
         return transactions.stream()
                 .filter(t -> t.getBookingDate() != null && TransactionStatus.BOOKED.equals(t.getStatus()))
                 .collect(Collectors.groupingBy(
                         t -> YearMonth.from(t.getBookingDate()),
-                        () -> new TreeMap<YearMonth, Map<String, List<Transaction>>>(Comparator.reverseOrder()),
+                        () -> new TreeMap<YearMonth, Map<TransactionCategory, List<Transaction>>>(Comparator.reverseOrder()),
                         groupByCategory()
                 ));
     }
 
-    private Collector<Transaction, ?, Map<String, List<Transaction>>> groupByCategory() {
+    private Collector<Transaction, ?, Map<TransactionCategory, List<Transaction>>> groupByCategory() {
         return Collectors.groupingBy(
-                t -> t.getCategory() != null ? t.getCategory() : UNCATEGORIZED_TRANSACTION_CATEGORY,
+                t -> t.getCategory() != null ? t.getCategory() : TransactionCategory.UNCATEGORIZED,
                 TreeMap::new,
                 Collectors.toList()
         );
     }
 
-    private Map<YearMonth, Map<String, List<Transaction>>> getPendingTransactionsMap(List<Transaction> transactions) {
+    private Map<YearMonth, Map<TransactionCategory, List<Transaction>>> getPendingTransactionsMap(List<Transaction> transactions) {
         return transactions.stream()
                 .filter(t -> t.getValueDate() != null && TransactionStatus.PENDING.equals(t.getStatus()))
                 .collect(Collectors.groupingBy(
                         t -> YearMonth.from(t.getValueDate()),
-                        () -> new TreeMap<YearMonth, Map<String, List<Transaction>>>(Comparator.reverseOrder()),
+                        () -> new TreeMap<YearMonth, Map<TransactionCategory, List<Transaction>>>(Comparator.reverseOrder()),
                         groupByCategory()
                 ));
     }

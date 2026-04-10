@@ -1,5 +1,6 @@
 package cvut.fel.sit.mojefinance.product.domain.entity;
 
+import cvut.fel.sit.shared.util.entity.ProductCategory;
 import lombok.AllArgsConstructor;import lombok.Builder;
 import lombok.Data;import lombok.NoArgsConstructor;
 
@@ -15,7 +16,7 @@ public class Product {
     private ProductIdentification productIdentification;
     private String currency;
     private List<String> ownersNames;
-    private String productCategory;
+    private ProductCategory productCategory;
     private String productName;
     private Amount balance;
     private Boolean manuallyCreated;

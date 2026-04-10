@@ -1,6 +1,8 @@
 package cvut.fel.sit.mojefinance.product.domain.entity;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;import com.fasterxml.jackson.databind.annotation.JsonSerialize;import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer;import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;import lombok.AllArgsConstructor;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;import com.fasterxml.jackson.databind.annotation.JsonSerialize;import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer;import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
+import cvut.fel.sit.shared.util.entity.TransactionCategory;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -26,5 +28,5 @@ public class Transaction {
 
     private String counterpartyName;
     private RelatedParties relatedParties;
-    private String category;
+    private TransactionCategory category;
 }

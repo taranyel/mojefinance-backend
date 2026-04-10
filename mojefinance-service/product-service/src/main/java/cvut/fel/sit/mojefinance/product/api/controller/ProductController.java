@@ -1,12 +1,13 @@
 package cvut.fel.sit.mojefinance.product.api.controller;
 
 import cvut.fel.sit.mojefinance.openapi.api.ProductsApi;
+import cvut.fel.sit.mojefinance.openapi.model.AssetsAndLiabilitiesResponse;
 import cvut.fel.sit.mojefinance.openapi.model.TransactionsResponse;
 import cvut.fel.sit.mojefinance.product.api.mapper.ProductsMapper;
 import cvut.fel.sit.mojefinance.product.api.mapper.TransactionsMapper;
 import cvut.fel.sit.mojefinance.product.domain.dto.ProductsResponse;
-import cvut.fel.sit.mojefinance.product.domain.dto.TransactionsRequest;
 import cvut.fel.sit.mojefinance.product.domain.dto.TransactionsDomainResponse;
+import cvut.fel.sit.mojefinance.product.domain.dto.TransactionsRequest;
 import cvut.fel.sit.mojefinance.product.domain.entity.BankDetails;
 import cvut.fel.sit.mojefinance.product.domain.service.ProductService;
 import cvut.fel.sit.mojefinance.product.domain.service.TransactionService;
@@ -37,6 +38,13 @@ public class ProductController implements ProductsApi {
         TransactionsRequest request = buildTransactionsRequest(accountId, clientRegistrationId, fromDate, toDate);
         TransactionsDomainResponse domainResponse = transactionService.getTransactions(request);
         TransactionsResponse apiResponse = transactionsMapper.toTransactionsResponse(domainResponse);
+        return new ResponseEntity<>(apiResponse, HttpStatus.OK);
+    }
+
+    @Override
+    public ResponseEntity<AssetsAndLiabilitiesResponse> getAssetsAndLiabilities(String authorization) {
+        cvut.fel.sit.mojefinance.product.domain.dto.AssetsAndLiabilitiesResponse domainResponse = productService.getAssetsAndLiabilities();
+        AssetsAndLiabilitiesResponse apiResponse = productsMapper.toAssetsAndLiabilitiesResponse(domainResponse);
         return new ResponseEntity<>(apiResponse, HttpStatus.OK);
     }
 

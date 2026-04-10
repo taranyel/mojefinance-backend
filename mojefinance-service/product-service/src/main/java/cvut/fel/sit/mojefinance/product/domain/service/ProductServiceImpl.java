@@ -7,12 +7,11 @@ import cvut.fel.sit.mojefinance.bank.domain.service.BankConnectionService;
 import cvut.fel.sit.mojefinance.categorization.CategorizationService;
 import cvut.fel.sit.mojefinance.categorization.domain.dto.CategorizeProductsRequest;
 import cvut.fel.sit.mojefinance.categorization.domain.dto.CategorizeProductsResponse;
-import cvut.fel.sit.mojefinance.categorization.domain.entity.ProductCategory;
+import cvut.fel.sit.shared.util.entity.ProductCategory;
 import cvut.fel.sit.mojefinance.product.domain.dto.AccountBalancesMessagingRequest;
+import cvut.fel.sit.mojefinance.product.domain.dto.AssetsAndLiabilitiesResponse;
 import cvut.fel.sit.mojefinance.product.domain.dto.ProductsResponse;
-import cvut.fel.sit.mojefinance.product.domain.entity.Amount;
-import cvut.fel.sit.mojefinance.product.domain.entity.BankDetails;
-import cvut.fel.sit.mojefinance.product.domain.entity.Product;
+import cvut.fel.sit.mojefinance.product.domain.entity.*;
 import cvut.fel.sit.mojefinance.product.domain.helper.ProductHelper;
 import cvut.fel.sit.mojefinance.product.messaging.dto.ProductsMessagingRequest;
 import cvut.fel.sit.mojefinance.product.messaging.service.ExternalApiProvider;
@@ -64,6 +63,18 @@ public class ProductServiceImpl implements ProductService {
                 .build();
     }
 
+    @Override
+    public AssetsAndLiabilitiesResponse getAssetsAndLiabilities() {
+        log.info("Getting assets and liabilities for authorized user.");
+        ProductsResponse productsResponse = getProducts();
+        List<GroupedProducts> assets = productHelper.groupProductsByProductType(productsResponse.getProducts(), cvut.fel.sit.shared.util.entity.ProductType.ASSET);
+        List<GroupedProducts> liabilities = productHelper.groupProductsByProductType(productsResponse.getProducts(), cvut.fel.sit.shared.util.entity.ProductType.LIABILITY);
+        return AssetsAndLiabilitiesResponse.builder()
+                .assets(assets)
+                .liabilities(liabilities)
+                .build();
+    }
+
     private List<Product> getProductsFromExternalApi(BankDetails bankDetails, String authorization, String principalName) {
         ProductsMessagingRequest productsMessagingRequest = productHelper.buildGetProductsMessagingRequest(bankDetails, authorization, principalName);
         ProductsResponse messagingResponse = externalApiProvider.getProducts(productsMessagingRequest);
@@ -85,7 +96,7 @@ public class ProductServiceImpl implements ProductService {
         if (category == null) {
             category = ProductCategory.OTHER;
         }
-        product.setProductCategory(category.getDisplayName());
+        product.setProductCategory(category);
     }
 
     private Map<String, ProductCategory> getProductCategoryMap(List<Product> products) {

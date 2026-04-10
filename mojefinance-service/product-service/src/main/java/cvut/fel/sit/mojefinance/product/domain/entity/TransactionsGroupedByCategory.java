@@ -1,5 +1,6 @@
 package cvut.fel.sit.mojefinance.product.domain.entity;
 
+import cvut.fel.sit.shared.util.entity.TransactionCategory;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -12,7 +13,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class TransactionsGroupedByCategory {
-    private String groupName;
+    private TransactionCategory groupName;
     private List<Transaction> transactions;
     private Amount totalIncome;
     private Amount totalExpense;

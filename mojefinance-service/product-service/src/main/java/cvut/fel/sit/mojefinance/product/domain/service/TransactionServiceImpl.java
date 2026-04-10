@@ -4,7 +4,7 @@ import cvut.fel.sit.mojefinance.authorization.AuthorizationService;
 import cvut.fel.sit.mojefinance.categorization.CategorizationService;
 import cvut.fel.sit.mojefinance.categorization.domain.dto.CategorizeTransactionsRequest;
 import cvut.fel.sit.mojefinance.categorization.domain.dto.CategorizeTransactionsResponse;
-import cvut.fel.sit.mojefinance.categorization.domain.entity.TransactionCategory;
+import cvut.fel.sit.shared.util.entity.TransactionCategory;
 import cvut.fel.sit.mojefinance.product.domain.dto.TransactionsDomainResponse;
 import cvut.fel.sit.mojefinance.product.domain.dto.TransactionsRequest;
 import cvut.fel.sit.mojefinance.product.domain.entity.RelatedParties;
@@ -71,7 +71,7 @@ public class TransactionServiceImpl implements TransactionService {
             if (category == null) {
                 category = TransactionCategory.UNCATEGORIZED;
             }
-            transaction.setCategory(category.getDisplayName());
+            transaction.setCategory(category);
         });
     }
 
