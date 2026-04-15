@@ -11,7 +11,10 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class TransactionsGroupedByMonth {
+public class GroupedTransactions {
     private String groupName;
-    private List<TransactionsGroupedByCategory> groupedByCategory;
+    private List<Transaction> transactions;
+    private Amount totalIncome;
+    private Amount totalExpense;
+    private List<GroupedTransactions> groupedTransactions;
 }

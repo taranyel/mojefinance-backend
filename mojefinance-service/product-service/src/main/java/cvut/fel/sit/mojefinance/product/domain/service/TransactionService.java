@@ -5,4 +5,6 @@ import cvut.fel.sit.mojefinance.product.domain.dto.TransactionsDomainResponse;
 
 public interface TransactionService {
     TransactionsDomainResponse getTransactions(TransactionsRequest request);
+
+    TransactionsDomainResponse getCashFlowSummary();
 }

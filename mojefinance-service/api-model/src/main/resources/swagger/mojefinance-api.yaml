@@ -138,6 +138,48 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
+  /products/cash-flow:
+    get:
+      summary: Get cash flow summary
+      operationId: getCashFlowSummary
+      parameters:
+        - name: Authorization
+          in: header
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransactionsResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
   /products/{clientRegistrationId}/{accountId}/transactions:
     get:
       summary: Get transactions
@@ -391,13 +433,19 @@ components:
       type: object
       properties:
         assets:
-          type: array
-          items:
-            $ref: '#/components/schemas/GroupedProducts'
+          $ref: '#/components/schemas/AssetLiability'
         liabilities:
+          $ref: '#/components/schemas/AssetLiability'
+
+    AssetLiability:
+      type: object
+      properties:
+        groupedProducts:
           type: array
           items:
             $ref: '#/components/schemas/GroupedProducts'
+        totalAmount:
+          $ref: '#/components/schemas/Amount'
 
     GroupedProducts:
       type: object
@@ -414,22 +462,12 @@ components:
     TransactionsResponse:
       type: object
       properties:
-        groupedByMonth:
+        groupedTransactions:
           type: array
           items:
-            $ref: '#/components/schemas/TransactionsGroupedByMonth'
+            $ref: '#/components/schemas/GroupedTransactions'
 
-    TransactionsGroupedByMonth:
-      type: object
-      properties:
-        groupName:
-          type: string
-        groupedByCategory:
-          type: array
-          items:
-            $ref: '#/components/schemas/TransactionsGroupedByCategory'
-
-    TransactionsGroupedByCategory:
+    GroupedTransactions:
       type: object
       properties:
         groupName:
@@ -442,6 +480,10 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Transaction'
+        groupedTransactions:
+          type: array
+          items:
+            $ref: '#/components/schemas/GroupedTransactions'
 
     Transaction:
       type: object

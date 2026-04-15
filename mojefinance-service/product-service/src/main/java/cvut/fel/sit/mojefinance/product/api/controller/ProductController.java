@@ -48,6 +48,13 @@ public class ProductController implements ProductsApi {
         return new ResponseEntity<>(apiResponse, HttpStatus.OK);
     }
 
+    @Override
+    public ResponseEntity<TransactionsResponse> getCashFlowSummary(String authorization) {
+        TransactionsDomainResponse domainResponse = transactionService.getCashFlowSummary();
+        TransactionsResponse apiResponse = transactionsMapper.toTransactionsResponse(domainResponse);
+        return new ResponseEntity<>(apiResponse, HttpStatus.OK);
+    }
+
     private TransactionsRequest buildTransactionsRequest(String accountId, String clientRegistrationId, LocalDate fromDate, LocalDate toDate) {
         return TransactionsRequest.builder()
                 .bankDetails(BankDetails.builder()

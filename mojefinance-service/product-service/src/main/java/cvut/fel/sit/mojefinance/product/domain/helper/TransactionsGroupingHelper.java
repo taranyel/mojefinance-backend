@@ -5,8 +5,7 @@ import cvut.fel.sit.mojefinance.product.domain.entity.Amount;
 import cvut.fel.sit.mojefinance.product.domain.entity.Transaction;
 import cvut.fel.sit.mojefinance.product.domain.entity.TransactionDirection;
 import cvut.fel.sit.mojefinance.product.domain.entity.TransactionStatus;
-import cvut.fel.sit.mojefinance.product.domain.entity.TransactionsGroupedByCategory;
-import cvut.fel.sit.mojefinance.product.domain.entity.TransactionsGroupedByMonth;
+import cvut.fel.sit.mojefinance.product.domain.entity.GroupedTransactions;
 import cvut.fel.sit.shared.util.entity.TransactionCategory;
 import org.springframework.stereotype.Component;
 
@@ -32,62 +31,85 @@ public class TransactionsGroupingHelper {
         Map<YearMonth, Map<TransactionCategory, List<Transaction>>> bookedTransactionsMap = getBookedTransactionsMap(transactions);
         Map<YearMonth, Map<TransactionCategory, List<Transaction>>> pendingTransactionsMap = getPendingTransactionsMap(transactions);
 
-        List<TransactionsGroupedByMonth> pendingTransactionsMonthlyGroups = pendingTransactionsMap.entrySet().stream()
+        List<GroupedTransactions> pendingTransactionsMonthlyGroups = pendingTransactionsMap.entrySet().stream()
                 .map(this::buildMonthGroup)
                 .toList();
-        List<TransactionsGroupedByMonth> result = new ArrayList<>(pendingTransactionsMonthlyGroups);
+        List<GroupedTransactions> result = new ArrayList<>(pendingTransactionsMonthlyGroups);
 
-        List<TransactionsGroupedByMonth> bookedTransactionsMonthlyGroups = bookedTransactionsMap.entrySet().stream()
+        List<GroupedTransactions> bookedTransactionsMonthlyGroups = bookedTransactionsMap.entrySet().stream()
                 .map(this::buildMonthGroup)
                 .toList();
         result.addAll(bookedTransactionsMonthlyGroups);
 
         return TransactionsDomainResponse.builder()
-                .groupedByMonth(result)
+                .groupedTransactions(result)
                 .build();
     }
 
-    private TransactionsGroupedByMonth buildMonthGroup(Map.Entry<YearMonth, Map<TransactionCategory, List<Transaction>>> monthEntry) {
+    private GroupedTransactions buildMonthGroup(Map.Entry<YearMonth, Map<TransactionCategory, List<Transaction>>> monthEntry) {
         YearMonth yearMonth = monthEntry.getKey();
         String monthName = yearMonth.getMonth().getDisplayName(TextStyle.FULL, Locale.ENGLISH) + " " + yearMonth.getYear();
 
-        List<TransactionsGroupedByCategory> categoryGroups = monthEntry.getValue().entrySet().stream()
+        List<GroupedTransactions> categoryGroups = monthEntry.getValue().entrySet().stream()
                 .map(this::buildCategoryGroup)
                 .toList();
+        String currency = categoryGroups.isEmpty() ? CZK_CURRENCY_CODE : categoryGroups.get(0).getTotalIncome().getCurrency();
 
-        return TransactionsGroupedByMonth.builder()
-                .groupName(monthName)
-                .groupedByCategory(categoryGroups)
-                .build();
-    }
-
-    private TransactionsGroupedByCategory buildCategoryGroup(Map.Entry<TransactionCategory, List<Transaction>> categoryEntry) {
-        TransactionCategory categoryName = categoryEntry.getKey();
-        List<Transaction> categoryTransactions = categoryEntry.getValue();
-
-        BigDecimal totalIncomeAmount = getTotalAmount(categoryTransactions, TransactionDirection.INCOME);
-        BigDecimal totalExpenseAmount = getTotalAmount(categoryTransactions, TransactionDirection.OUTCOME);
-        String currency = categoryTransactions.isEmpty() ? CZK_CURRENCY_CODE : categoryTransactions.get(0).getAmount().getCurrency();
-
+        BigDecimal totalIncomeAmount = getTotalIncomeFromTransactionGroups(categoryGroups);
+        BigDecimal totalExpenseAmount = getTotalExpenseFromTransactionGroups(categoryGroups);
         Amount totalIncomeAmountObject = getAmountObject(totalIncomeAmount, currency);
         Amount totalExpenseAmountObject = getAmountObject(totalExpenseAmount, currency);
 
-        return TransactionsGroupedByCategory.builder()
-                .groupName(categoryName)
+        return GroupedTransactions.builder()
+                .groupName(monthName)
+                .totalIncome(totalIncomeAmountObject)
+                .totalExpense(totalExpenseAmountObject)
+                .groupedTransactions(categoryGroups)
+                .build();
+    }
+
+    private BigDecimal getTotalIncomeFromTransactionGroups(List<GroupedTransactions> categoryGroups) {
+        return categoryGroups.stream().
+                map(GroupedTransactions::getTotalIncome)
+                .filter(Objects::nonNull)
+                .map(Amount::getValue)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    private BigDecimal getTotalExpenseFromTransactionGroups(List<GroupedTransactions> categoryGroups) {
+        return categoryGroups.stream().
+                map(GroupedTransactions::getTotalExpense)
+                .filter(Objects::nonNull)
+                .map(Amount::getValue)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    private GroupedTransactions buildCategoryGroup(Map.Entry<TransactionCategory, List<Transaction>> categoryEntry) {
+        TransactionCategory categoryName = categoryEntry.getKey();
+        List<Transaction> categoryTransactions = categoryEntry.getValue();
+
+        BigDecimal totalIncomeAmount = getTotalAmountFromTransactionList(categoryTransactions, TransactionDirection.INCOME);
+        BigDecimal totalExpenseAmount = getTotalAmountFromTransactionList(categoryTransactions, TransactionDirection.OUTCOME);
+        String currency = categoryTransactions.isEmpty() ? CZK_CURRENCY_CODE : categoryTransactions.get(0).getAmount().getCurrency();
+        Amount totalIncomeAmountObject = getAmountObject(totalIncomeAmount, currency);
+        Amount totalExpenseAmountObject = getAmountObject(totalExpenseAmount, currency);
+
+        return GroupedTransactions.builder()
+                .groupName(categoryName.getDisplayName())
                 .totalIncome(totalIncomeAmountObject)
                 .totalExpense(totalExpenseAmountObject)
                 .transactions(categoryTransactions)
                 .build();
     }
 
-    private Amount getAmountObject(BigDecimal totalExpenseAmount, String currency) {
+    private Amount getAmountObject(BigDecimal totalAmount, String currency) {
         return Amount.builder()
-                .value(totalExpenseAmount)
+                .value(totalAmount)
                 .currency(currency)
                 .build();
     }
 
-    private BigDecimal getTotalAmount(List<Transaction> transactions, TransactionDirection direction) {
+    private BigDecimal getTotalAmountFromTransactionList(List<Transaction> transactions, TransactionDirection direction) {
         return transactions.stream()
                 .filter(transaction -> direction.equals(transaction.getDirection()))
                 .map(Transaction::getAmount)

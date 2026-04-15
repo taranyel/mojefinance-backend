@@ -1,40 +1,28 @@
 package cvut.fel.sit.mojefinance.product.domain.service;
 
-import cvut.fel.sit.mojefinance.authorization.AuthorizationService;
-import cvut.fel.sit.mojefinance.categorization.CategorizationService;
-import cvut.fel.sit.mojefinance.categorization.domain.dto.CategorizeTransactionsRequest;
-import cvut.fel.sit.mojefinance.categorization.domain.dto.CategorizeTransactionsResponse;
-import cvut.fel.sit.shared.util.entity.TransactionCategory;
+import cvut.fel.sit.mojefinance.product.domain.dto.ProductsResponse;
 import cvut.fel.sit.mojefinance.product.domain.dto.TransactionsDomainResponse;
 import cvut.fel.sit.mojefinance.product.domain.dto.TransactionsRequest;
-import cvut.fel.sit.mojefinance.product.domain.entity.RelatedParties;
+import cvut.fel.sit.mojefinance.product.domain.entity.Product;
 import cvut.fel.sit.mojefinance.product.domain.entity.Transaction;
-import cvut.fel.sit.mojefinance.product.domain.entity.TransactionDirection;
+import cvut.fel.sit.mojefinance.product.domain.helper.TransactionHelper;
 import cvut.fel.sit.mojefinance.product.domain.helper.TransactionsGroupingHelper;
-import cvut.fel.sit.mojefinance.product.messaging.dto.TransactionsMessagingResponse;
-import cvut.fel.sit.mojefinance.product.messaging.service.ExternalApiProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class TransactionServiceImpl implements TransactionService {
-    private final ExternalApiProvider externalApiProvider;
-    private final AuthorizationService authorizationService;
     private final TransactionsGroupingHelper transactionsGroupingHelper;
-    private final CategorizationService categorizationService;
-
-    private static final String NOT_SPECIFIED_COUNTERPARTY_NAME = "Not specified";
-    private static final String BEARER_PREFIX = "Bearer";
+    private final ProductService productService;
+    private final TransactionHelper transactionHelper;
 
     @Override
     public TransactionsDomainResponse getTransactions(TransactionsRequest request) {
@@ -43,83 +31,42 @@ public class TransactionServiceImpl implements TransactionService {
         request.setPrincipalName(principal.getName());
 
         String clientRegistrationId = request.getBankDetails().getClientRegistrationId();
-        String authorization = BEARER_PREFIX + " " + authorizationService.authorizeClient(clientRegistrationId);
+        String authorization = transactionHelper.constructAuthorizationHeader(clientRegistrationId);
         request.setAuthorization(authorization);
 
-        List<Transaction> transactions = getTransactionsFromExternalApi(request);
-        enrichTransactions(transactions);
+        List<Transaction> transactions = transactionHelper.getTransactionsFromExternalApi(request);
+        transactionHelper.enrichTransactions(transactions);
 
         log.info("Retrieved: {} transactions for client registration id: {} for account id: {}, from date: {}, to date: {}",
                 transactions.size(), clientRegistrationId, request.getAccountId(), request.getFromDate(), request.getToDate());
         return transactionsGroupingHelper.groupTransactions(transactions);
     }
 
-    private List<Transaction> getTransactionsFromExternalApi(TransactionsRequest request) {
-        TransactionsMessagingResponse messagingResponse = externalApiProvider.getTransactions(request);
-        return messagingResponse.getTransactions();
-    }
+    @Override
+    public TransactionsDomainResponse getCashFlowSummary() {
+        log.info("Getting cash flow summary for authorized user.");
+        ProductsResponse productsResponse = productService.getProducts();
+        Authentication principal = SecurityContextHolder.getContext().getAuthentication();
+        String clientRegistrationId = null;
+        String authorization = null;
+        List<Transaction> allTransactions = new ArrayList<>();
 
-    private void enrichTransactions(List<Transaction> transactions) {
-        setCounterparties(transactions);
-        setTransactionCategories(transactions);
-    }
+        for (Product product : productsResponse.getProducts()) {
+            TransactionsRequest request = transactionHelper.buildTransactionsRequest(product.getProductId(), product.getBankDetails());
+            request.setPrincipalName(principal.getName());
 
-    private void setTransactionCategories(List<Transaction> transactions) {
-        Map<String, TransactionCategory> categoryMap = getTransactionCategoryMap(transactions);
-        transactions.forEach(transaction -> {
-            TransactionCategory category = categoryMap.get(transaction.getCounterpartyName() + " " + transaction.getDirection().name());
-            if (category == null) {
-                category = TransactionCategory.UNCATEGORIZED;
+            if (authorization == null || !clientRegistrationId.equals(product.getBankDetails().getClientRegistrationId())) {
+                clientRegistrationId = product.getBankDetails().getClientRegistrationId();
+                authorization = transactionHelper.constructAuthorizationHeader(clientRegistrationId);
             }
-            transaction.setCategory(category);
-        });
-    }
+            request.setAuthorization(authorization);
 
-    private Map<String, TransactionCategory> getTransactionCategoryMap(List<Transaction> transactions) {
-        CategorizeTransactionsRequest categorizeTransactionsRequest = buildCategorizeTransactionsRequest(transactions);
-        CategorizeTransactionsResponse categorizeTransactionsResponse = categorizationService
-                .categorizeTransactions(categorizeTransactionsRequest);
-        return categorizeTransactionsResponse.getCategorizedTransactions();
-    }
-
-    private CategorizeTransactionsRequest buildCategorizeTransactionsRequest(List<Transaction> transactions) {
-        return CategorizeTransactionsRequest.builder()
-                .transactionNames(transactions.stream()
-                        .map(transaction -> transaction.getCounterpartyName() + " " + transaction.getDirection().name())
-                        .collect(Collectors.toSet()))
-                .build();
-    }
-
-    private void setCounterparties(List<Transaction> transactions) {
-        for (Transaction transaction : transactions) {
-            RelatedParties parties = transaction.getRelatedParties();
-            if (parties == null || transaction.getDirection() == null) {
-                return;
-            }
-            if (TransactionDirection.OUTCOME.equals(transaction.getDirection())) {
-                String counterpartyName = getCounterpartyName(parties.getCreditorName(), parties.getCreditorAccountIban());
-                transaction.setCounterpartyName(counterpartyName);
-                negateTransactionAmountValue(transaction);
-
-            } else if (TransactionDirection.INCOME.equals(transaction.getDirection())) {
-                String counterpartyName = getCounterpartyName(parties.getDebtorName(), parties.getDebtorAccountIban());
-                transaction.setCounterpartyName(counterpartyName);
-            }
+            List<Transaction> transactions = transactionHelper.getTransactionsFromExternalApi(request);
+            transactionHelper.enrichTransactions(transactions);
+            allTransactions.addAll(transactions);
         }
-    }
 
-    private String getCounterpartyName(String partyName1, String partyName2) {
-        String counterpartyName = NOT_SPECIFIED_COUNTERPARTY_NAME;
-        if (partyName1 != null || partyName2 != null) {
-            counterpartyName = partyName1 != null ? partyName1 : partyName2;
-        }
-        return counterpartyName;
-    }
-
-    private void negateTransactionAmountValue(Transaction transaction) {
-        BigDecimal amountValue = transaction.getAmount().getValue();
-        if (amountValue.compareTo(BigDecimal.ZERO) > 0) {
-            transaction.getAmount().setValue(amountValue.negate());
-        }
+        log.info("Retrieved cash flow summary with total: {} transactions for authorized user.", allTransactions.size());
+        return transactionsGroupingHelper.groupTransactions(allTransactions);
     }
 }
