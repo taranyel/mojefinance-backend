@@ -1,7 +1,7 @@
 package cvut.fel.sit.mojefinance.product.domain.helper;
 
 import cvut.fel.sit.mojefinance.authorization.AuthorizationService;
-import cvut.fel.sit.mojefinance.bank.domain.dto.ConnectedBanksDomainResponse;
+import cvut.fel.sit.mojefinance.bank.domain.dto.ConnectedBanksResponse;
 import cvut.fel.sit.mojefinance.bank.domain.entity.BankConnection;
 import cvut.fel.sit.mojefinance.bank.domain.entity.BankConnectionStatus;
 import cvut.fel.sit.mojefinance.categorization.CategorizationService;
@@ -12,8 +12,8 @@ import cvut.fel.sit.mojefinance.product.domain.dto.ProductsResponse;
 import cvut.fel.sit.mojefinance.product.domain.entity.*;
 import cvut.fel.sit.mojefinance.product.messaging.dto.ProductsMessagingRequest;
 import cvut.fel.sit.mojefinance.product.messaging.service.ExternalApiProvider;
-import cvut.fel.sit.shared.util.entity.ProductCategory;
-import cvut.fel.sit.shared.util.entity.ProductType;
+import cvut.fel.sit.shared.entity.ProductCategory;
+import cvut.fel.sit.shared.entity.ProductType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -57,7 +57,7 @@ public class ProductHelper {
                 .toList();
     }
 
-    public List<BankConnection> filterBanksWithActiveConnection(ConnectedBanksDomainResponse connectedBanks) {
+    public List<BankConnection> filterBanksWithActiveConnection(ConnectedBanksResponse connectedBanks) {
         return connectedBanks.getConnectedBanks().stream()
                 .filter(connectedBank -> BankConnectionStatus.CONNECTED.equals(connectedBank.getBankConnectionStatus()))
                 .toList();

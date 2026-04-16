@@ -4,7 +4,7 @@ import cvut.fel.sit.mojefinance.categorization.data.entity.TransactionCategoryEn
 import cvut.fel.sit.mojefinance.categorization.data.entity.TransactionMappingEntity;
 import cvut.fel.sit.mojefinance.categorization.data.repository.TransactionMappingRepository;
 import cvut.fel.sit.mojefinance.categorization.messaging.service.GeminiProvider;
-import cvut.fel.sit.shared.util.entity.TransactionCategory;
+import cvut.fel.sit.shared.entity.TransactionCategory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;

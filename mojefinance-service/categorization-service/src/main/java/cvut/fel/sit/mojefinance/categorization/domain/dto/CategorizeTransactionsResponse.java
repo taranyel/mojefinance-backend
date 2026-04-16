@@ -1,6 +1,6 @@
 package cvut.fel.sit.mojefinance.categorization.domain.dto;
 
-import cvut.fel.sit.shared.util.entity.TransactionCategory;
+import cvut.fel.sit.shared.entity.TransactionCategory;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

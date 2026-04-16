@@ -16,20 +16,15 @@ import java.time.LocalDate;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Transaction {
-    private Amount amount;
-    private TransactionDirection direction;
-    private TransactionStatus status;
-
-    @JsonDeserialize(using = LocalDateDeserializer.class)
-    @JsonSerialize(using = LocalDateSerializer.class)
-    private LocalDate bookingDate;
-
-    @JsonDeserialize(using = LocalDateDeserializer.class)
-    @JsonSerialize(using = LocalDateSerializer.class)
-    private LocalDate valueDate;
-
-    private String counterpartyName;
-    private RelatedParties relatedParties;
+public class Budget {
+    private Long budgetId;
+    private String principalName;
     private TransactionCategory category;
+    private Amount amount;
+    private Amount spentAmount;
+    private BudgetStatus budgetStatus;
+
+    @JsonDeserialize(using = LocalDateDeserializer.class)
+    @JsonSerialize(using = LocalDateSerializer.class)
+    private LocalDate startDate;
 }

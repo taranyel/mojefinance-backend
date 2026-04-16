@@ -8,8 +8,8 @@ import cvut.fel.sit.mojefinance.categorization.domain.dto.CategorizeTransactions
 import cvut.fel.sit.mojefinance.categorization.domain.dto.CategorizeTransactionsResponse;
 import cvut.fel.sit.mojefinance.categorization.domain.helper.ProductCategorizationHelper;
 import cvut.fel.sit.mojefinance.categorization.domain.helper.TransactionCategorizationHelper;
-import cvut.fel.sit.shared.util.entity.ProductCategory;
-import cvut.fel.sit.shared.util.entity.TransactionCategory;
+import cvut.fel.sit.shared.entity.ProductCategory;
+import cvut.fel.sit.shared.entity.TransactionCategory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;

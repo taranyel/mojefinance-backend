@@ -54,6 +54,175 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
+  /budgets:
+    get:
+      summary: Get budgets
+      operationId: getBudgets
+      parameters:
+        - name: Authorization
+          in: header
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BudgetsResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      summary: Create new budget
+      operationId: createBudget
+      parameters:
+        - name: Authorization
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BudgetRequest'
+      responses:
+        '201':
+          description: CREATED
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    put:
+      summary: Update budget
+      operationId: updateBudget
+      parameters:
+        - name: Authorization
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BudgetRequest'
+      responses:
+        '200':
+          description: OK
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /budgets/{budgetId}:
+    delete:
+      summary: Delete budget
+      operationId: deleteBudget
+      parameters:
+        - name: Authorization
+          in: header
+          required: true
+          schema:
+            type: string
+        - name: budgetId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: NO CONTENT
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
   /products:
     get:
       summary: Get products
@@ -263,14 +432,10 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Bank'
+              $ref: '#/components/schemas/ConnectBankRequest'
       responses:
         '201':
           description: CREATED
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Bank'
         '401':
           description: Unauthorized
           content:
@@ -419,7 +584,48 @@ components:
         connectedBanks:
           type: array
           items:
-            $ref: '#/components/schemas/Bank'
+            $ref: '#/components/schemas/BankConnection'
+
+    ConnectBankRequest:
+      type: object
+      properties:
+        bankConnection:
+          $ref: '#/components/schemas/BankConnection'
+      required: [bankConnection]
+
+    BudgetRequest:
+      type: object
+      properties:
+        budget:
+          $ref: '#/components/schemas/Budget'
+      required: [budget]
+
+    BudgetsResponse:
+      type: object
+      properties:
+        budgets:
+          type: array
+          items:
+            $ref: '#/components/schemas/Budget'
+
+    Budget:
+      type: object
+      properties:
+        budgetId:
+          type: integer
+        category:
+          type: string
+        amount:
+          $ref: '#/components/schemas/Amount'
+        startDate:
+          type: string
+          format: date
+        spentAmount:
+          $ref: '#/components/schemas/Amount'
+        budgetStatus:
+          type: string
+          enum: [ ACTIVE, EXCEEDED ]
+      required: [category, amount, startDate]
 
     ProductsResponse:
       type: object
@@ -552,20 +758,17 @@ components:
         currency:
           type: string
 
-    Bank:
+    BankConnection:
       type: object
       properties:
         clientRegistrationId:
           type: string
         bankName:
           type: string
-        logoUrl:
-          type: string
-        manuallyCreated:
-          type: boolean
         bankConnectionStatus:
           type: string
           enum: [ CONNECTED, DISCONNECTED ]
+      required: [clientRegistrationId, bankName]
 
     ProfileResponse:
       type: object

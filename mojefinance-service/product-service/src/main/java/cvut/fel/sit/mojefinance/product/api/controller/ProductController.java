@@ -50,7 +50,7 @@ public class ProductController implements ProductsApi {
 
     @Override
     public ResponseEntity<TransactionsResponse> getCashFlowSummary(String authorization) {
-        TransactionsDomainResponse domainResponse = transactionService.getCashFlowSummary();
+        TransactionsDomainResponse domainResponse = transactionService.getCashFlowSummary(null);
         TransactionsResponse apiResponse = transactionsMapper.toTransactionsResponse(domainResponse);
         return new ResponseEntity<>(apiResponse, HttpStatus.OK);
     }

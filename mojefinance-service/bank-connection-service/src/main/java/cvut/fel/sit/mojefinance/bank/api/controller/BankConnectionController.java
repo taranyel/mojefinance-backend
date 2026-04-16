@@ -2,11 +2,10 @@ package cvut.fel.sit.mojefinance.bank.api.controller;
 
 import cvut.fel.sit.mojefinance.bank.api.mapper.BankConnectionMapper;
 import cvut.fel.sit.mojefinance.bank.domain.dto.ConnectBankDomainRequest;
-import cvut.fel.sit.mojefinance.bank.domain.dto.ConnectedBanksDomainResponse;
-import cvut.fel.sit.mojefinance.bank.domain.entity.BankConnection;
+import cvut.fel.sit.mojefinance.bank.domain.dto.ConnectedBanksResponse;
 import cvut.fel.sit.mojefinance.bank.domain.service.BankConnectionService;
 import cvut.fel.sit.mojefinance.openapi.api.BanksApi;
-import cvut.fel.sit.mojefinance.openapi.model.ConnectedBanksResponse;
+import cvut.fel.sit.mojefinance.openapi.model.ConnectBankRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,14 +18,10 @@ public class BankConnectionController implements BanksApi {
     private final BankConnectionMapper bankConnectionMapper;
 
     @Override
-    public ResponseEntity<cvut.fel.sit.mojefinance.openapi.model.Bank> connectBank(String authorization, cvut.fel.sit.mojefinance.openapi.model.Bank bank, String code) {
-        ConnectBankDomainRequest domainRequest = ConnectBankDomainRequest.builder()
-                .code(code)
-                .bankConnection(bankConnectionMapper.toBankConnectionDomainEntity(bank))
-                .build();
-        BankConnection bankConnectionDomainEntity = bankConnectionService.connectBank(domainRequest);
-        cvut.fel.sit.mojefinance.openapi.model.Bank apiBank = bankConnectionMapper.toBankApiEntity(bankConnectionDomainEntity);
-        return new ResponseEntity<>(apiBank, HttpStatus.CREATED);
+    public ResponseEntity<Void> connectBank(String authorization, ConnectBankRequest connectBankRequest, String code) {
+        ConnectBankDomainRequest domainRequest = bankConnectionMapper.toConnectBankDomainRequest(connectBankRequest, code);
+        bankConnectionService.connectBank(domainRequest);
+        return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
     @Override
@@ -36,9 +31,9 @@ public class BankConnectionController implements BanksApi {
     }
 
     @Override
-    public ResponseEntity<ConnectedBanksResponse> getConnectedBanks(String authorization) {
-        ConnectedBanksDomainResponse domainResponse = bankConnectionService.getConnectedBanks();
-        ConnectedBanksResponse apiResponse = bankConnectionMapper.toConnectedBanksResponse(domainResponse);
+    public ResponseEntity<cvut.fel.sit.mojefinance.openapi.model.ConnectedBanksResponse> getConnectedBanks(String authorization) {
+        ConnectedBanksResponse domainResponse = bankConnectionService.getConnectedBanks();
+        cvut.fel.sit.mojefinance.openapi.model.ConnectedBanksResponse apiResponse = bankConnectionMapper.toConnectedBanksResponse(domainResponse);
         return new ResponseEntity<>(apiResponse, HttpStatus.OK);
     }
 }

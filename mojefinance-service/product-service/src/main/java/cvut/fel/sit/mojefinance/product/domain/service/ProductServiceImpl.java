@@ -1,6 +1,6 @@
 package cvut.fel.sit.mojefinance.product.domain.service;
 
-import cvut.fel.sit.mojefinance.bank.domain.dto.ConnectedBanksDomainResponse;
+import cvut.fel.sit.mojefinance.bank.domain.dto.ConnectedBanksResponse;
 import cvut.fel.sit.mojefinance.bank.domain.entity.BankConnection;
 import cvut.fel.sit.mojefinance.bank.domain.service.BankConnectionService;
 import cvut.fel.sit.mojefinance.product.domain.dto.AssetsAndLiabilitiesResponse;
@@ -9,7 +9,7 @@ import cvut.fel.sit.mojefinance.product.domain.entity.AssetLiability;
 import cvut.fel.sit.mojefinance.product.domain.entity.BankDetails;
 import cvut.fel.sit.mojefinance.product.domain.entity.Product;
 import cvut.fel.sit.mojefinance.product.domain.helper.ProductHelper;
-import cvut.fel.sit.shared.util.entity.ProductType;
+import cvut.fel.sit.shared.entity.ProductType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
@@ -31,7 +31,7 @@ public class ProductServiceImpl implements ProductService {
         log.info("Getting products for authorized user.");
         List<Product> products = new ArrayList<>();
 
-        ConnectedBanksDomainResponse connectedBanks = bankConnectionService.getConnectedBanks();
+        ConnectedBanksResponse connectedBanks = bankConnectionService.getConnectedBanks();
         List<BankConnection> activeBankConnections = productHelper.filterBanksWithActiveConnection(connectedBanks);
         List<BankConnection> realBankConnections = productHelper.filterRealBanks(activeBankConnections);
         Authentication principal = SecurityContextHolder.getContext().getAuthentication();

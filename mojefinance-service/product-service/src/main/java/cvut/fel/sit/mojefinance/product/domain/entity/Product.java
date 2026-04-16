@@ -1,8 +1,10 @@
 package cvut.fel.sit.mojefinance.product.domain.entity;
 
-import cvut.fel.sit.shared.util.entity.ProductCategory;
-import lombok.AllArgsConstructor;import lombok.Builder;
-import lombok.Data;import lombok.NoArgsConstructor;
+import cvut.fel.sit.shared.entity.ProductCategory;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
 

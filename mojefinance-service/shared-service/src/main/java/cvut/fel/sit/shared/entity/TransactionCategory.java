@@ -1,4 +1,4 @@
-package cvut.fel.sit.shared.util.entity;
+package cvut.fel.sit.shared.entity;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

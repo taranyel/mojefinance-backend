@@ -26,7 +26,12 @@ import java.util.UUID;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import static cvut.fel.sit.shared.util.Constants.*;
+import static cvut.fel.sit.shared.util.Constants.AIR_BANK_CLIENT_REGISTRATION_ID;
+import static cvut.fel.sit.shared.util.Constants.CZK_CURRENCY_CODE;
+import static cvut.fel.sit.shared.util.Constants.CSOB_CLIENT_REGISTRATION_ID;
+import static cvut.fel.sit.shared.util.Constants.KB_CLIENT_REGISTRATION_ID;
+import static cvut.fel.sit.shared.util.Constants.RAIFFEISEN_BANK_CLIENT_REGISTRATION_ID;
+import static cvut.fel.sit.shared.util.Constants.CESKA_SPORITELNA_CLIENT_REGISTRATION_ID;
 
 @Slf4j
 @Service

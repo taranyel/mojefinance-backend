@@ -8,6 +8,6 @@ import java.util.List;
 
 @Data
 @Builder
-public class ConnectedBanksDomainResponse {
+public class ConnectedBanksResponse {
     private List<BankConnection> connectedBanks;
 }

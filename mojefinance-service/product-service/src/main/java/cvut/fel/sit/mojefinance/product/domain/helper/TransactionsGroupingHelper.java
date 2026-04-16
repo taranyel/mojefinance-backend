@@ -6,7 +6,7 @@ import cvut.fel.sit.mojefinance.product.domain.entity.Transaction;
 import cvut.fel.sit.mojefinance.product.domain.entity.TransactionDirection;
 import cvut.fel.sit.mojefinance.product.domain.entity.TransactionStatus;
 import cvut.fel.sit.mojefinance.product.domain.entity.GroupedTransactions;
-import cvut.fel.sit.shared.util.entity.TransactionCategory;
+import cvut.fel.sit.shared.entity.TransactionCategory;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;

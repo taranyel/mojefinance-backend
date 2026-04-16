@@ -11,11 +11,12 @@ import cvut.fel.sit.mojefinance.product.domain.entity.Transaction;
 import cvut.fel.sit.mojefinance.product.domain.entity.TransactionDirection;
 import cvut.fel.sit.mojefinance.product.messaging.dto.TransactionsMessagingResponse;
 import cvut.fel.sit.mojefinance.product.messaging.service.ExternalApiProvider;
-import cvut.fel.sit.shared.util.entity.TransactionCategory;
+import cvut.fel.sit.shared.entity.TransactionCategory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -29,10 +30,11 @@ public class TransactionHelper {
     private static final String NOT_SPECIFIED_COUNTERPARTY_NAME = "Not specified";
     private static final String BEARER_PREFIX = "Bearer";
 
-    public TransactionsRequest buildTransactionsRequest(String accountId, BankDetails bankDetails) {
+    public TransactionsRequest buildTransactionsRequest(String accountId, BankDetails bankDetails, LocalDate fromDate) {
         return TransactionsRequest.builder()
                 .bankDetails(bankDetails)
                 .accountId(accountId)
+                .fromDate(fromDate)
                 .build();
     }
 

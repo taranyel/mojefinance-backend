@@ -1,10 +1,8 @@
 package cvut.fel.sit.mojefinance.user.domain.service;
 
-import cvut.fel.sit.mojefinance.user.data.entity.UserEntity;
 import cvut.fel.sit.mojefinance.user.data.repository.UserRepository;
 import cvut.fel.sit.mojefinance.user.domain.dto.ProfileDomainResponse;
 import cvut.fel.sit.mojefinance.user.domain.entity.User;
-import cvut.fel.sit.mojefinance.user.domain.mapper.UserDomainMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
@@ -18,17 +16,14 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class ProfileServiceImpl implements ProfileService {
     private final UserRepository userRepository;
-    private final UserDomainMapper mapper;
 
     @Override
     public ProfileDomainResponse getProfile() {
         log.info("Getting current user details.");
 
         String username = getUsername();
-        UserEntity profileDataResponse = userRepository.getUserByUsername(username);
-
+        User user = userRepository.getUserByUsername(username);
         log.info("User found.");
-        User user = mapper.toUser(profileDataResponse);
         return ProfileDomainResponse.builder()
                 .user(user)
                 .build();

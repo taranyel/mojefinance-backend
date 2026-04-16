@@ -13,6 +13,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -43,7 +44,7 @@ public class TransactionServiceImpl implements TransactionService {
     }
 
     @Override
-    public TransactionsDomainResponse getCashFlowSummary() {
+    public TransactionsDomainResponse getCashFlowSummary(LocalDate fromDate) {
         log.info("Getting cash flow summary for authorized user.");
         ProductsResponse productsResponse = productService.getProducts();
         Authentication principal = SecurityContextHolder.getContext().getAuthentication();
@@ -52,7 +53,7 @@ public class TransactionServiceImpl implements TransactionService {
         List<Transaction> allTransactions = new ArrayList<>();
 
         for (Product product : productsResponse.getProducts()) {
-            TransactionsRequest request = transactionHelper.buildTransactionsRequest(product.getProductId(), product.getBankDetails());
+            TransactionsRequest request = transactionHelper.buildTransactionsRequest(product.getProductId(), product.getBankDetails(), fromDate);
             request.setPrincipalName(principal.getName());
 
             if (authorization == null || !clientRegistrationId.equals(product.getBankDetails().getClientRegistrationId())) {

@@ -1,4 +1,4 @@
-package cvut.fel.sit.shared.util.entity;
+package cvut.fel.sit.shared.entity;
 
 public enum ProductType {
     ASSET,
