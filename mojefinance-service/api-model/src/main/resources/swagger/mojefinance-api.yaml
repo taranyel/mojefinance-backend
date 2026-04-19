@@ -625,7 +625,7 @@ components:
         budgetStatus:
           type: string
           enum: [ ACTIVE, EXCEEDED ]
-      required: [category, amount, startDate]
+      required: [category, amount]
 
     ProductsResponse:
       type: object
