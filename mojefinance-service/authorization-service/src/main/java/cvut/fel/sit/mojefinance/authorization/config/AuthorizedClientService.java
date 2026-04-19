@@ -8,12 +8,12 @@ import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
 import org.springframework.security.oauth2.core.OAuth2AccessToken;
 import org.springframework.security.oauth2.core.OAuth2RefreshToken;
 
-public class EncryptingOAuth2AuthorizedClientService implements OAuth2AuthorizedClientService {
+public class AuthorizedClientService implements OAuth2AuthorizedClientService {
 
     private final OAuth2AuthorizedClientService delegate;
     private final TextEncryptor encryptor;
 
-    public EncryptingOAuth2AuthorizedClientService(OAuth2AuthorizedClientService delegate, String password, String salt) {
+    public AuthorizedClientService(OAuth2AuthorizedClientService delegate, String password, String salt) {
         this.delegate = delegate;
         this.encryptor = Encryptors.text(password, salt);
     }
