@@ -62,7 +62,7 @@ public class AuthorizedClientServiceImpl implements AuthorizedClientService {
         if (authorizedClient != null && authorizedClient.getAccessToken() != null) {
             return authorizedClient.getAccessToken().getTokenValue();
         } else {
-            throw new RuntimeException("Failed to authorize client: " + clientRegistrationId);
+            throw new SecurityException("Failed to authorize client: " + clientRegistrationId);
         }
     }
 }

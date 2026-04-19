@@ -1,4 +1,4 @@
-package cvut.fel.sit.mojefinance.user.api.exception;
+package cvut.fel.sit.shared.exception;
 
 import cvut.fel.sit.mojefinance.openapi.model.ErrorResponse;
 import jakarta.persistence.EntityNotFoundException;
@@ -18,7 +18,7 @@ import java.util.Map;
 
 @Slf4j
 @ControllerAdvice
-public class UserExceptionHandler {
+public class GlobalExceptionHandler {
 
     private static void logException(Exception e) {
         log.warn("Exception caught: {}", e.getMessage());
@@ -54,6 +54,12 @@ public class UserExceptionHandler {
     public ResponseEntity<ErrorResponse> validationException(ValidationException e) {
         logException(e);
         return new ResponseEntity<>(errorInfo(e), HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler(SecurityException.class)
+    public ResponseEntity<ErrorResponse> securityException(SecurityException e) {
+        logException(e);
+        return new ResponseEntity<>(errorInfo(e), HttpStatus.FORBIDDEN);
     }
 
     @ExceptionHandler(AccessDeniedException.class)

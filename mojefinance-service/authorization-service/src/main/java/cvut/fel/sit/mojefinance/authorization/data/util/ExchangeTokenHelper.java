@@ -1,6 +1,7 @@
 package cvut.fel.sit.mojefinance.authorization.data.util;
 
 import cvut.fel.sit.mojefinance.authorization.data.exception.ClientRegistrationNotFoundException;
+import cvut.fel.sit.shared.exception.ServiceException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
@@ -40,7 +41,7 @@ public class ExchangeTokenHelper {
             OAuth2AccessToken accessToken = tokenResponse.getAccessToken();
 
             if (accessToken == null) {
-                throw new RuntimeException("No access token returned from token endpoint.");
+                throw new SecurityException("No access token returned from token endpoint.");
             }
 
             log.info("Successfully exchanged authorization code for OAuth2 tokens.");
@@ -49,7 +50,7 @@ public class ExchangeTokenHelper {
             OAuth2AuthorizedClient authorizedClient = getOAuth2AuthorizedClient(clientRegistration, principal, accessToken, tokenResponse);
             authorizedClientService.saveAuthorizedClient(authorizedClient, principal);
         } catch (NullPointerException e) {
-            throw new RuntimeException(e);
+            throw new ServiceException("Null Pointer Exception caught " + e.getMessage(), e);
         }
     }
 

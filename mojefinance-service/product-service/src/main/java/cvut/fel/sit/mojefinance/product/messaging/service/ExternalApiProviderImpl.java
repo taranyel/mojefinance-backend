@@ -11,6 +11,7 @@ import cvut.fel.sit.mojefinance.product.messaging.dto.TransactionsMessagingRespo
 import cvut.fel.sit.mojefinance.product.messaging.mapper.AccountBalanceApiMapper;
 import cvut.fel.sit.mojefinance.product.messaging.mapper.ProductsApiMapper;
 import cvut.fel.sit.mojefinance.product.messaging.mapper.TransactionsApiMapper;
+import cvut.fel.sit.shared.exception.ServiceException;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -236,10 +237,10 @@ public class ExternalApiProviderImpl implements ExternalApiProvider {
             if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
                 return mapper.apply(response.getBody());
             } else {
-                throw new RuntimeException("Failed to fetch data from " + bankName + " API. Status: " + response.getStatusCode());
+                throw new ServiceException("Failed to fetch data from " + bankName + " API. Status: " + response.getStatusCode());
             }
         } catch (FeignException e) {
-            throw new RuntimeException("Error calling " + bankName + " API: " + e.getMessage(), e);
+            throw new ServiceException("Error calling " + bankName + " API: " + e.getMessage(), e);
         }
     }
 }
