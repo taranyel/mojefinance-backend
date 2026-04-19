@@ -1,6 +1,7 @@
 package cvut.fel.sit.mojefinance.categorization.messaging.service;
 
 import com.google.genai.Client;
+import com.google.genai.Models;
 import com.google.genai.types.GenerateContentResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -17,6 +18,10 @@ public class GeminiProviderImpl implements GeminiProvider {
     @Value("${external.api.google.apikey}")
     private String geminiApiKey;
 
+    protected Models getModels(Client client) {
+        return client.models;
+    }
+
     @Override
     public String askGemini(String prompt) {
         log.info("Asking Gemini with prompt: {}", prompt);
@@ -27,7 +32,7 @@ public class GeminiProviderImpl implements GeminiProvider {
                     .apiKey(geminiApiKey)
                     .build();
 
-            response = client.models.generateContent(
+            response = getModels(client).generateContent(
                     GEMINI_MODEL_NAME,
                     prompt,
                     null);
