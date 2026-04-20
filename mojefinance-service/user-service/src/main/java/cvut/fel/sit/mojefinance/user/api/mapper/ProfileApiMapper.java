@@ -1,10 +1,9 @@
 package cvut.fel.sit.mojefinance.user.api.mapper;
 
-import cvut.fel.sit.mojefinance.openapi.model.ProfileResponse;
-import cvut.fel.sit.mojefinance.user.domain.dto.ProfileDomainResponse;
+import cvut.fel.sit.mojefinance.user.domain.dto.ProfileResponse;
 import org.mapstruct.Mapper;
 
 @Mapper(componentModel = "spring")
 public interface ProfileApiMapper {
-    ProfileResponse toProfileResponse(ProfileDomainResponse profileDomainResponse);
+    cvut.fel.sit.mojefinance.openapi.model.ProfileResponse toProfileResponse(ProfileResponse profileResponse);
 }

@@ -1,9 +1,8 @@
 package cvut.fel.sit.mojefinance.user.api.controller;
 
 import cvut.fel.sit.mojefinance.openapi.api.ProfileApi;
-import cvut.fel.sit.mojefinance.openapi.model.ProfileResponse;
 import cvut.fel.sit.mojefinance.user.api.mapper.ProfileApiMapper;
-import cvut.fel.sit.mojefinance.user.domain.dto.ProfileDomainResponse;
+import cvut.fel.sit.mojefinance.user.domain.dto.ProfileResponse;
 import cvut.fel.sit.mojefinance.user.domain.service.ProfileService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -17,9 +16,9 @@ public class ProfileController implements ProfileApi {
     private final ProfileApiMapper mapper;
 
     @Override
-    public ResponseEntity<ProfileResponse> getCurrentUser(String authorization) {
-        ProfileDomainResponse profileDomainResponse = profileService.getProfile();
-        ProfileResponse profileResponse = mapper.toProfileResponse(profileDomainResponse);
+    public ResponseEntity<cvut.fel.sit.mojefinance.openapi.model.ProfileResponse> getCurrentUser(String authorization) {
+        ProfileResponse profileDomainResponse = profileService.getProfile();
+        cvut.fel.sit.mojefinance.openapi.model.ProfileResponse profileResponse = mapper.toProfileResponse(profileDomainResponse);
         return new ResponseEntity<>(profileResponse, HttpStatus.OK);
     }
 }

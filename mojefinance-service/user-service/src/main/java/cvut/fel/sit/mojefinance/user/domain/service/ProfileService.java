@@ -1,7 +1,7 @@
 package cvut.fel.sit.mojefinance.user.domain.service;
 
-import cvut.fel.sit.mojefinance.user.domain.dto.ProfileDomainResponse;
+import cvut.fel.sit.mojefinance.user.domain.dto.ProfileResponse;
 
 public interface ProfileService {
-    ProfileDomainResponse getProfile();
+    ProfileResponse getProfile();
 }

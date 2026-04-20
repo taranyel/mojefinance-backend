@@ -6,6 +6,6 @@ import lombok.Data;
 
 @Data
 @Builder
-public class ProfileDomainResponse {
+public class ProfileResponse {
     User user;
 }

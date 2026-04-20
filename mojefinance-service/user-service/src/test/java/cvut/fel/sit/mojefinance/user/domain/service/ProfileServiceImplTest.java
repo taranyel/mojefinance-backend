@@ -1,8 +1,6 @@
 package cvut.fel.sit.mojefinance.user.domain.service;
 
-import cvut.fel.sit.mojefinance.user.data.repository.UserRepository;
-import cvut.fel.sit.mojefinance.user.domain.dto.ProfileDomainResponse;
-import cvut.fel.sit.mojefinance.user.domain.entity.User;
+import cvut.fel.sit.mojefinance.user.domain.dto.ProfileResponse;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -10,83 +8,78 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.core.Authentication;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import java.util.Map;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class ProfileServiceImplTest {
 
-    @Mock
-    private UserRepository userRepository;
-
     @InjectMocks
     private ProfileServiceImpl profileService;
 
-    private final String MOCK_USERNAME = "testuser";
+    @Mock
+    private SecurityContext securityContext;
+
+    @Mock
+    private JwtAuthenticationToken jwtAuthenticationToken;
 
     @BeforeEach
-    void setUpSecurityContext() {
-        // 1. Mock the UserDetails principal
-        UserDetails userDetails = mock(UserDetails.class);
-        lenient().when(userDetails.getUsername()).thenReturn(MOCK_USERNAME);
-
-        // 2. Mock the Authentication object
-        Authentication authentication = mock(Authentication.class);
-        lenient().when(authentication.getPrincipal()).thenReturn(userDetails);
-
-        // 3. Mock the Security Context
-        SecurityContext securityContext = mock(SecurityContext.class);
-        lenient().when(securityContext.getAuthentication()).thenReturn(authentication);
-
-        // 4. Inject into the holder
+    void setUp() {
         SecurityContextHolder.setContext(securityContext);
     }
 
     @AfterEach
-    void clearSecurityContext() {
-        // Prevent context leakage between tests
+    void tearDown() {
         SecurityContextHolder.clearContext();
     }
 
     @Test
-    void getProfile_ShouldReturnProfileResponseWithCurrentUser() {
-        // Arrange
-        User mockUser = new User();
-        mockUser.setUsername(MOCK_USERNAME);
-        mockUser.setEmail("testuser@example.com");
+    void getProfile_WithValidJwtToken_ShouldReturnProfileResponse() {
+        Map<String, Object> mockClaims = Map.of(
+                "preferred_username", "johndoe",
+                "email", "john.doe@example.com",
+                "given_name", "John",
+                "family_name", "Doe"
+        );
 
-        when(userRepository.getUserByUsername(MOCK_USERNAME)).thenReturn(mockUser);
+        when(securityContext.getAuthentication()).thenReturn(jwtAuthenticationToken);
+        when(jwtAuthenticationToken.getTokenAttributes()).thenReturn(mockClaims);
 
-        // Act
-        ProfileDomainResponse response = profileService.getProfile();
+        ProfileResponse response = profileService.getProfile();
 
-        // Assert
-        assertNotNull(response, "ProfileDomainResponse should not be null");
-        assertNotNull(response.getUser(), "User inside response should not be null");
-        assertEquals(MOCK_USERNAME, response.getUser().getUsername());
-        assertEquals("testuser@example.com", response.getUser().getEmail());
-
-        // Verify the repository was called with the exact username extracted from the security context
-        verify(userRepository, times(1)).getUserByUsername(MOCK_USERNAME);
+        assertThat(response).isNotNull();
+        assertThat(response.getUser()).isNotNull();
+        assertThat(response.getUser().getUsername()).isEqualTo("johndoe");
+        assertThat(response.getUser().getEmail()).isEqualTo("john.doe@example.com");
+        assertThat(response.getUser().getFirstName()).isEqualTo("John");
+        assertThat(response.getUser().getLastName()).isEqualTo("Doe");
     }
 
     @Test
-    void getProfile_WhenUserNotFound_ShouldReturnProfileWithNullUser() {
-        // Arrange
-        when(userRepository.getUserByUsername(MOCK_USERNAME)).thenReturn(null);
+    void getProfile_WithNonJwtAuthentication_ShouldThrowIllegalStateException() {
+        UsernamePasswordAuthenticationToken wrongAuthType =
+                new UsernamePasswordAuthenticationToken("user", "password");
 
-        // Act
-        ProfileDomainResponse response = profileService.getProfile();
+        when(securityContext.getAuthentication()).thenReturn(wrongAuthType);
 
-        // Assert
-        assertNotNull(response, "ProfileDomainResponse should still be created");
-        assertNull(response.getUser(), "User should be null if repository returns null");
+        assertThatThrownBy(() -> profileService.getProfile())
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage("User is not authenticated with a JWT");
+    }
 
-        verify(userRepository, times(1)).getUserByUsername(MOCK_USERNAME);
+    @Test
+    void getProfile_WithNullAuthentication_ShouldThrowIllegalStateException() {
+        when(securityContext.getAuthentication()).thenReturn(null);
+        assertThatThrownBy(() -> profileService.getProfile())
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage("User is not authenticated with a JWT");
     }
 }
