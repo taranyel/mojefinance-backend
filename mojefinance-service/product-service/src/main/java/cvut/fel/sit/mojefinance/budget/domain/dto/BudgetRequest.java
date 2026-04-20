@@ -1,0 +1,15 @@
+package cvut.fel.sit.mojefinance.budget.domain.dto;
+
+import cvut.fel.sit.mojefinance.budget.domain.entity.Budget;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class BudgetRequest {
+    private Budget budget;
+}

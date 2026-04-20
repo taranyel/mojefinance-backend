@@ -29,10 +29,10 @@ public class TransactionsGroupingHelper {
 
     public TransactionsDomainResponse groupTransactions(List<Transaction> transactions) {
         Map<YearMonth, Map<TransactionCategory, List<Transaction>>> bookedTransactionsMap = getBookedTransactionsMap(transactions);
-        Map<YearMonth, Map<TransactionCategory, List<Transaction>>> pendingTransactionsMap = getPendingTransactionsMap(transactions);
+        Map<TransactionCategory, List<Transaction>> pendingTransactionsMap = getPendingTransactionsMap(transactions);
 
         List<GroupedTransactions> pendingTransactionsMonthlyGroups = pendingTransactionsMap.entrySet().stream()
-                .map(this::buildMonthGroup)
+                .map(this::buildPendingGroup)
                 .toList();
         List<GroupedTransactions> result = new ArrayList<>(pendingTransactionsMonthlyGroups);
 
@@ -68,7 +68,27 @@ public class TransactionsGroupingHelper {
                 .build();
     }
 
+    private GroupedTransactions buildPendingGroup(Map.Entry<TransactionCategory, List<Transaction>> pendingEntry) {
+        GroupedTransactions categoryGroup = buildCategoryGroup(pendingEntry);
+        String currency = categoryGroup == null ? CZK_CURRENCY_CODE : categoryGroup.getTotalIncome().getCurrency();
+
+        BigDecimal totalIncomeAmount = getTotalIncomeFromTransactionGroups(List.of(categoryGroup));
+        BigDecimal totalExpenseAmount = getTotalExpenseFromTransactionGroups(List.of(categoryGroup));
+        Amount totalIncomeAmountObject = getAmountObject(totalIncomeAmount, currency);
+        Amount totalExpenseAmountObject = getAmountObject(totalExpenseAmount, currency);
+
+        return GroupedTransactions.builder()
+                .groupName(TransactionStatus.PENDING.name())
+                .totalIncome(totalIncomeAmountObject)
+                .totalExpense(totalExpenseAmountObject)
+                .groupedTransactions(List.of(categoryGroup))
+                .build();
+    }
+
     private BigDecimal getTotalIncomeFromTransactionGroups(List<GroupedTransactions> categoryGroups) {
+        if (categoryGroups == null) {
+            throw new IllegalArgumentException("Category groups must not be null.");
+        }
         return categoryGroups.stream().
                 map(GroupedTransactions::getTotalIncome)
                 .filter(Objects::nonNull)
@@ -77,6 +97,9 @@ public class TransactionsGroupingHelper {
     }
 
     private BigDecimal getTotalExpenseFromTransactionGroups(List<GroupedTransactions> categoryGroups) {
+        if (categoryGroups == null) {
+            throw new IllegalArgumentException("Category groups must not be null.");
+        }
         return categoryGroups.stream().
                 map(GroupedTransactions::getTotalExpense)
                 .filter(Objects::nonNull)
@@ -137,13 +160,9 @@ public class TransactionsGroupingHelper {
         );
     }
 
-    private Map<YearMonth, Map<TransactionCategory, List<Transaction>>> getPendingTransactionsMap(List<Transaction> transactions) {
+    private Map<TransactionCategory, List<Transaction>> getPendingTransactionsMap(List<Transaction> transactions) {
         return transactions.stream()
                 .filter(t -> t.getValueDate() != null && TransactionStatus.PENDING.equals(t.getStatus()))
-                .collect(Collectors.groupingBy(
-                        t -> YearMonth.from(t.getValueDate()),
-                        () -> new TreeMap<YearMonth, Map<TransactionCategory, List<Transaction>>>(Comparator.reverseOrder()),
-                        groupByCategory()
-                ));
+                .collect(groupByCategory());
     }
 }
