@@ -6,7 +6,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
+import org.springframework.security.oauth2.server.resource.authentication.BearerTokenAuthentication;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
@@ -21,7 +21,7 @@ public class ProfileServiceImpl implements ProfileService {
     public ProfileResponse getProfile() {
         log.info("Getting current user details.");
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication instanceof JwtAuthenticationToken jwtToken) {
+        if (authentication instanceof BearerTokenAuthentication jwtToken) {
             Map<String, Object> claims = jwtToken.getTokenAttributes();
 
             String username = (String) claims.get("preferred_username");
@@ -38,6 +38,6 @@ public class ProfileServiceImpl implements ProfileService {
                             .build())
                     .build();
         }
-        throw new IllegalStateException("User is not authenticated with a JWT");
+        throw new IllegalStateException("User is not authenticated with a Bearer token");
     }
 }

@@ -11,7 +11,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
+import org.springframework.security.oauth2.server.resource.authentication.BearerTokenAuthentication;
 
 import java.util.Map;
 
@@ -29,7 +29,7 @@ class ProfileServiceImplTest {
     private SecurityContext securityContext;
 
     @Mock
-    private JwtAuthenticationToken jwtAuthenticationToken;
+    private BearerTokenAuthentication jwtAuthenticationToken;
 
     @BeforeEach
     void setUp() {
