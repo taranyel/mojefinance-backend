@@ -8,6 +8,7 @@ spring:
     import:
       - classpath:client-registration.yaml
       - classpath:external-api-specification.yaml
+      - resilience4j.yaml
 
   data:
     redis:

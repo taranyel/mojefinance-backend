@@ -1,0 +1,28 @@
+management:
+  health:
+    circuitbreakers:
+      enabled: true # Exposes circuit breaker status at /actuator/health
+  endpoints:
+    web:
+      exposure:
+        include: health, metrics
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      bankApi:
+        slidingWindowSize: 10                  # Evaluate the last 10 calls
+        minimumNumberOfCalls: 5                # Wait for at least 5 calls before calculating failure rate
+        failureRateThreshold: 50               # Open the circuit if 50% or more calls fail
+        waitDurationInOpenState: 15s           # Wait 15 seconds before trying half-open
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+
+  retry:
+    instances:
+      bankApi:
+        maxAttempts: 3                         # Try up to 3 times total
+        waitDuration: 2s                       # Wait 2 seconds between retries
+        retryExceptions:
+          - cvut.fel.sit.shared.exception.ServiceException
+          - feign.FeignException

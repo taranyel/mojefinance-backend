@@ -13,6 +13,8 @@ import cvut.fel.sit.mojefinance.product.messaging.mapper.ProductsApiMapper;
 import cvut.fel.sit.mojefinance.product.messaging.mapper.TransactionsApiMapper;
 import cvut.fel.sit.shared.exception.ServiceException;
 import feign.FeignException;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.retry.annotation.Retry;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,9 +22,11 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
+import java.util.Collections;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -48,6 +52,7 @@ public class ExternalApiProviderImpl implements ExternalApiProvider {
     private final TransactionsApiMapper transactionsApiMapper;
 
     private static final String APPLICATION_JSON_CONTENT_TYPE = "application/json";
+    private static final String RESILIENCE_INSTANCE = "bankApi";
 
     @Value("${external.api.csob.apikey}")
     private String csobApiKey;
@@ -62,6 +67,8 @@ public class ExternalApiProviderImpl implements ExternalApiProvider {
     private String raiffeisenBankXIbmClientId;
 
     @Override
+    @Retry(name = RESILIENCE_INSTANCE, fallbackMethod = "fallbackGetProducts")
+    @CircuitBreaker(name = RESILIENCE_INSTANCE, fallbackMethod = "fallbackGetProducts")
     @Cacheable(value = "products", key = "#request.principalName + '-' + #request.bankDetails.clientRegistrationId")
     public ProductsResponse getProducts(ProductsMessagingRequest request) {
         BankDetails bankDetails = request.getBankDetails();
@@ -108,6 +115,8 @@ public class ExternalApiProviderImpl implements ExternalApiProvider {
     }
 
     @Override
+    @Retry(name = RESILIENCE_INSTANCE, fallbackMethod = "fallbackGetAccountBalance")
+    @CircuitBreaker(name = RESILIENCE_INSTANCE, fallbackMethod = "fallbackGetAccountBalance")
     @Cacheable(value = "balances", key = "#request.principalName + '-' + #request.bankDetails.clientRegistrationId + '-' + #request.accountId")
     public Amount getAccountBalance(AccountBalancesMessagingRequest request) {
         String clientRegistrationId = request.getBankDetails().getClientRegistrationId();
@@ -155,6 +164,8 @@ public class ExternalApiProviderImpl implements ExternalApiProvider {
     }
 
     @Override
+    @Retry(name = RESILIENCE_INSTANCE, fallbackMethod = "fallbackGetTransactions")
+    @CircuitBreaker(name = RESILIENCE_INSTANCE, fallbackMethod = "fallbackGetTransactions")
     @Cacheable(value = "transactions", key = "#request.principalName + '-' + #request.bankDetails.clientRegistrationId + '-' + #request.accountId")
     public TransactionsMessagingResponse getTransactions(TransactionsRequest request) {
         String clientRegistrationId = request.getBankDetails().getClientRegistrationId();
@@ -214,6 +225,31 @@ public class ExternalApiProviderImpl implements ExternalApiProvider {
             default ->
                     throw new IllegalArgumentException("Unsupported client registration ID: " + clientRegistrationId);
         };
+    }
+
+    private ProductsResponse fallbackGetProducts(ProductsMessagingRequest request, Throwable throwable) {
+        log.error("CircuitBreaker/Retry Fallback triggered for getProducts. Bank: {}. Reason: {}",
+                request.getBankDetails().getBankName(), throwable.getMessage());
+        return ProductsResponse.builder()
+                .products(Collections.emptyList())
+                .build();
+    }
+
+    private Amount fallbackGetAccountBalance(AccountBalancesMessagingRequest request, Throwable throwable) {
+        log.error("CircuitBreaker/Retry Fallback triggered for getAccountBalance. Bank: {}. Reason: {}",
+                request.getBankDetails().getBankName(), throwable.getMessage());
+        return Amount.builder()
+                .value(BigDecimal.ZERO)
+                .currency(CZK_CURRENCY_CODE)
+                .build();
+    }
+
+    private TransactionsMessagingResponse fallbackGetTransactions(TransactionsRequest request, Throwable throwable) {
+        log.error("CircuitBreaker/Retry Fallback triggered for getTransactions. Bank: {}. Reason: {}",
+                request.getBankDetails().getBankName(), throwable.getMessage());
+        return TransactionsMessagingResponse.builder()
+                .transactions(Collections.emptyList())
+                .build();
     }
 
     private LocalDate getToDate(LocalDate toDate) {
