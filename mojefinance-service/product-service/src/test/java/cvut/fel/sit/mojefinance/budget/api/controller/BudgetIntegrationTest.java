@@ -102,14 +102,14 @@ class BudgetIntegrationTest {
     @Test
     @WithMockUser(username = "testuser")
     void getBudgets_ShouldReturnSavedBudgetsAndCalculatedAmounts() throws Exception {
-        BudgetRequest request = buildBudgetRequest("ELECTRONICS", 5000.0);
-
-        mockMvc.perform(post("/budgets")
-                        .header("Authorization", "Bearer test-token")
-                        .with(csrf())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isCreated());
+        BudgetEntity budgetEntity = BudgetEntity.builder()
+                .startDate(LocalDate.of(2026, 4, 1))
+                .principalName("testuser")
+                .currency("CZK")
+                .category("ELECTRONICS")
+                .amount(BigDecimal.valueOf(5000))
+                .build();
+        budgetJpaRepository.save(budgetEntity);
 
         TransactionsDomainResponse transactionsDomainResponse = getTransactionsDomainResponse();
         when(transactionService.getCashFlowSummary(any())).thenReturn(transactionsDomainResponse);

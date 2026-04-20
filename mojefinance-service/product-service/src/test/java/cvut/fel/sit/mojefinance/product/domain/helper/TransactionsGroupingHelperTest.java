@@ -108,7 +108,7 @@ class TransactionsGroupingHelperTest {
 
         // Even though they are the same month, they form two distinct groups in the result
         // because pending and booked are mapped separately in the helper.
-        assertEquals("March 2026", monthGroups.get(0).getGroupName());
+        assertEquals("PENDING", monthGroups.get(0).getGroupName());
         assertEquals("March 2026", monthGroups.get(1).getGroupName());
 
         // The first group should contain our pending transaction

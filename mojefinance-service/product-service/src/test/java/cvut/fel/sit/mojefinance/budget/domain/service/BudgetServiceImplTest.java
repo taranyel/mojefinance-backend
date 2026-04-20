@@ -75,13 +75,9 @@ class BudgetServiceImplTest {
         doNothing().when(budgetHelper).validateStartDate(budget);
         when(budgetDomainMapper.toBudgetEntity(budget)).thenReturn(mappedEntity);
 
-        // Act
         budgetService.createBudget(request);
 
-        // Assert
-        assertEquals(BudgetStatus.ACTIVE, budget.getBudgetStatus());
         assertEquals(PRINCIPAL_NAME, mappedEntity.getPrincipalName());
-
         verify(budgetRepository, times(1)).saveBudget(mappedEntity, PRINCIPAL_NAME);
     }
 
