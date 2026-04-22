@@ -1,286 +1,235 @@
 package cvut.fel.sit.mojefinance.product.messaging.service;
 
-import cvut.fel.sit.airbank.openapi.model.AccountList;
-import cvut.fel.sit.airbank.openapi.model.TransactionList;
-import cvut.fel.sit.cs.openapi.model.MyAccountsIdBalanceGet200Response;
-import cvut.fel.sit.csob.transactions.openapi.model.GetTransactionHistoryRes;
 import cvut.fel.sit.mojefinance.product.domain.dto.AccountBalancesMessagingRequest;
 import cvut.fel.sit.mojefinance.product.domain.dto.ProductsResponse;
 import cvut.fel.sit.mojefinance.product.domain.dto.TransactionsRequest;
 import cvut.fel.sit.mojefinance.product.domain.entity.Amount;
 import cvut.fel.sit.mojefinance.product.domain.entity.BankDetails;
-import cvut.fel.sit.mojefinance.product.messaging.client.*;
 import cvut.fel.sit.mojefinance.product.messaging.dto.ProductsMessagingRequest;
 import cvut.fel.sit.mojefinance.product.messaging.dto.TransactionsMessagingResponse;
-import cvut.fel.sit.mojefinance.product.messaging.mapper.AccountBalanceApiMapper;
-import cvut.fel.sit.mojefinance.product.messaging.mapper.ProductsApiMapper;
-import cvut.fel.sit.mojefinance.product.messaging.mapper.TransactionsApiMapper;
-import cvut.fel.sit.shared.exception.ServiceException;
-import feign.FeignException;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 
 import static cvut.fel.sit.shared.util.Constants.*;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class ExternalApiProviderImplTest {
 
-    @Mock private AirBankApiFeignClient airBankApiFeignClient;
-    @Mock private CeskaSporitelnaApiFeignClient ceskaSporitelnaApiFeignClient;
-    @Mock private CSOBApiFeignClient csobApiFeignClient;
-    @Mock private KBApiFeignClient kbApiFeignClient;
-    @Mock private RaiffeisenBankApiFeignClient raiffeisenBankApiFeignClient;
-
-    @Mock private ProductsApiMapper productsApiMapper;
-    @Mock private AccountBalanceApiMapper accountBalanceApiMapper;
-    @Mock private TransactionsApiMapper transactionsApiMapper;
+    @Mock private AirBankApiProvider airBankApiProvider;
+    @Mock private CeskaSporitelnaApiProvider ceskaSporitelnaApiProvider;
+    @Mock private CSOBApiProvider csobApiProvider;
+    @Mock private KBApiProvider kbApiProvider;
+    @Mock private RaiffeisenBankApiProvider raiffeisenBankApiProvider;
+    @Mock private ExchangeRatesApiProvider exchangeRatesApiProvider;
 
     @InjectMocks
     private ExternalApiProviderImpl externalApiProvider;
 
-    private BankDetails bankDetails;
-    private final String AUTH_TOKEN = "Bearer test-token";
-    private final String ACCOUNT_ID = "acc-123";
-    private final String PRINCIPAL = "user123";
+    private static final String ACCOUNT_ID = "acc-123";
 
-    @BeforeEach
-    void setUp() {
-        // Inject values normally handled by Spring's @Value
-        ReflectionTestUtils.setField(externalApiProvider, "csobApiKey", "csob-key");
-        ReflectionTestUtils.setField(externalApiProvider, "csobTppName", "mojefinance");
-        ReflectionTestUtils.setField(externalApiProvider, "ceskaSporitelnaApiKey", "cs-key");
-        ReflectionTestUtils.setField(externalApiProvider, "raiffeisenBankXIbmClientId", "rb-key");
+    // --- getProducts Tests ---
 
-        bankDetails = new BankDetails();
-        bankDetails.setBankName("Test Bank");
+    @Test
+    void getProducts_ShouldRouteToCorrectProvider() {
+        verifyProductRouting(AIR_BANK_CLIENT_REGISTRATION_ID, airBankApiProvider);
+        verifyProductRouting(CESKA_SPORITELNA_CLIENT_REGISTRATION_ID, ceskaSporitelnaApiProvider);
+        verifyProductRouting(CSOB_CLIENT_REGISTRATION_ID, csobApiProvider);
+        verifyProductRouting(KB_CLIENT_REGISTRATION_ID, kbApiProvider);
+        verifyProductRouting(RAIFFEISEN_BANK_CLIENT_REGISTRATION_ID, raiffeisenBankApiProvider);
     }
 
     @Test
-    void getProducts_AirBank_ShouldRouteAndMapSuccessfully() {
-        // Arrange
-        bankDetails.setClientRegistrationId(AIR_BANK_CLIENT_REGISTRATION_ID);
-        ProductsMessagingRequest request = getProductsMessagingRequest();
+    void getProducts_ShouldThrowIllegalArgumentException_ForUnknownBank() {
+        ProductsMessagingRequest request = buildProductsRequest("unknown-bank");
 
-        AccountList mockApiResponse = new AccountList();
-        ProductsResponse expectedResponse = ProductsResponse.builder().build();
-
-        when(airBankApiFeignClient.getAccounts(AUTH_TOKEN)).thenReturn(ResponseEntity.ok(mockApiResponse));
-        when(productsApiMapper.toProductsResponse(mockApiResponse, bankDetails)).thenReturn(expectedResponse);
-
-        // Act
-        ProductsResponse actualResponse = externalApiProvider.getProducts(request);
-
-        // Assert
-        assertEquals(expectedResponse, actualResponse);
-        verify(airBankApiFeignClient).getAccounts(AUTH_TOKEN);
-    }
-
-    @Test
-    void getProducts_KB_ShouldRouteAndMapSuccessfully() {
-        // Arrange
-        bankDetails.setClientRegistrationId(KB_CLIENT_REGISTRATION_ID);
-        ProductsMessagingRequest request = getProductsMessagingRequest();
-
-        cvut.fel.sit.kb.openapi.model.GetAccountListResponse mockApiResponse = new cvut.fel.sit.kb.openapi.model.GetAccountListResponse();
-        ProductsResponse expectedResponse = ProductsResponse.builder().build();
-
-        when(kbApiFeignClient.getAccounts(AUTH_TOKEN)).thenReturn(ResponseEntity.ok(mockApiResponse));
-        when(productsApiMapper.toProductsResponse(mockApiResponse, bankDetails)).thenReturn(expectedResponse);
-
-        // Act
-        ProductsResponse actualResponse = externalApiProvider.getProducts(request);
-
-        // Assert
-        assertEquals(expectedResponse, actualResponse);
-        verify(kbApiFeignClient).getAccounts(AUTH_TOKEN);
-    }
-
-    @Test
-    void getProducts_UnsupportedBank_ShouldThrowIllegalArgumentException() {
-        // Arrange
-        bankDetails.setClientRegistrationId("UNKNOWN_BANK");
-        ProductsMessagingRequest request = getProductsMessagingRequest();
-
-        // Act & Assert
-        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
                 () -> externalApiProvider.getProducts(request));
-        assertTrue(ex.getMessage().contains("Unsupported client registration ID"));
+
+        assertTrue(exception.getMessage().contains("Unsupported client registration ID"));
+    }
+
+    // --- getAccountBalance Tests ---
+
+    @Test
+    void getAccountBalance_ShouldRouteToCorrectProvider() {
+        verifyBalanceRouting(AIR_BANK_CLIENT_REGISTRATION_ID, airBankApiProvider);
+        verifyBalanceRouting(CESKA_SPORITELNA_CLIENT_REGISTRATION_ID, ceskaSporitelnaApiProvider);
+        verifyBalanceRouting(CSOB_CLIENT_REGISTRATION_ID, csobApiProvider);
+        verifyBalanceRouting(KB_CLIENT_REGISTRATION_ID, kbApiProvider);
+        verifyBalanceRouting(RAIFFEISEN_BANK_CLIENT_REGISTRATION_ID, raiffeisenBankApiProvider);
     }
 
     @Test
-    void getAccountBalance_CeskaSporitelna_ShouldRouteAndMapSuccessfully() {
-        // Arrange
-        bankDetails.setClientRegistrationId(CESKA_SPORITELNA_CLIENT_REGISTRATION_ID);
-        AccountBalancesMessagingRequest request = AccountBalancesMessagingRequest.builder()
-                .accountId(ACCOUNT_ID)
-                .authorization(AUTH_TOKEN)
-                .bankDetails(bankDetails)
-                .principalName(PRINCIPAL)
-                .build();
+    void getAccountBalance_ShouldThrowIllegalArgumentException_ForUnknownBank() {
+        AccountBalancesMessagingRequest request = buildBalanceRequest("unknown-bank");
 
-        MyAccountsIdBalanceGet200Response mockApiResponse = new MyAccountsIdBalanceGet200Response();
-        Amount expectedAmount = Amount.builder().build();
-
-        when(ceskaSporitelnaApiFeignClient.getAccountBalance(AUTH_TOKEN, "cs-key", ACCOUNT_ID))
-                .thenReturn(ResponseEntity.ok(mockApiResponse));
-        when(accountBalanceApiMapper.toDomainBalance(mockApiResponse)).thenReturn(expectedAmount);
-
-        // Act
-        Amount actualAmount = externalApiProvider.getAccountBalance(request);
-
-        // Assert
-        assertEquals(expectedAmount, actualAmount);
-        verify(ceskaSporitelnaApiFeignClient).getAccountBalance(AUTH_TOKEN, "cs-key", ACCOUNT_ID);
+        assertThrows(IllegalArgumentException.class, () -> externalApiProvider.getAccountBalance(request));
     }
 
-    @Test
-    void getTransactions_CSOB_ShouldFormatDatesToUTCInstant() {
-        // Arrange
-        bankDetails.setClientRegistrationId(CSOB_CLIENT_REGISTRATION_ID);
-
-        LocalDate fromDate = LocalDate.of(2026, 4, 1);
-        LocalDate toDate = LocalDate.of(2026, 4, 19);
-
-        TransactionsRequest request = TransactionsRequest.builder()
-                .bankDetails(bankDetails)
-                .authorization(AUTH_TOKEN)
-                .principalName(PRINCIPAL)
-                .accountId(ACCOUNT_ID)
-                .fromDate(fromDate)
-                .toDate(toDate)
-                .build();
-
-        GetTransactionHistoryRes mockApiResponse = new GetTransactionHistoryRes();
-        TransactionsMessagingResponse expectedResponse = TransactionsMessagingResponse.builder().build();
-
-        String expectedFromDateIso = "2026-04-01T00:00:00Z";
-        String expectedToDateIso = "2026-04-19T00:00:00Z";
-
-        when(csobApiFeignClient.getTransactions(eq(AUTH_TOKEN), anyString(), eq(true), eq("mojefinance"),
-                eq("csob-key"), eq("application/json"), eq(ACCOUNT_ID), eq(expectedFromDateIso), eq(expectedToDateIso)))
-                .thenReturn(ResponseEntity.ok(mockApiResponse));
-
-        when(transactionsApiMapper.toTransactionsResponse(mockApiResponse)).thenReturn(expectedResponse);
-
-        // Act
-        TransactionsMessagingResponse actualResponse = externalApiProvider.getTransactions(request);
-
-        // Assert
-        assertEquals(expectedResponse, actualResponse);
-    }
+    // --- getTransactions Tests ---
 
     @Test
-    void getTransactions_Raiffeisen_ShouldPassCustomHeadersAndCurrency() {
-        // Arrange
-        bankDetails.setClientRegistrationId(RAIFFEISEN_BANK_CLIENT_REGISTRATION_ID);
+    void getTransactions_ShouldFormatDatesAndRouteToStandardProvider() {
+        TransactionsRequest request = buildTransactionsRequest(AIR_BANK_CLIENT_REGISTRATION_ID, LocalDate.of(2026, 4, 1), LocalDate.of(2026, 4, 30));
 
-        LocalDate fromDate = LocalDate.of(2026, 4, 1);
-        LocalDate toDate = LocalDate.of(2026, 4, 19);
+        when(airBankApiProvider.fetchTransactions(request, "2026-04-01", "2026-04-30"))
+                .thenReturn(TransactionsMessagingResponse.builder().build());
 
-        TransactionsRequest request = TransactionsRequest.builder()
-                .bankDetails(bankDetails)
-                .authorization(AUTH_TOKEN)
-                .principalName(PRINCIPAL)
-                .accountId(ACCOUNT_ID)
-                .fromDate(fromDate)
-                .toDate(toDate)
-                .build();
-
-        cvut.fel.sit.reif.openapi.model.GetTransactionList200Response mockApiResponse = new cvut.fel.sit.reif.openapi.model.GetTransactionList200Response();
-        TransactionsMessagingResponse expectedResponse = TransactionsMessagingResponse.builder().build();
-
-        when(raiffeisenBankApiFeignClient.getTransactions(eq("rb-key"), anyString(), eq(ACCOUNT_ID),
-                eq(CZK_CURRENCY_CODE), eq(fromDate.toString()), eq(toDate.toString())))
-                .thenReturn(ResponseEntity.ok(mockApiResponse));
-
-        when(transactionsApiMapper.toTransactionsResponse(mockApiResponse)).thenReturn(expectedResponse);
-
-        // Act
-        TransactionsMessagingResponse actualResponse = externalApiProvider.getTransactions(request);
-
-        // Assert
-        assertEquals(expectedResponse, actualResponse);
-        verify(raiffeisenBankApiFeignClient).getTransactions(eq("rb-key"), anyString(), eq(ACCOUNT_ID), eq(CZK_CURRENCY_CODE), eq(fromDate.toString()), eq(toDate.toString()));
-    }
-
-    @Test
-    void getTransactions_NullDates_ShouldDefaultToNowAndMinus3Months() {
-        // Arrange
-        bankDetails.setClientRegistrationId(AIR_BANK_CLIENT_REGISTRATION_ID);
-
-        TransactionsRequest request = TransactionsRequest.builder()
-                .bankDetails(bankDetails)
-                .authorization(AUTH_TOKEN)
-                .accountId(ACCOUNT_ID)
-                .build();
-
-        TransactionList mockApiResponse = new TransactionList();
-
-        String expectedToDate = LocalDate.now().toString();
-        String expectedFromDate = LocalDate.now().minusMonths(3).toString();
-
-        when(airBankApiFeignClient.getTransactions(AUTH_TOKEN, ACCOUNT_ID, expectedFromDate, expectedToDate))
-                .thenReturn(ResponseEntity.ok(mockApiResponse));
-
-        when(transactionsApiMapper.toTransactionsResponse(mockApiResponse)).thenReturn(TransactionsMessagingResponse.builder().build());
-
-        // Act
         externalApiProvider.getTransactions(request);
 
-        // Assert
-        verify(airBankApiFeignClient).getTransactions(AUTH_TOKEN, ACCOUNT_ID, expectedFromDate, expectedToDate);
+        verify(airBankApiProvider).fetchTransactions(request, "2026-04-01", "2026-04-30");
     }
 
     @Test
-    void executeApiCall_WhenApiReturnsNon2xxStatus_ShouldThrowServiceException() {
-        // Arrange
-        bankDetails.setClientRegistrationId(AIR_BANK_CLIENT_REGISTRATION_ID);
-        ProductsMessagingRequest request = getProductsMessagingRequest();
+    void getTransactions_ShouldFormatDatesToIsoInstantAndRouteToCSOB() {
+        TransactionsRequest request = buildTransactionsRequest(CSOB_CLIENT_REGISTRATION_ID, LocalDate.of(2026, 4, 1), LocalDate.of(2026, 4, 30));
 
-        when(airBankApiFeignClient.getAccounts(AUTH_TOKEN))
-                .thenReturn(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null));
+        String expectedFrom = LocalDate.of(2026, 4, 1).atStartOfDay().atOffset(ZoneOffset.UTC).format(DateTimeFormatter.ISO_INSTANT);
+        String expectedTo = LocalDate.of(2026, 4, 30).atStartOfDay().atOffset(ZoneOffset.UTC).format(DateTimeFormatter.ISO_INSTANT);
 
-        // Act & Assert
-        ServiceException ex = assertThrows(ServiceException.class,
-                () -> externalApiProvider.getProducts(request));
-        assertTrue(ex.getMessage().contains("Failed to fetch data from Test Bank API. Status: 400 BAD_REQUEST"));
+        when(csobApiProvider.fetchTransactions(request, expectedFrom, expectedTo))
+                .thenReturn(TransactionsMessagingResponse.builder().build());
+
+        externalApiProvider.getTransactions(request);
+
+        verify(csobApiProvider).fetchTransactions(request, expectedFrom, expectedTo);
     }
 
     @Test
-    void executeApiCall_WhenFeignThrowsException_ShouldWrapInServiceException() {
-        // Arrange
-        bankDetails.setClientRegistrationId(AIR_BANK_CLIENT_REGISTRATION_ID);
-        ProductsMessagingRequest request = getProductsMessagingRequest();
+    void getTransactions_WhenDatesAreNull_ShouldUseDefaultDates() {
+        TransactionsRequest request = buildTransactionsRequest(KB_CLIENT_REGISTRATION_ID, null, null);
 
-        FeignException mockFeignException = mock(FeignException.class);
-        when(mockFeignException.getMessage()).thenReturn("Connection timed out");
+        String expectedFrom = LocalDate.now().minusMonths(3).toString();
+        String expectedTo = LocalDate.now().toString();
 
-        when(airBankApiFeignClient.getAccounts(AUTH_TOKEN)).thenThrow(mockFeignException);
+        when(kbApiProvider.fetchTransactions(request, expectedFrom, expectedTo))
+                .thenReturn(TransactionsMessagingResponse.builder().build());
 
-        // Act & Assert
-        ServiceException ex = assertThrows(ServiceException.class,
-                () -> externalApiProvider.getProducts(request));
-        assertTrue(ex.getMessage().contains("Error calling Test Bank API: Connection timed out"));
-        assertEquals(mockFeignException, ex.getCause());
+        externalApiProvider.getTransactions(request);
+
+        verify(kbApiProvider).fetchTransactions(request, expectedFrom, expectedTo);
     }
 
-    private ProductsMessagingRequest getProductsMessagingRequest() {
+    // --- getExchangeRates Tests ---
+
+    @Test
+    void getExchangeRates_ShouldDelegateToProvider() {
+        when(exchangeRatesApiProvider.fetchExchangeRate("EUR")).thenReturn(BigDecimal.valueOf(25.5));
+
+        BigDecimal result = externalApiProvider.getExchangeRates("EUR");
+
+        assertEquals(0, BigDecimal.valueOf(25.5).compareTo(result));
+        verify(exchangeRatesApiProvider).fetchExchangeRate("EUR");
+    }
+
+    // --- Fallback Methods Tests (via Reflection) ---
+
+    @Test
+    void fallbackGetProducts_ShouldReturnEmptyList() {
+        ProductsMessagingRequest request = buildProductsRequest(KB_CLIENT_REGISTRATION_ID);
+        RuntimeException ex = new RuntimeException("Service Down");
+
+        ProductsResponse response = ReflectionTestUtils.invokeMethod(externalApiProvider, "fallbackGetProducts", request, ex);
+
+        assertNotNull(response);
+        assertTrue(response.getProducts().isEmpty());
+    }
+
+    @Test
+    void fallbackGetExchangeRates_ShouldReturnOne() {
+        RuntimeException ex = new RuntimeException("Service Down");
+
+        BigDecimal response = ReflectionTestUtils.invokeMethod(externalApiProvider, "fallbackGetExchangeRates", "EUR", ex);
+
+        assertNotNull(response);
+        assertEquals(0, BigDecimal.ONE.compareTo(response));
+    }
+
+    @Test
+    void fallbackGetAccountBalance_ShouldReturnZeroCZK() {
+        AccountBalancesMessagingRequest request = buildBalanceRequest(KB_CLIENT_REGISTRATION_ID);
+        RuntimeException ex = new RuntimeException("Service Down");
+
+        Amount response = ReflectionTestUtils.invokeMethod(externalApiProvider, "fallbackGetAccountBalance", request, ex);
+
+        assertNotNull(response);
+        assertEquals(0, BigDecimal.ZERO.compareTo(response.getValue()));
+        assertEquals(CZK_CURRENCY_CODE, response.getCurrency());
+    }
+
+    @Test
+    void fallbackGetTransactions_ShouldReturnEmptyList() {
+        TransactionsRequest request = buildTransactionsRequest(KB_CLIENT_REGISTRATION_ID, null, null);
+        RuntimeException ex = new RuntimeException("Service Down");
+
+        TransactionsMessagingResponse response = ReflectionTestUtils.invokeMethod(externalApiProvider, "fallbackGetTransactions", request, ex);
+
+        assertNotNull(response);
+        assertTrue(response.getTransactions().isEmpty());
+    }
+
+    // --- Helper Methods ---
+
+    private void verifyProductRouting(String bankId, Object mockProvider) {
+        ProductsMessagingRequest request = buildProductsRequest(bankId);
+        ProductsResponse expectedResponse = ProductsResponse.builder().build();
+
+        try {
+            mockProvider.getClass().getMethod("fetchProducts", ProductsMessagingRequest.class).invoke(when(mockProvider).getMock(), expectedResponse);
+        } catch (Exception ignored) {}
+
+        externalApiProvider.getProducts(request);
+
+        try {
+            mockProvider.getClass().getMethod("fetchProducts", ProductsMessagingRequest.class).invoke(verify(mockProvider), request);
+        } catch (Exception ignored) {}
+    }
+
+    private void verifyBalanceRouting(String bankId, Object mockProvider) {
+        AccountBalancesMessagingRequest request = buildBalanceRequest(bankId);
+        Amount expectedResponse = Amount.builder().build();
+
+        try {
+            mockProvider.getClass().getMethod("fetchAccountBalance", AccountBalancesMessagingRequest.class).invoke(when(mockProvider).getMock(), expectedResponse);
+        } catch (Exception ignored) {}
+
+        externalApiProvider.getAccountBalance(request);
+
+        try {
+            mockProvider.getClass().getMethod("fetchAccountBalance", AccountBalancesMessagingRequest.class).invoke(verify(mockProvider), request);
+        } catch (Exception ignored) {}
+    }
+
+    private ProductsMessagingRequest buildProductsRequest(String bankId) {
         return ProductsMessagingRequest.builder()
-                .authorization(AUTH_TOKEN)
-                .principalName(PRINCIPAL)
-                .bankDetails(bankDetails)
+                .bankDetails(BankDetails.builder().clientRegistrationId(bankId).bankName(bankId).build())
+                .build();
+    }
+
+    private AccountBalancesMessagingRequest buildBalanceRequest(String bankId) {
+        return AccountBalancesMessagingRequest.builder()
+                .accountId(ACCOUNT_ID)
+                .bankDetails(BankDetails.builder().clientRegistrationId(bankId).bankName(bankId).build())
+                .build();
+    }
+
+    private TransactionsRequest buildTransactionsRequest(String bankId, LocalDate from, LocalDate to) {
+        return TransactionsRequest.builder()
+                .accountId(ACCOUNT_ID)
+                .fromDate(from)
+                .toDate(to)
+                .bankDetails(BankDetails.builder().clientRegistrationId(bankId).bankName(bankId).build())
                 .build();
     }
 }

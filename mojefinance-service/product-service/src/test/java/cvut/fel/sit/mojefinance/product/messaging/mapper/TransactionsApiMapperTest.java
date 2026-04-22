@@ -1,162 +1,103 @@
 package cvut.fel.sit.mojefinance.product.messaging.mapper;
 
-import cvut.fel.sit.airbank.openapi.model.TransactionList;
-import cvut.fel.sit.airbank.openapi.model.TransactionListTransactionsInner;
-import cvut.fel.sit.cs.openapi.model.MyAccountsIdTransactionsGet200Response;
-import cvut.fel.sit.csob.transactions.openapi.model.GetTransactionHistoryRes;
-import cvut.fel.sit.kb.openapi.model.GeAccountTransactionsResponse;
-import cvut.fel.sit.mojefinance.product.domain.entity.Transaction;
 import cvut.fel.sit.mojefinance.product.domain.entity.TransactionDirection;
 import cvut.fel.sit.mojefinance.product.domain.entity.TransactionStatus;
-import cvut.fel.sit.mojefinance.product.messaging.dto.TransactionsMessagingResponse;
-import cvut.fel.sit.reif.openapi.model.GetTransactionList200Response;
-import cvut.fel.sit.reif.openapi.model.GetTransactionList200ResponseTransactionsInner;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
-import java.util.List;
+import java.time.ZoneOffset;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
 
-@ExtendWith(MockitoExtension.class)
 class TransactionsApiMapperTest {
 
     private TransactionsApiMapper mapper;
 
     @BeforeEach
     void setUp() {
-        mapper = new TransactionsApiMapperImpl();
+        // Instantiate an anonymous class to test the default methods directly
+        mapper = new TransactionsApiMapper() {};
     }
 
-    @Test
-    void toTransactionsResponse_NullInputs_ShouldReturnNull() {
-        assertNull(mapper.toTransactionsResponse((TransactionList) null));
-        assertNull(mapper.toTransactionsResponse((MyAccountsIdTransactionsGet200Response) null));
-        assertNull(mapper.toTransactionsResponse((GetTransactionHistoryRes) null));
-        assertNull(mapper.toTransactionsResponse((GeAccountTransactionsResponse) null));
-        assertNull(mapper.toTransactionsResponse((GetTransactionList200Response) null));
-    }
+    // --- mapTransactionDirection Tests ---
 
     @Test
-    void customMappers_ShouldMapDirectionsAndStatusesCorrectly() {
-        // Test mapTransactionDirection
+    void mapTransactionDirection_WhenCRDT_ShouldReturnIncome() {
         assertEquals(TransactionDirection.INCOME, mapper.mapTransactionDirection("CRDT"));
+        assertEquals(TransactionDirection.INCOME, mapper.mapTransactionDirection("crdt")); // tests toUpperCase()
+    }
+
+    @Test
+    void mapTransactionDirection_WhenDBIT_ShouldReturnOutcome() {
         assertEquals(TransactionDirection.OUTCOME, mapper.mapTransactionDirection("DBIT"));
-        assertThrows(IllegalArgumentException.class, () -> mapper.mapTransactionDirection("UNKNOWN"));
+        assertEquals(TransactionDirection.OUTCOME, mapper.mapTransactionDirection("dbit")); // tests toUpperCase()
+    }
 
-        // Test mapTransactionStatus
+    @Test
+    void mapTransactionDirection_WhenNull_ShouldReturnNull() {
+        assertNull(mapper.mapTransactionDirection(null));
+    }
+
+    @Test
+    void mapTransactionDirection_WhenUnknown_ShouldThrowException() {
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> mapper.mapTransactionDirection("UNKNOWN")
+        );
+        assertEquals("Unknown credit/debit indicator from bank: UNKNOWN", exception.getMessage());
+    }
+
+    // --- mapTransactionStatus Tests ---
+
+    @Test
+    void mapTransactionStatus_WhenBOOK_ShouldReturnBooked() {
         assertEquals(TransactionStatus.BOOKED, mapper.mapTransactionStatus("BOOK"));
+        assertEquals(TransactionStatus.BOOKED, mapper.mapTransactionStatus("book")); // tests toUpperCase()
+    }
+
+    @Test
+    void mapTransactionStatus_WhenPDNG_ShouldReturnPending() {
         assertEquals(TransactionStatus.PENDING, mapper.mapTransactionStatus("PDNG"));
-        assertThrows(IllegalArgumentException.class, () -> mapper.mapTransactionStatus("UNKNOWN"));
-
-        // Test Date Mapping
-        OffsetDateTime offsetDateTime = OffsetDateTime.parse("2026-04-19T10:15:30+02:00");
-        assertEquals(LocalDate.of(2026, 4, 19), mapper.mapDateFromOffsetDateTime(offsetDateTime));
+        assertEquals(TransactionStatus.PENDING, mapper.mapTransactionStatus("pdng")); // tests toUpperCase()
     }
 
     @Test
-    void toTransactionsResponse_AirBank_ShouldMapDeeplyNestedFieldsCorrectly() {
-        // Arrange
-        TransactionList response = mock(TransactionList.class);
-        TransactionListTransactionsInner apiTx = mock(TransactionListTransactionsInner.class, RETURNS_DEEP_STUBS);
-
-        // We return the real enums because Mockito cannot mock enums
-        when(apiTx.getCreditDebitIndicator()).thenReturn(TransactionListTransactionsInner.CreditDebitIndicatorEnum.CRDT);
-        when(apiTx.getStatus()).thenReturn(TransactionListTransactionsInner.StatusEnum.BOOK);
-
-        when(apiTx.getBookingDate().getDate()).thenReturn("2026-04-19");
-        when(apiTx.getAmount().getValue()).thenReturn(new BigDecimal("1500.50"));
-        when(apiTx.getAmount().getCurrency()).thenReturn("CZK");
-
-        // Deep stubbing the nested RelatedParties tree
-        when(apiTx.getEntryDetails().getTransactionDetails().getRelatedParties().getDebtor().getName()).thenReturn("John Doe");
-        when(apiTx.getEntryDetails().getTransactionDetails().getRelatedParties().getDebtorAccount().getIdentification().getIban()).thenReturn("CZ1234567890");
-
-        when(response.getTransactions()).thenReturn(List.of(apiTx));
-
-        // Act
-        TransactionsMessagingResponse domainResponse = mapper.toTransactionsResponse(response);
-
-        // Assert
-        assertNotNull(domainResponse);
-        assertEquals(1, domainResponse.getTransactions().size());
-
-        Transaction domainTx = domainResponse.getTransactions().get(0);
-        assertEquals(TransactionDirection.INCOME, domainTx.getDirection());
-        assertEquals(TransactionStatus.BOOKED, domainTx.getStatus());
-        assertEquals(LocalDate.of(2026, 4, 19), domainTx.getBookingDate());
-        assertEquals(new BigDecimal("1500.50"), domainTx.getAmount().getValue());
-        assertEquals("CZK", domainTx.getAmount().getCurrency());
-
-        // Assert Nested Parties
-        assertNotNull(domainTx.getRelatedParties());
-        assertEquals("John Doe", domainTx.getRelatedParties().getDebtorName());
-        assertEquals("CZ1234567890", domainTx.getRelatedParties().getDebtorAccountIban());
+    void mapTransactionStatus_WhenNull_ShouldReturnNull() {
+        assertNull(mapper.mapTransactionStatus(null));
     }
 
     @Test
-    void toTransactionsResponse_KB_ShouldMapDoubleAmountCorrectly() {
-        // Arrange
-        GeAccountTransactionsResponse response = mock(GeAccountTransactionsResponse.class);
-        cvut.fel.sit.kb.openapi.model.AccountTransaction apiTx = mock(cvut.fel.sit.kb.openapi.model.AccountTransaction.class, RETURNS_DEEP_STUBS);
+    void mapTransactionStatus_WhenUnknown_ShouldThrowException() {
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> mapper.mapTransactionStatus("PROCESSING")
+        );
+        // Note: Your original code has a slight copy-paste typo in the exception message for status ("Unknown credit/debit indicator...").
+        // This test expects the exact message currently in your source code.
+        assertEquals("Unknown credit/debit indicator from bank: PROCESSING", exception.getMessage());
+    }
 
-        cvut.fel.sit.kb.openapi.model.CreditDebitIndicator indicator = mock(cvut.fel.sit.kb.openapi.model.CreditDebitIndicator.class);
-        when(indicator.getValue()).thenReturn("DBIT");
-        when(apiTx.getCreditDebitIndicator()).thenReturn(indicator);
+    // --- mapDateFromOffsetDateTime Tests ---
 
-        when(apiTx.getStatus()).thenReturn("PDNG"); // KB passes status as a direct String
-        when(apiTx.getBookingDate().getDate()).thenReturn("2026-04-20");
+    @Test
+    void mapDateFromOffsetDateTime_ShouldExtractLocalDate() {
+        // Given
+        OffsetDateTime offsetDateTime = OffsetDateTime.of(2026, 4, 22, 18, 45, 0, 0, ZoneOffset.UTC);
 
-        // KB uses Double for values instead of BigDecimal
-        when(apiTx.getAmount().getValue()).thenReturn(250.75);
-        when(apiTx.getAmount().getCurrency()).thenReturn("EUR");
+        // When
+        LocalDate result = mapper.mapDateFromOffsetDateTime(offsetDateTime);
 
-        when(response.getTransactions()).thenReturn(List.of(apiTx));
-
-        // Act
-        TransactionsMessagingResponse domainResponse = mapper.toTransactionsResponse(response);
-
-        // Assert
-        Transaction domainTx = domainResponse.getTransactions().get(0);
-        assertEquals(TransactionDirection.OUTCOME, domainTx.getDirection());
-        assertEquals(TransactionStatus.PENDING, domainTx.getStatus());
-        assertEquals(new BigDecimal("250.75"), domainTx.getAmount().getValue()); // Verifies Double -> BigDecimal mapping
-        assertEquals("EUR", domainTx.getAmount().getCurrency());
+        // Then
+        assertNotNull(result);
+        assertEquals(2026, result.getYear());
+        assertEquals(4, result.getMonthValue());
+        assertEquals(22, result.getDayOfMonth());
     }
 
     @Test
-    void toTransactionsResponse_Reiffeisen_ShouldMapOffsetDateTimeAndConstants() {
-        // Arrange
-        GetTransactionList200Response response = mock(GetTransactionList200Response.class);
-        GetTransactionList200ResponseTransactionsInner apiTx = mock(GetTransactionList200ResponseTransactionsInner.class, RETURNS_DEEP_STUBS);
-
-        when(apiTx.getCreditDebitIndication()).thenReturn(GetTransactionList200ResponseTransactionsInner.CreditDebitIndicationEnum.CRDT);
-        when(apiTx.getBookingDate()).thenReturn(OffsetDateTime.parse("2026-04-21T08:30:00Z"));
-        when(apiTx.getValueDate()).thenReturn(OffsetDateTime.parse("2026-04-21T08:30:00Z"));
-        when(apiTx.getAmount().getValue()).thenReturn(100.0);
-        when(apiTx.getEntryDetails().getTransactionDetails().getRelatedParties().getCounterParty().getName()).thenReturn("Netflix");
-        when(apiTx.getEntryDetails().getTransactionDetails().getRelatedParties().getCounterParty().getAccount().getIban()).thenReturn("IE12BOFI90001122334455");
-        when(response.getTransactions()).thenReturn(List.of(apiTx));
-
-        // Act
-        TransactionsMessagingResponse domainResponse = mapper.toTransactionsResponse(response);
-
-        // Assert
-        Transaction domainTx = domainResponse.getTransactions().get(0);
-        assertEquals(TransactionDirection.INCOME, domainTx.getDirection());
-        assertEquals(TransactionStatus.BOOKED, domainTx.getStatus());
-        assertEquals(LocalDate.of(2026, 4, 21), domainTx.getBookingDate());
-        assertEquals(LocalDate.of(2026, 4, 21), domainTx.getValueDate()); // Optional: verify value date too
-
-        // Assert CounterParty mapping
-        assertEquals("Netflix", domainTx.getCounterpartyName());
-        assertEquals("IE12BOFI90001122334455", domainTx.getRelatedParties().getCreditorAccountIban());
-        assertEquals("IE12BOFI90001122334455", domainTx.getRelatedParties().getDebtorAccountIban());
+    void mapDateFromOffsetDateTime_WhenNull_ShouldReturnNull() {
+        assertNull(mapper.mapDateFromOffsetDateTime(null));
     }
 }

@@ -5,11 +5,8 @@ import cvut.fel.sit.mojefinance.categorization.CategorizationService;
 import cvut.fel.sit.mojefinance.categorization.domain.dto.CategorizeTransactionsRequest;
 import cvut.fel.sit.mojefinance.categorization.domain.dto.CategorizeTransactionsResponse;
 import cvut.fel.sit.mojefinance.product.domain.dto.TransactionsRequest;
-import cvut.fel.sit.mojefinance.product.domain.entity.BankDetails;
-import cvut.fel.sit.mojefinance.product.domain.entity.RelatedParties;
-import cvut.fel.sit.mojefinance.product.domain.entity.Transaction;
-import cvut.fel.sit.mojefinance.product.domain.entity.TransactionDirection;
-import cvut.fel.sit.mojefinance.product.messaging.dto.TransactionsMessagingResponse;
+import cvut.fel.sit.mojefinance.product.domain.entity.*;
+import cvut.fel.sit.mojefinance.product.domain.service.CurrencyExchangeService;import cvut.fel.sit.mojefinance.product.messaging.dto.TransactionsMessagingResponse;
 import cvut.fel.sit.mojefinance.product.messaging.service.ExternalApiProvider;
 import cvut.fel.sit.shared.entity.TransactionCategory;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +16,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.stream.Collectors;import static cvut.fel.sit.shared.util.Constants.CZK_CURRENCY_CODE;
 
 @Component
 @RequiredArgsConstructor
@@ -27,6 +24,7 @@ public class TransactionHelper {
     private final ExternalApiProvider externalApiProvider;
     private final CategorizationService categorizationService;
     private final AuthorizationService authorizationService;
+    private final CurrencyExchangeService currencyExchangeService;
     private static final String NOT_SPECIFIED_COUNTERPARTY_NAME = "Not specified";
     private static final String BEARER_PREFIX = "Bearer";
 
@@ -60,6 +58,12 @@ public class TransactionHelper {
                 category = TransactionCategory.UNCATEGORIZED;
             }
             transaction.setCategory(category);
+
+            if (!CZK_CURRENCY_CODE.equals(transaction.getAmount().getCurrency())) {
+                Amount originalAmount = transaction.getAmount();
+                Amount amountInCZK = currencyExchangeService.exchangeAmount(originalAmount);
+                transaction.setAmount(amountInCZK);
+            }
         });
     }
 

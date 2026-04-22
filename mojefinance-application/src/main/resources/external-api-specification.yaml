@@ -39,3 +39,7 @@ external:
       tpp-name: ${csob-tpp-name}
     google:
         apikey: ${google-apikey}
+    exchange-rates:
+      base-url: https://api-gateway.kb.cz/exchange-rates/v2
+      exchange-rates-path: /exchange-rates/{currency}
+      apikey: ${exchange-rates-apikey}

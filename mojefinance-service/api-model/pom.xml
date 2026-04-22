@@ -72,6 +72,28 @@
                         </configuration>
                     </execution>
                     <execution>
+                        <id>exchange-rates-api</id>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <inputSpec>
+                                ${project.basedir}/src/main/resources/swagger/ExchangeRates.json
+                            </inputSpec>
+                            <generatorName>spring</generatorName>
+                            <apiPackage>cvut.fel.sit.er.openapi.api</apiPackage>
+                            <modelPackage>cvut.fel.sit.er.openapi.model</modelPackage>
+                            <supportingFilesToGenerate>
+                                ApiUtil.java
+                            </supportingFilesToGenerate>
+                            <configOptions>
+                                <useSpringSecurity>true</useSpringSecurity>
+                                <interfaceOnly>true</interfaceOnly>
+                                <useJakartaEe>true</useJakartaEe>
+                            </configOptions>
+                        </configuration>
+                    </execution>
+                    <execution>
                         <id>reif-api</id>
                         <goals>
                             <goal>generate</goal>

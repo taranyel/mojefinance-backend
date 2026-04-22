@@ -57,6 +57,7 @@ public class ProductServiceImpl implements ProductService {
     public AssetsAndLiabilitiesResponse getAssetsAndLiabilities() {
         log.info("Getting assets and liabilities for authorized user.");
         ProductsResponse productsResponse = getProducts();
+        productHelper.exchangeProductBalances(productsResponse.getProducts());
         AssetLiability assets = productHelper.buildAssetLiability(productsResponse.getProducts(), ProductType.ASSET);
         AssetLiability liabilities = productHelper.buildAssetLiability(productsResponse.getProducts(), ProductType.LIABILITY);
         return AssetsAndLiabilitiesResponse.builder()

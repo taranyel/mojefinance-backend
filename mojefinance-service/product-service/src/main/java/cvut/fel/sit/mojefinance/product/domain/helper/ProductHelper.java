@@ -10,6 +10,7 @@ import cvut.fel.sit.mojefinance.categorization.domain.dto.CategorizeProductsResp
 import cvut.fel.sit.mojefinance.product.domain.dto.AccountBalancesMessagingRequest;
 import cvut.fel.sit.mojefinance.product.domain.dto.ProductsResponse;
 import cvut.fel.sit.mojefinance.product.domain.entity.*;
+import cvut.fel.sit.mojefinance.product.domain.service.CurrencyExchangeService;
 import cvut.fel.sit.mojefinance.product.messaging.dto.ProductsMessagingRequest;
 import cvut.fel.sit.mojefinance.product.messaging.service.ExternalApiProvider;
 import cvut.fel.sit.shared.entity.ProductCategory;
@@ -33,6 +34,7 @@ public class ProductHelper {
     private final ExternalApiProvider externalApiProvider;
     private final CategorizationService categorizationService;
     private final AuthorizationService authorizationService;
+    private final CurrencyExchangeService currencyExchangeService;
     private static final String BEARER_PREFIX = "Bearer";
 
     public AccountBalancesMessagingRequest buildAccountBalancesMessagingRequest(String productId, BankDetails bankDetails, String authorization, String principalName) {
@@ -94,6 +96,16 @@ public class ProductHelper {
         return BEARER_PREFIX + " " + authorizationService.authorizeClient(clientRegistrationId);
     }
 
+    public void exchangeProductBalances(List<Product> products) {
+        for (Product product : products) {
+            Amount originalAmount = product.getBalance();
+            if (!CZK_CURRENCY_CODE.equals(originalAmount.getCurrency())) {
+                Amount amountInCZK = currencyExchangeService.exchangeAmount(originalAmount);
+                product.setBalance(amountInCZK);
+            }
+        }
+    }
+
     private void setProductCategory(Product product, Map<String, ProductCategory> categoryMap) {
         ProductCategory category = categoryMap.get(product.getProductName());
         if (category == null) {
@@ -134,7 +146,15 @@ public class ProductHelper {
 
     private List<GroupedProducts> groupProductsByProductType(List<Product> products, ProductType productType) {
         return products.stream()
-                .filter(product -> product.getProductCategory().getProductType() == productType)
+                .filter(product -> {
+                    if (productType.equals(ProductType.ASSET)) {
+                        return product.getProductCategory().getProductType() == productType
+                                && product.getBalance().getValue().compareTo(BigDecimal.ZERO) >= 0;
+                    } else {
+                        return product.getProductCategory().getProductType() == productType
+                                || product.getBalance().getValue().compareTo(BigDecimal.ZERO) < 0;
+                    }
+                })
                 .collect(Collectors.groupingBy(Product::getProductCategory))
                 .entrySet().stream()
                 .map(entry -> GroupedProducts.builder()

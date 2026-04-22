@@ -72,7 +72,7 @@ class ProfileServiceImplTest {
 
         assertThatThrownBy(() -> profileService.getProfile())
                 .isInstanceOf(IllegalStateException.class)
-                .hasMessage("User is not authenticated with a JWT");
+                .hasMessage("User is not authenticated with a Bearer token");
     }
 
     @Test
@@ -80,6 +80,6 @@ class ProfileServiceImplTest {
         when(securityContext.getAuthentication()).thenReturn(null);
         assertThatThrownBy(() -> profileService.getProfile())
                 .isInstanceOf(IllegalStateException.class)
-                .hasMessage("User is not authenticated with a JWT");
+                .hasMessage("User is not authenticated with a Bearer token");
     }
 }

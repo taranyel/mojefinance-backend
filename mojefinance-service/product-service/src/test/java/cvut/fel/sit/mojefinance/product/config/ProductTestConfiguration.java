@@ -10,7 +10,11 @@ import org.springframework.context.annotation.FilterType;
 @ComponentScan(basePackages = "cvut.fel.sit.mojefinance.product",
         excludeFilters = @ComponentScan.Filter(
                 type = FilterType.REGEX,
-                pattern = "cvut\\.fel\\.sit\\.mojefinance\\.product\\.messaging\\.config\\..*"
+                pattern = {
+                        "cvut\\.fel\\.sit\\.mojefinance\\.product\\.messaging\\.config\\..*",
+                        "cvut\\.fel\\.sit\\.mojefinance\\.product\\.messaging\\.client\\..*",
+                        "cvut\\.fel\\.sit\\.mojefinance\\.product\\.messaging\\.service\\..*"
+                }
         ))
 public class ProductTestConfiguration {
 }

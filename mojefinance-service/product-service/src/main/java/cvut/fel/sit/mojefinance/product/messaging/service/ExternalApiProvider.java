@@ -5,7 +5,7 @@ import cvut.fel.sit.mojefinance.product.domain.dto.ProductsResponse;
 import cvut.fel.sit.mojefinance.product.domain.dto.TransactionsRequest;
 import cvut.fel.sit.mojefinance.product.domain.entity.Amount;
 import cvut.fel.sit.mojefinance.product.messaging.dto.ProductsMessagingRequest;
-import cvut.fel.sit.mojefinance.product.messaging.dto.TransactionsMessagingResponse;
+import cvut.fel.sit.mojefinance.product.messaging.dto.TransactionsMessagingResponse;import java.math.BigDecimal;
 
 public interface ExternalApiProvider {
     ProductsResponse getProducts(ProductsMessagingRequest request);
@@ -13,4 +13,6 @@ public interface ExternalApiProvider {
     Amount getAccountBalance(AccountBalancesMessagingRequest request);
 
     TransactionsMessagingResponse getTransactions(TransactionsRequest request);
+
+    BigDecimal getExchangeRates(String currency);
 }

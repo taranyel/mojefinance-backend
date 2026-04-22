@@ -1,0 +1,398 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Exchange Rates",
+    "description": "This is KB Exchange Rates REST API supposed to be used to retrieve current or historical exchange rates for foreign exchange or foreign currency.",
+    "version": "1.2"
+  },
+  "servers": [
+    {
+      "url": "https://api-gateway.kb.cz/exchange-rates/v2"
+    }
+  ],
+  "security": [
+    {
+      "ApiKeyAuth": []
+    }
+  ],
+  "tags": [
+    {
+      "name": "exchangeRates",
+      "description": "Exchange rates operations."
+    }
+  ],
+  "paths": {
+    "/exchange-rates": {
+      "get": {
+        "tags": [
+          "exchangeRates"
+        ],
+        "summary": "Returns exchange rates for all currencies.",
+        "description": "Returns exchange rates list for current day or specific date and time for all currencies.",
+        "operationId": "getExchangeRates",
+        "parameters": [
+          {
+            "name": "x-correlation-id",
+            "in": "header",
+            "description": "Correlation ID (GUID 128-bit: 8-4-4-4-12) is the generated unique identifier of the initial request, which stays the same through all the systems/application involved.",
+            "example": "324d4777-b59e-4ad3-bb16-527856460113",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^(\\{{0,1}([0-9a-fA-F]){8}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){12}\\}{0,1})$"
+            }
+          },
+          {
+            "name": "validityDateTime",
+            "in": "query",
+            "description": "Return exchange rate for specified DateTime in UTC ISO8601 DateTime format. If empty, latest exchange rates list is returned.",
+            "example": "2019-03-27T06:00:00.000Z",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExchangeRateList"
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "No exchange rates found for specific date time."
+          },
+          "400": {
+            "description": "Invalid request header/parameter (missing header/parameter or wrong header/parameter value).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "x-auth-type": "Application & Application User",
+        "x-throttling-tier": "Unlimited",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ]
+      }
+    },
+    "/exchange-rates/{currency}": {
+      "get": {
+        "tags": [
+          "exchangeRates"
+        ],
+        "summary": "Returns exchange rate for specific currency.",
+        "description": "Returns exchange rates for specific currency for current day or specific date and time.",
+        "operationId": "getExchangeRate",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/CorrelationId"
+          },
+          {
+            "$ref": "#/components/parameters/Currency"
+          },
+          {
+            "$ref": "#/components/parameters/ValidityDateTime"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExchangeRate"
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "Exchange rate for requested currency was not found for specific date time."
+          },
+          "400": {
+            "description": "Invalid request header/parameter (missing header/parameter or wrong header/parameter value).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Unknown currency."
+          }
+        },
+        "x-auth-type": "Application & Application User",
+        "x-throttling-tier": "Unlimited",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "parameters": {
+      "CorrelationId": {
+        "name": "x-correlation-id",
+        "in": "header",
+        "description": "Correlation ID (GUID 128-bit: 8-4-4-4-12) is the generated unique identifier of the initial request, which stays the same through all the systems/application involved.",
+        "example": "324d4777-b59e-4ad3-bb16-527856460113",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "pattern": "^(\\{{0,1}([0-9a-fA-F]){8}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){12}\\}{0,1})$"
+        }
+      },
+      "Currency": {
+        "name": "currency",
+        "in": "path",
+        "description": "ISO code of the currency (ISO 4127 alpha-3 currency code).",
+        "example": "USD",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 3
+        }
+      },
+      "ValidityDateTime": {
+        "name": "validityDateTime",
+        "in": "query",
+        "description": "Return exchange rate for specified DateTime in UTC ISO8601 DateTime format. If empty, latest exchange rates list is returned.",
+        "example": "2019-03-27T06:00:00.000Z",
+        "required": false,
+        "schema": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "securitySchemes": {
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "apiKey",
+        "description": "API key can be generated in API Portal (for more information see https://developers.kb.cz/manual#apikey)"
+      }
+    },
+    "schemas": {
+      "EcbRates": {
+        "title": "EcbRates",
+        "type": "array",
+        "description": "The percentage differences between KB exchange rates for card transactions and European Central Bank (ECB) reference exchange rates.",
+        "items": {
+          "$ref": "#/components/schemas/EcbRate"
+        }
+      },
+      "EcbRate": {
+        "title": "EcbRate",
+        "description": "The percentage differences between KB exchange rates for card transactions and European Central Bank (ECB) reference exchange rates.",
+        "type": "object",
+        "required": [
+          "marginPercentageBuy",
+          "marginPercentageSell",
+          "validDate"
+        ],
+        "properties": {
+          "marginPercentageBuy": {
+            "description": "The percentage difference for purchase transactions. ",
+            "type": "number",
+            "example": "-2.8483"
+          },
+          "marginPercentageSell": {
+            "description": "The percentage difference for sales transactions.",
+            "type": "number",
+            "example": "2.6465"
+          },
+          "cardAssociation": {
+            "description": "Specific card association. OPTIONAL parameter.",
+            "type": "string",
+            "example": "Visa"
+          }
+        }
+      },
+      "Currency": {
+        "example": "DKK",
+        "type": "string",
+        "description": "ISO code of the currency (ISO 4127 alpha-3 currency code).",
+        "minLength": 3,
+        "maxLength": 3
+      },
+      "CurrencyShortName": {
+        "example": "koruna",
+        "type": "string",
+        "description": "Short name of the currency.",
+        "maxLength": 30
+      },
+      "CurrencyFullName": {
+        "example": "dánska koruna",
+        "type": "string",
+        "description": "Full name of the currency.",
+        "maxLength": 100
+      },
+      "CountryName": {
+        "example": "Dánsko",
+        "type": "string",
+        "description": "Country name of the currency.",
+        "maxLength": 100
+      },
+      "Country": {
+        "type": "string",
+        "description": "Country ISO code of the currency (ISO 3166-1 alpha-2 country code).",
+        "minLength": 2,
+        "maxLength": 2,
+        "example": "DK"
+      },
+      "ValidityDateTime": {
+        "type": "string",
+        "format": "date-time",
+        "description": "The DateTime the exchange rate is valid in UTC ISO8601 DateTime format.",
+        "example": "2017-04-25T05:00:00.000Z"
+      },
+      "CurrencyUnit": {
+        "type": "integer",
+        "format": "int32",
+        "description": "Number of currency units the exchange rate applies to.",
+        "example": 1
+      },
+      "Middle": {
+        "type": "number",
+        "description": "The center value of exchange rate.",
+        "example": 27.06
+      },
+      "CashBuy": {
+        "type": "number",
+        "description": "Exchange rate for purchase transactions carried out in cash.",
+        "example": 27.06
+      },
+      "CashSell": {
+        "type": "number",
+        "description": "Exchange rate for sales transactions carried out in cash.",
+        "example": 27.06
+      },
+      "NonCashBuy": {
+        "type": "number",
+        "description": "Exchange rate for purchase transactions carried out in non-cash.",
+        "example": 27.06
+      },
+      "NonCashSell": {
+        "type": "number",
+        "description": "Exchange rate for sales transactions carried out in non-cash.",
+        "example": 27.06
+      },
+      "ExchangeRate": {
+        "type": "object",
+        "description": "The exchange rate details.",
+        "properties": {
+          "currency": {
+            "$ref": "#/components/schemas/Currency"
+          },
+          "currencyShortName": {
+            "$ref": "#/components/schemas/CurrencyShortName"
+          },
+          "currencyFullName": {
+            "$ref": "#/components/schemas/CurrencyFullName"
+          },
+          "countryName": {
+            "$ref": "#/components/schemas/CountryName"
+          },
+          "country": {
+            "$ref": "#/components/schemas/Country"
+          },
+          "validityDateTime": {
+            "$ref": "#/components/schemas/ValidityDateTime"
+          },
+          "currencyUnit": {
+            "$ref": "#/components/schemas/CurrencyUnit"
+          },
+          "middle": {
+            "$ref": "#/components/schemas/Middle"
+          },
+          "cashBuy": {
+            "$ref": "#/components/schemas/CashBuy"
+          },
+          "cashSell": {
+            "$ref": "#/components/schemas/CashSell"
+          },
+          "nonCashBuy": {
+            "$ref": "#/components/schemas/NonCashBuy"
+          },
+          "nonCashSell": {
+            "$ref": "#/components/schemas/NonCashSell"
+          },
+          "ecbRates": {
+            "$ref": "#/components/schemas/EcbRates"
+          }
+        }
+      },
+      "ExchangeRateList": {
+        "type": "array",
+        "description": "Collection of the exchange rates.",
+        "items": {
+          "$ref": "#/components/schemas/ExchangeRate"
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "description": "The parent element contains a collection of all error states.",
+        "properties": {
+          "errors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        },
+        "required": [
+          "errors"
+        ]
+      },
+      "Error": {
+        "type": "object",
+        "description": "Specific error.",
+        "required": [
+          "message"
+        ],
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "Optional error code (only for business exceptions)."
+          },
+          "additionalInfo": {
+            "type": "object",
+            "description": "Optional information about error. Contains additional information specific to a particular error.",
+            "properties": {
+              "parameterName": {
+                "type": "string",
+                "description": "The input parameter name."
+              },
+              "rejectedValue": {
+                "type": "string",
+                "description": "Rejected value of the parameter"
+              }
+            }
+          },
+          "message": {
+            "type": "string",
+            "description": "Text description of the error. It is not meant to be interpreted to the end user but to enrich the error log."
+          }
+        }
+      }
+    }
+  }
+}

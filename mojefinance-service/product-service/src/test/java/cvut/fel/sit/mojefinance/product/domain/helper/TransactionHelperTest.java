@@ -95,7 +95,8 @@ class TransactionHelperTest {
         tx.setDirection(TransactionDirection.OUTCOME);
 
         Amount amount = new Amount();
-        amount.setValue(new BigDecimal("100.50")); // Positive amount, should be negated
+        amount.setValue(new BigDecimal("100.50"));
+        amount.setCurrency("CZK");
         tx.setAmount(amount);
 
         RelatedParties parties = new RelatedParties();
@@ -125,7 +126,8 @@ class TransactionHelperTest {
         tx.setDirection(TransactionDirection.INCOME);
 
         Amount amount = new Amount();
-        amount.setValue(new BigDecimal("5000.00")); // Income, should stay positive
+        amount.setValue(new BigDecimal("5000.00"));
+        amount.setCurrency("CZK");
         tx.setAmount(amount);
 
         RelatedParties parties = new RelatedParties();
@@ -156,7 +158,8 @@ class TransactionHelperTest {
         tx.setDirection(TransactionDirection.OUTCOME);
 
         Amount amount = new Amount();
-        amount.setValue(new BigDecimal("-50.00")); // Already negative, should stay negative
+        amount.setValue(new BigDecimal("-50.00"));
+        amount.setCurrency("CZK");
         tx.setAmount(amount);
 
         RelatedParties parties = new RelatedParties(); // Name and IBAN are null
@@ -181,6 +184,9 @@ class TransactionHelperTest {
         Transaction tx = new Transaction();
         tx.setDirection(TransactionDirection.OUTCOME);
         tx.setRelatedParties(null);
+        tx.setAmount(new Amount());
+        tx.getAmount().setValue(BigDecimal.ONE);
+        tx.getAmount().setCurrency("CZK");
 
         CategorizeTransactionsResponse catResponse = new CategorizeTransactionsResponse();
         catResponse.setCategorizedTransactions(Map.of());
@@ -199,6 +205,7 @@ class TransactionHelperTest {
         tx1.setRelatedParties(parties1);
         tx1.setAmount(new Amount());
         tx1.getAmount().setValue(BigDecimal.ONE);
+        tx1.getAmount().setCurrency("CZK");
 
         Transaction tx2 = new Transaction();
         tx2.setDirection(TransactionDirection.INCOME);
@@ -207,6 +214,7 @@ class TransactionHelperTest {
         tx2.setRelatedParties(parties2);
         tx2.setAmount(new Amount());
         tx2.getAmount().setValue(BigDecimal.ONE);
+        tx2.getAmount().setCurrency("CZK");
 
         when(categorizationService.categorizeTransactions(any())).thenReturn(new CategorizeTransactionsResponse(Map.of()));
 
