@@ -25,6 +25,7 @@ public class CurrencyExchangeServiceImpl implements CurrencyExchangeService {
         BigDecimal exchangeRate = externalApiProvider.getExchangeRates(amount.getCurrency());
         BigDecimal originalAmount = amount.getValue();
         BigDecimal result = originalAmount.multiply(exchangeRate);
+        log.info("Exchanged amount: {} {} to {} {}", originalAmount, amount.getCurrency(), result, CZK_CURRENCY_CODE);
         return Amount.builder()
                 .value(result)
                 .currency(CZK_CURRENCY_CODE)
