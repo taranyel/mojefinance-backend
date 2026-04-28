@@ -1,5 +1,6 @@
 package cvut.fel.sit.mojefinance.bank.domain.service;
 
+import cvut.fel.sit.mojefinance.bank.data.entity.BankConnectionId;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -110,10 +111,16 @@ class BankConnectionServiceImplTest {
         ConnectedBanksResponse response = ConnectedBanksResponse.builder().connectedBanks(banks).build();
         when(bankConnectionRepository.getAllConnectedBanksByPrincipalName("user1")).thenReturn(response);
         when(authorizationService.authorizedClientExists(any())).thenReturn(false);
-        BankConnectionEntity entity = mock(BankConnectionEntity.class);
+
+        BankConnectionId bankConnectionId = new BankConnectionId();
+        bankConnectionId.setPrincipalName("user1");
+        bankConnectionId.setClientRegistrationId("regA");
+        BankConnectionEntity entity = BankConnectionEntity.builder()
+                .id(bankConnectionId)
+                .build();
         when(bankConnectionDomainMapper.toBankConnectionEntity(any())).thenReturn(entity);
         ConnectedBanksResponse result = service.getConnectedBanks();
-        verify(bankConnectionRepository).updateConnectedBank(entity);
+        verify(bankConnectionRepository).updateConnectedBank(any());
         assertEquals(BankConnectionStatus.DISCONNECTED, banks.get(0).getBankConnectionStatus());
         assertEquals(response, result);
     }

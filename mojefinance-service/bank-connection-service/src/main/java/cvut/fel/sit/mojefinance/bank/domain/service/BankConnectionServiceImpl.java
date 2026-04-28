@@ -95,6 +95,7 @@ public class BankConnectionServiceImpl implements BankConnectionService {
             if (authorizedClientDoesNotExist && bankIsNotReiffeisenbank) {
                 connectedBank.setBankConnectionStatus(BankConnectionStatus.DISCONNECTED);
                 BankConnectionEntity bankEntityToUpdate = bankConnectionDomainMapper.toBankConnectionEntity(connectedBank);
+                bankEntityToUpdate.getId().setPrincipalName(principalName);
                 bankConnectionRepository.updateConnectedBank(bankEntityToUpdate);
             }
         }
