@@ -23,7 +23,7 @@ services:
     restart: always
     container_name: postgres-db
     environment:
-      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_DB: mojefinance
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     healthcheck:
